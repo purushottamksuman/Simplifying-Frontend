@@ -1,0 +1,298 @@
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
+
+:root {
+  --app-muted: rgba(217, 217, 217, 1);
+  --cards-long-default: 0px 14px 42px 0px rgba(8, 15, 52, 0.06);
+  --designresetcommanatee: rgba(136, 142, 168, 1);
+  --designresetcomoxford-blue: rgba(59, 63, 92, 1);
+  --images-medium: 0px 18px 54px 0px rgba(20, 20, 43, 0.16);
+  --object-black-60: rgba(27, 27, 27, 0.6);
+  --object-black-90: rgba(27, 27, 27, 0.9);
+  --place-holder: rgba(107, 114, 128, 1);
+  --primaryone: rgba(8, 58, 80, 1);
+  --river-bed: rgba(75, 85, 99, 1);
+  --www-figma-com-segoe-UI-bold-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-segoe-UI-bold-font-size: 31.5px;
+  --www-figma-com-segoe-UI-bold-font-style: normal;
+  --www-figma-com-segoe-UI-bold-font-weight: 700;
+  --www-figma-com-segoe-UI-bold-letter-spacing: 0px;
+  --www-figma-com-segoe-UI-bold-line-height: 35px;
+  --www-figma-com-segoe-UI-emoji-regular-font-family: "Segoe UI Emoji",
+    Helvetica;
+  --www-figma-com-segoe-UI-emoji-regular-font-size: 12.300000190734863px;
+  --www-figma-com-segoe-UI-emoji-regular-font-style: normal;
+  --www-figma-com-segoe-UI-emoji-regular-font-weight: 400;
+  --www-figma-com-segoe-UI-emoji-regular-letter-spacing: 0px;
+  --www-figma-com-segoe-UI-emoji-regular-line-height: 17.5px;
+  --www-figma-com-segoe-UI-regular-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-segoe-UI-regular-font-size: 12.300000190734863px;
+  --www-figma-com-segoe-UI-regular-font-style: normal;
+  --www-figma-com-segoe-UI-regular-font-weight: 400;
+  --www-figma-com-segoe-UI-regular-letter-spacing: 0px;
+  --www-figma-com-segoe-UI-regular-line-height: 19.90999984741211px;
+  --www-figma-com-segoe-UI-semibold-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-segoe-UI-semibold-font-size: 10.5px;
+  --www-figma-com-segoe-UI-semibold-font-style: normal;
+  --www-figma-com-segoe-UI-semibold-font-weight: 400;
+  --www-figma-com-segoe-UI-semibold-letter-spacing: 0px;
+  --www-figma-com-segoe-UI-semibold-line-height: 14px;
+  --www-figma-com-semantic-button-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-semantic-button-font-size: 12.300000190734863px;
+  --www-figma-com-semantic-button-font-style: normal;
+  --www-figma-com-semantic-button-font-weight: 400;
+  --www-figma-com-semantic-button-letter-spacing: 0px;
+  --www-figma-com-semantic-button-line-height: 17.5px;
+  --www-figma-com-semantic-heading-3-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-semantic-heading-3-font-size: 15.800000190734863px;
+  --www-figma-com-semantic-heading-3-font-style: normal;
+  --www-figma-com-semantic-heading-3-font-weight: 400;
+  --www-figma-com-semantic-heading-3-letter-spacing: 0px;
+  --www-figma-com-semantic-heading-3-line-height: 24.5px;
+  --www-figma-com-semantic-heading-4-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-semantic-heading-4-font-size: 14px;
+  --www-figma-com-semantic-heading-4-font-style: normal;
+  --www-figma-com-semantic-heading-4-font-weight: 400;
+  --www-figma-com-semantic-heading-4-letter-spacing: 0px;
+  --www-figma-com-semantic-heading-4-line-height: 14px;
+  --www-figma-com-semantic-input-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-semantic-input-font-size: 12.300000190734863px;
+  --www-figma-com-semantic-input-font-style: normal;
+  --www-figma-com-semantic-input-font-weight: 400;
+  --www-figma-com-semantic-input-letter-spacing: 0px;
+  --www-figma-com-semantic-input-line-height: normal;
+  --www-figma-com-semantic-label-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-semantic-label-font-size: 14px;
+  --www-figma-com-semantic-label-font-style: normal;
+  --www-figma-com-semantic-label-font-weight: 400;
+  --www-figma-com-semantic-label-letter-spacing: 0px;
+  --www-figma-com-semantic-label-line-height: 21px;
+  --www-figma-com-semantic-textarea-font-family: "Segoe UI", Helvetica;
+  --www-figma-com-semantic-textarea-font-size: 12.300000190734863px;
+  --www-figma-com-semantic-textarea-font-style: normal;
+  --www-figma-com-semantic-textarea-font-weight: 400;
+  --www-figma-com-semantic-textarea-letter-spacing: 0px;
+  --www-figma-com-semantic-textarea-line-height: 17.5px;
+  --www-simplilearn-com-semantic-heading-3-title-font-family: "Roboto",
+    Helvetica;
+  --www-simplilearn-com-semantic-heading-3-title-font-size: 18px;
+  --www-simplilearn-com-semantic-heading-3-title-font-style: normal;
+  --www-simplilearn-com-semantic-heading-3-title-font-weight: 500;
+  --www-simplilearn-com-semantic-heading-3-title-letter-spacing: 0.5px;
+  --www-simplilearn-com-semantic-heading-3-title-line-height: 21px;
+  --www-simplilearn-com-semantic-label-font-family: "Roboto", Helvetica;
+  --www-simplilearn-com-semantic-label-font-size: 16px;
+  --www-simplilearn-com-semantic-label-font-style: normal;
+  --www-simplilearn-com-semantic-label-font-weight: 400;
+  --www-simplilearn-com-semantic-label-letter-spacing: 0px;
+  --www-simplilearn-com-semantic-label-line-height: 24px;
+  --wwwfigmacomathens-gray: rgba(243, 243, 245, 1);
+  --wwwfigmacomblue-ribbon: rgba(21, 93, 252, 1);
+  --wwwfigmacomcod-gray: rgba(10, 10, 10, 1);
+  --wwwfigmacomfeta: rgba(240, 253, 244, 1);
+  --wwwfigmacomfun-green: rgba(0, 130, 54, 1);
+  --wwwfigmacomgreen-haze: rgba(0, 166, 62, 1);
+  --wwwfigmacomice-cold: rgba(185, 248, 207, 1);
+  --wwwfigmacommirage: rgba(30, 41, 57, 1);
+  --wwwfigmacomriver-bed: rgba(74, 85, 101, 1);
+  --wwwfigmacomselective-yellow: rgba(239, 177, 0, 1);
+  --wwwfigmacomstorm-gray: rgba(113, 113, 130, 1);
+  --wwwfigmacomwhite: rgba(255, 255, 255, 1);
+  --wwwsimplilearncomblack: rgba(0, 0, 0, 1);
+}
+
+:root {
+  --animate-spin: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s infinite;
+}
+
+.animate-spin {
+  animation: var(--animate-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes image-glow {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+  }
+
+  10% {
+    opacity: 0.7;
+    animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+  }
+
+  to {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  90%,
+  to {
+    background-position: calc(-100% - var(--shimmer-width)) 0;
+  }
+
+  30%,
+  60% {
+    background-position: calc(100% + var(--shimmer-width)) 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    --card: transparent;
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 215 20.2% 65.1%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --card: transparent;
+    --card-foreground: 213 31% 91%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 216 34% 17%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
