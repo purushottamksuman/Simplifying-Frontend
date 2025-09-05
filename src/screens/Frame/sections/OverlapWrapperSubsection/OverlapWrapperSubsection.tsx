@@ -97,7 +97,7 @@ export const OverlapWrapperSubsection = (): JSX.Element => {
               <img
                 className="absolute w-[366px] h-[91px] top-[15px] left-[130px] object-cover"
                 alt="Simplifying SKILLS"
-                src="/image34.png"
+                src="/simplifying_skills_logo.png"
               />
             </CardContent>
           </Card>
