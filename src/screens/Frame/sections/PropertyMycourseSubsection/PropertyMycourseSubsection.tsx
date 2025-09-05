@@ -181,7 +181,8 @@ const navigationItems = [
 export const PropertyMycourseSubsection = (): JSX.Element => {
   return (
     <div className="w-full h-screen bg-[#3479ff] flex">
-      <aside className="w-[315px] bg-[#3479ff] flex flex-col">
+      <aside className="w-[315px] h-full bg-[#3479ff] flex flex-col shadow-[0px_4px_25px_rgba(0,0,0,0.2)] relative">
+
         <div className="p-6">
           <img
             className="w-[262px] h-[68px]"
@@ -190,29 +191,61 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
           />
         </div>
 
-        <nav className="flex-1 px-6 py-8">
-          <div className="flex flex-col gap-[43px]">
-            {navigationItems.map((item, index) => (
-              <div key={index} className="flex items-center gap-[17px]">
-                <span className="w-[26px] h-[26px] text-lg">{item.icon}</span>
-                <span
-                  className={`[font-family:'Nunito',Helvetica] font-extrabold text-lg tracking-[0] leading-[19.6px] ${
-                    item.active ? "text-[#13377c]" : "text-white"
-                  }`}
-                >
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
+      <nav className="flex flex-col gap-[90px] p-[70px_30px_0_30px]">
+  {/* Navigation Items */}
+  <div className="flex flex-col gap-[20px]">
+    {navigationItems.map((item, index) => (
+      <div
+        key={index}
+        className={`group flex items-center gap-[15px] cursor-pointer transition-all duration-300 relative`}
+      >
+        {/* Active Item Background */}
+{item.active && (
+  <div
+    className="absolute inset-0 bg-white transition-all duration-300"
+    style={{
+      left: "-20px",
+      right: "-50px",
+      borderTopLeftRadius: "40px",
+      borderBottomLeftRadius: "40px",
+      clipPath: "polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)", // slant effect
+    }}
+  ></div>
+)}
 
-          <div className="mt-[90px] flex items-center gap-[17px]">
-            <span className="w-7 h-7 text-lg">🚪</span>
-            <span className="[font-family:'Poppins',Helvetica] font-semibold text-white text-xl tracking-[0.40px] leading-[normal]">
-              Log Out
-            </span>
-          </div>
-        </nav>
+
+        {/* Icon + Label */}
+        <div className="flex items-center gap-[15px] px-6 py-4 relative z-10 w-full">
+          <item.icon
+            className={`w-[24px] h-[24px] transition-colors duration-300 ${
+              item.active
+                ? "text-[#3479ff]"
+                : "text-white group-hover:text-[#dbe9ff]"
+            }`}
+          />
+          <span
+            className={`font-semibold text-base [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] transition-colors duration-300 ${
+              item.active
+                ? "text-[#3479ff]"
+                : "text-white group-hover:text-[#dbe9ff]"
+            }`}
+          >
+            {item.label}
+          </span>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {/* Logout Button */}
+  <div className="flex items-center gap-[15px] cursor-pointer px-6 py-3 rounded-[15px] hover:bg-[#ffffff1a] transition-all duration-300">
+    <LogOutIcon className="w-6 h-6 text-white" />
+    <span className="[font-family:'Poppins',Helvetica] font-medium text-white text-lg tracking-[0.40px] leading-[normal]">
+      Log Out
+    </span>
+  </div>
+</nav>
+
       </aside>
 
       <main className="flex-1 bg-white shadow-[0px_0px_29px_#00000075] relative">
