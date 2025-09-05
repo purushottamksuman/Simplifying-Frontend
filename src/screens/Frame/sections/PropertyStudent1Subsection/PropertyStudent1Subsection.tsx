@@ -45,11 +45,15 @@ export const PropertyStudent1Subsection = (): JSX.Element => {
               </div>
 
               <div className="absolute top-32 left-[104px] w-[448px] h-[454px]">
-                <img className="w-full h-full" alt="Image" />
+                <img className="w-full h-full"
+                src="/sch_students.png"
+                alt="Image" />
               </div>
 
               <div className="absolute top-0 left-0 w-[651px] h-[627px]">
-                <img className="w-full h-full" alt="Frame" />
+                <img className="w-full h-full"
+                src="/framestudent.png" 
+                alt="Frame" />
               </div>
             </CardContent>
           </Card>
@@ -59,6 +63,7 @@ export const PropertyStudent1Subsection = (): JSX.Element => {
           <div className="w-[366px] h-[91px]">
             <img
               className="w-full h-full object-cover"
+              src="/logosimplify.png"
               alt="Simplifying SKILLS"
             />
           </div>

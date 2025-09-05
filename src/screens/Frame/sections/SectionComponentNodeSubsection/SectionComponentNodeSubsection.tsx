@@ -24,6 +24,7 @@ export const SectionComponentNodeSubsection = (): JSX.Element => {
 
               <img
                 className="absolute w-[375px] h-[433px] top-[105px] left-[139px]"
+                src = "/birthday_girl.png"
                 alt="Group"
               />
             </CardContent>
@@ -31,6 +32,7 @@ export const SectionComponentNodeSubsection = (): JSX.Element => {
 
           <img
             className="w-[642px] h-[627px] left-0 absolute top-0"
+            src="/framestudent.png"
             alt="Frame"
           />
         </div>
@@ -39,7 +41,8 @@ export const SectionComponentNodeSubsection = (): JSX.Element => {
           <div className="flex flex-col w-full max-w-[450px] items-center gap-[51px]">
             <img
               className="w-[366px] h-[91px] object-cover"
-              alt="Simplifying SKILLS"
+              src="/logosimplify.png"
+              alt="logosimplify"
             />
 
             <div className="flex flex-col items-center gap-[39px] w-full">
