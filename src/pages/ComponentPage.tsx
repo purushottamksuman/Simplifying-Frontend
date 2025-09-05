@@ -187,29 +187,29 @@ export const ComponentPage: React.FC = () => {
   const { component: Component, name, description } = componentMap[componentName];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/">
-                <Button variant="outline" size="sm">
-                  <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                  Back to Components
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">{name}</h1>
-                <p className="text-gray-600">{description}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    // <div className="min-h-screen bg-gray-100">
+    //   <div className="bg-white shadow-sm border-b">
+    //     <div className="container mx-auto px-4 py-4">
+    //       <div className="flex items-center justify-between">
+    //         <div className="flex items-center space-x-4">
+    //           <Link to="/">
+    //             <Button variant="outline" size="sm">
+    //               <ArrowLeftIcon className="w-4 h-4 mr-2" />
+    //               Back to Components
+    //             </Button>
+    //           </Link>
+    //           <div>
+    //             <h1 className="text-2xl font-bold text-gray-800">{name}</h1>
+    //             <p className="text-gray-600">{description}</p>
+    //           </div>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   </div>
       
       <div className="w-full">
         <Component />
       </div>
-    </div>
+    // </div>
   );
 };
