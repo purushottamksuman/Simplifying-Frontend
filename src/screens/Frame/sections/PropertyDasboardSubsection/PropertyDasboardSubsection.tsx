@@ -6,6 +6,7 @@ import {
   GiftIcon,
   HelpCircleIcon,
   HomeIcon,
+  LockIcon,
   LogOutIcon,
   PresentationIcon,
   SettingsIcon,
