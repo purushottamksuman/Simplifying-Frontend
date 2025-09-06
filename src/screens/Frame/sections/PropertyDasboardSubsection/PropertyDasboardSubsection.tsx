@@ -340,7 +340,8 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
               </div>
             </div>
           </div>
-        </main>
+        </div>
+      </main>
     </div>
   );
 };
