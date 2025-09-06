@@ -22,7 +22,9 @@ async function sendOTPEmail(email: string, otpCode: string): Promise<boolean> {
   try {
     // For demo purposes, we'll log the OTP
     // In production, integrate with email service like SendGrid, Resend, etc.
-    console.log(`OTP for ${email}: ${otpCode}`);
+    console.log(`🔐 OTP for ${email}: ${otpCode}`);
+    console.log(`📧 Email would be sent to: ${email}`);
+    console.log(`🔢 OTP Code: ${otpCode}`);
     
     // Simulate email sending delay
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -35,7 +37,10 @@ async function sendOTPEmail(email: string, otpCode: string): Promise<boolean> {
 }
 
 Deno.serve(async (req: Request) => {
+  console.log(`📨 Received ${req.method} request to send-otp function`);
+  
   if (req.method === "OPTIONS") {
+    console.log("✅ Handling CORS preflight request");
     return new Response(null, {
       status: 200,
       headers: corsHeaders,
@@ -48,10 +53,21 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    console.log("🔧 Supabase client created");
+    console.log("🌐 Supabase URL:", Deno.env.get('SUPABASE_URL') ? "✅ Set" : "❌ Missing");
+    console.log("🔑 Service Role Key:", Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ? "✅ Set" : "❌ Missing");
+
     if (req.method === 'POST') {
-      const { email, phone, otp_type }: OTPRequest = await req.json();
+      console.log("📝 Processing POST request");
+      
+      const requestBody = await req.text();
+      console.log("📦 Raw request body:", requestBody);
+      
+      const { email, phone, otp_type }: OTPRequest = JSON.parse(requestBody);
+      console.log("📋 Parsed request data:", { email, phone, otp_type });
 
       if (!email || !otp_type) {
+        console.error("❌ Missing required fields:", { email: !!email, otp_type: !!otp_type });
         return new Response(
           JSON.stringify({ error: 'Email and OTP type are required' }),
           {
@@ -63,8 +79,10 @@ Deno.serve(async (req: Request) => {
 
       // Generate OTP
       const otpCode = generateOTP();
+      console.log("🎲 Generated OTP:", otpCode);
 
       // Store OTP in database
+      console.log("💾 Storing OTP in database...");
       const { data, error } = await supabase
         .from('otp_verifications')
         .insert({
@@ -78,9 +96,9 @@ Deno.serve(async (req: Request) => {
         .single();
 
       if (error) {
-        console.error('Database error:', error);
+        console.error('❌ Database error:', error);
         return new Response(
-          JSON.stringify({ error: 'Failed to create OTP verification' }),
+          JSON.stringify({ error: 'Failed to create OTP verification', details: error.message }),
           {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -88,10 +106,14 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      console.log("✅ OTP stored in database:", data);
+
       // Send OTP via email
+      console.log("📧 Sending OTP email...");
       const emailSent = await sendOTPEmail(email, otpCode);
 
       if (!emailSent) {
+        console.error("❌ Failed to send email");
         return new Response(
           JSON.stringify({ error: 'Failed to send OTP email' }),
           {
@@ -101,11 +123,13 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      console.log("✅ OTP sent successfully!");
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'OTP sent successfully',
-          otp_id: data.id 
+          otp_id: data.id,
+          debug_otp: otpCode // Remove this in production
         }),
         {
           status: 200,
@@ -114,6 +138,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    console.log("❌ Method not allowed:", req.method);
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
       {
@@ -123,9 +148,9 @@ Deno.serve(async (req: Request) => {
     );
 
   } catch (error) {
-    console.error('Function error:', error);
+    console.error('❌ Function error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

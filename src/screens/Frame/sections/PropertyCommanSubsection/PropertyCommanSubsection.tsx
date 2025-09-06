@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../../components/ui/select";
-import { authHelpers } from "../../../../lib/supabase";
 import { useState } from "react";
 
 export const PropertyCommanSubsection = (): JSX.Element => {
@@ -25,7 +24,8 @@ export const PropertyCommanSubsection = (): JSX.Element => {
   const [error, setError] = useState("");
 
   const handleSignUp = async () => {
-    console.log("Form data:", formData); // Debug log
+    console.log("🚀 Starting registration process...");
+    console.log("📝 Form data:", formData);
     
     // Validate required fields
     if (!formData.email.trim()) {
@@ -39,26 +39,41 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     }
     
     if (!formData.userType.trim()) {
-      setError("Please fill in all required fields");
+      setError("Please select your user type (Student/Parent/Teacher)");
       return;
     }
 
-    console.log("Sending OTP request with data:", {
-      email: formData.email,
-      phone: `${formData.countryCode}${formData.phone}`,
-      otp_type: 'registration'
-    });
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
     setLoading(true);
     setError("");
 
     try {
-      // Generate OTP and send email
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
-      console.log("Supabase URL:", supabaseUrl);
-      console.log("Making request to:", `${supabaseUrl}/functions/v1/send-otp`);
+      console.log("🔧 Environment check:");
+      console.log("- Supabase URL:", supabaseUrl ? "✅ Set" : "❌ Missing");
+      console.log("- Supabase Key:", supabaseKey ? "✅ Set" : "❌ Missing");
+      
+      if (!supabaseUrl || !supabaseKey) {
+        setError("Configuration error: Supabase credentials missing");
+        return;
+      }
+
+      const requestData = {
+        email: formData.email.trim(),
+        phone: `${formData.countryCode}${formData.phone.trim()}`,
+        otp_type: 'registration'
+      };
+      
+      console.log("📤 Sending OTP request:", requestData);
+      console.log("🌐 Request URL:", `${supabaseUrl}/functions/v1/send-otp`);
       
       const otpResponse = await fetch(`${supabaseUrl}/functions/v1/send-otp`, {
         method: 'POST',
@@ -66,25 +81,31 @@ export const PropertyCommanSubsection = (): JSX.Element => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${supabaseKey}`
         },
-        body: JSON.stringify({
-          email: formData.email,
-          phone: `${formData.countryCode}${formData.phone}`,
-          otp_type: 'registration'
-        })
+        body: JSON.stringify(requestData)
       });
 
-      console.log("OTP Response status:", otpResponse.status);
-      console.log("OTP Response headers:", otpResponse.headers);
+      console.log("📥 OTP Response status:", otpResponse.status);
+      console.log("📥 OTP Response ok:", otpResponse.ok);
       
       const otpResult = await otpResponse.json();
-      console.log("OTP Result:", otpResult);
+      console.log("📥 OTP Result:", otpResult);
       
       if (!otpResponse.ok || !otpResult.success) {
-        setError(otpResult.error || `Failed to send OTP. Status: ${otpResponse.status}`);
+        console.error("❌ OTP sending failed:", otpResult);
+        setError(otpResult.error || `Failed to send OTP. Please try again.`);
         return;
       }
 
       // Store user data in localStorage for OTP verification
+      const pendingUserData = {
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        userType: formData.userType,
+        countryCode: formData.countryCode,
+        otpId: otpResult.otp_id
+      };
+      
+      console.log("💾 Storing pending user data:", pendingUserData);
       localStorage.setItem('pendingUser', JSON.stringify({
         email: formData.email,
         phone: formData.phone,
@@ -92,17 +113,18 @@ export const PropertyCommanSubsection = (): JSX.Element => {
         countryCode: formData.countryCode
       }));
 
-      console.log("Navigating to OTP page...");
+      console.log("✅ OTP sent successfully! Navigating to verification page...");
       navigate('/component/otp');
     } catch (err) {
-      console.error('Registration error:', err);
-      setError(`Network error: ${err.message}. Please check your connection and try again.`);
+      console.error('❌ Registration error:', err);
+      setError(`Network error: ${err.message || 'Unknown error'}. Please check your connection and try again.`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
+    console.log(`📝 Field updated: ${field} = ${value}`);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -230,6 +252,10 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 </div>
               )}
               
+              {/* Debug info */}
+              <div className="absolute w-[445px] top-[560px] left-[89px] text-xs text-gray-500 text-center">
+                Debug: User Type: {formData.userType || 'Not selected'} | Email: {formData.email || 'Empty'} | Phone: {formData.phone || 'Empty'}
+              </div>
               {/* Debug info - remove in production */}
               <div className="text-xs text-gray-500 text-center">
                 Debug: {JSON.stringify(formData, null, 2)}

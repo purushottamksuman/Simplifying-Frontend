@@ -12,7 +12,10 @@ interface VerifyOTPRequest {
 }
 
 Deno.serve(async (req: Request) => {
+  console.log(`📨 Received ${req.method} request to verify-otp function`);
+  
   if (req.method === "OPTIONS") {
+    console.log("✅ Handling CORS preflight request");
     return new Response(null, {
       status: 200,
       headers: corsHeaders,
@@ -25,10 +28,19 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    console.log("🔧 Supabase client created for verification");
+
     if (req.method === 'POST') {
-      const { email, otp_code }: VerifyOTPRequest = await req.json();
+      console.log("📝 Processing OTP verification request");
+      
+      const requestBody = await req.text();
+      console.log("📦 Raw request body:", requestBody);
+      
+      const { email, otp_code }: VerifyOTPRequest = JSON.parse(requestBody);
+      console.log("📋 Parsed verification data:", { email, otp_code });
 
       if (!email || !otp_code) {
+        console.error("❌ Missing required fields:", { email: !!email, otp_code: !!otp_code });
         return new Response(
           JSON.stringify({ error: 'Email and OTP code are required' }),
           {
@@ -39,6 +51,7 @@ Deno.serve(async (req: Request) => {
       }
 
       // Find valid OTP
+      console.log("🔍 Looking for valid OTP in database...");
       const { data: otpRecord, error: otpError } = await supabase
         .from('otp_verifications')
         .select('*')
@@ -50,6 +63,8 @@ Deno.serve(async (req: Request) => {
         .single();
 
       if (otpError || !otpRecord) {
+        console.error("❌ Invalid OTP or not found:", otpError);
+        
         // Increment attempts for failed verification
         await supabase
           .from('otp_verifications')
@@ -66,7 +81,10 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      console.log("✅ Valid OTP found:", otpRecord);
+
       // Mark OTP as verified
+      console.log("✅ Marking OTP as verified...");
       const { error: updateError } = await supabase
         .from('otp_verifications')
         .update({ 
@@ -77,6 +95,7 @@ Deno.serve(async (req: Request) => {
         .eq('id', otpRecord.id);
 
       if (updateError) {
+        console.error("❌ Failed to update OTP record:", updateError);
         return new Response(
           JSON.stringify({ error: 'Failed to verify OTP' }),
           {
@@ -86,6 +105,7 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      console.log("✅ OTP verified successfully!");
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -98,6 +118,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    console.log("❌ Method not allowed:", req.method);
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
       {
@@ -107,9 +128,9 @@ Deno.serve(async (req: Request) => {
     );
 
   } catch (error) {
-    console.error('Function error:', error);
+    console.error('❌ Function error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
