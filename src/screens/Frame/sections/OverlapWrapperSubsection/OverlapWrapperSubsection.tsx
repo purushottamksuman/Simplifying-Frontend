@@ -7,35 +7,26 @@ import { useEffect, useState } from "react";
 export const OverlapWrapperSubsection = (): JSX.Element => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("User");
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Only run once when component mounts
-    const checkUserData = () => {
+    // Get user data from localStorage
+    const currentUser = localStorage.getItem('currentUser');
+    
+    if (currentUser) {
       try {
-        const currentUser = localStorage.getItem('currentUser');
-        
-        if (currentUser) {
-          const userData = JSON.parse(currentUser);
-          const name = userData.email?.split('@')[0] || userData.user_metadata?.full_name || "User";
-          setUserName(name);
-          console.log("✅ Success page loaded for user:", name);
-        } else {
-          console.log("❌ No user data found, redirecting to login");
-          navigate('/component/login');
-          return;
-        }
+        const userData = JSON.parse(currentUser);
+        const name = userData.email?.split('@')[0] || userData.user_metadata?.full_name || "User";
+        setUserName(name);
+        console.log("✅ Success page loaded for user:", name);
       } catch (error) {
         console.error("❌ Error parsing user data:", error);
-        navigate('/component/login');
-        return;
+        setUserName("User");
       }
-      
-      setIsLoading(false);
-    };
-
-    checkUserData();
-  }, []); // Empty dependency array - only run once
+    } else {
+      console.log("❌ No user data found on success page");
+      setUserName("User");
+    }
+  }, []);
 
   const handleContinue = () => {
     console.log("🔄 User clicked Continue, navigating to dashboard");
@@ -43,15 +34,6 @@ export const OverlapWrapperSubsection = (): JSX.Element => {
     localStorage.removeItem('pendingUser');
     navigate('/component/dashboard');
   };
-
-  // Show loading state while checking user data
-  if (isLoading) {
-    return (
-      <div className="w-full h-screen bg-white flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full h-[1080px] bg-white relative">
