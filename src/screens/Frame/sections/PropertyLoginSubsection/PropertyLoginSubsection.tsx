@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
-import { Separator } from "../../../../components/ui/separator";
 import { authHelpers } from "../../../../lib/supabase";
 import { useState } from "react";
 
@@ -31,25 +30,13 @@ export const PropertyLoginSubsection = (): JSX.Element => {
       if (error) {
         // Check if email is not confirmed
         if (error.message === "Email not confirmed" || error.message.includes("email_not_confirmed")) {
-          console.log("📧 Email not confirmed, sending magic link...");
+          console.log("📧 Email not confirmed, sending confirmation email...");
           
-          // Send OTP for email verification using custom template
-          const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({
-              email: formData.email.trim(),
-              otp_type: 'email'
-            })
-          });
-
-          const otpResult = await otpResponse.json();
+          // Resend confirmation email using Supabase's default system
+          const { error: resendError } = await authHelpers.resendConfirmation(formData.email);
           
-          if (!otpResponse.ok || !otpResult.success) {
-            setError(otpResult.error || "Failed to send verification email. Please try again.");
+          if (resendError) {
+            setError("Failed to send confirmation email. Please try again.");
             return;
           }
           
@@ -57,11 +44,10 @@ export const PropertyLoginSubsection = (): JSX.Element => {
           localStorage.setItem('pendingUser', JSON.stringify({
             email: formData.email,
             password: formData.password,
-            userType: 'existing_user',
             isLogin: true
           }));
           
-          console.log("✅ OTP sent for email confirmation, redirecting to OTP verification...");
+          console.log("✅ Confirmation email sent, redirecting to verification...");
           navigate('/component/otp');
           return;
         }

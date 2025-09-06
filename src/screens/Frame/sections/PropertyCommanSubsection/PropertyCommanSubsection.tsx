@@ -28,7 +28,6 @@ export const PropertyCommanSubsection = (): JSX.Element => {
 
   const handleSignUp = async () => {
     console.log("🚀 Starting registration process...");
-    console.log("📝 Form data:", formData);
     
     // Validate required fields
     if (!formData.email.trim()) {
@@ -60,6 +59,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
       setError("Passwords do not match");
       return;
     }
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
@@ -71,52 +71,47 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     setError("");
 
     try {
-      // Send OTP for registration (this will use your custom email template)
-      const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          email: formData.email.trim(),
-          phone: `${formData.countryCode}${formData.phone.trim()}`,
-          otp_type: 'registration',
+      // Sign up with Supabase (this will send your custom confirmation email)
+      const { data, error } = await authHelpers.signUp(
+        formData.email.trim(),
+        formData.password,
+        {
           user_type: formData.userType,
-          password: formData.password,
+          phone: `${formData.countryCode}${formData.phone.trim()}`,
+          full_name: "",
           country_code: formData.countryCode
-        })
-      });
+        }
+      );
 
-      const otpResult = await otpResponse.json();
-      
-      if (!otpResponse.ok || !otpResult.success) {
-        console.error("❌ OTP sending failed:", otpResult);
-        setError(otpResult.error || "Failed to send OTP. Please try again.");
+      if (error) {
+        console.error("❌ Registration failed:", error);
+        setError(error.message || "Registration failed. Please try again.");
         return;
       }
 
-      // Store user data for OTP verification
+      console.log("✅ Registration successful! Confirmation email sent.");
+      
+      // Store user data for OTP verification page
       localStorage.setItem('pendingUser', JSON.stringify({
         email: formData.email,
         phone: formData.phone,
         userType: formData.userType,
         countryCode: formData.countryCode,
-        password: formData.password
+        isRegistration: true
       }));
 
-      console.log("✅ OTP sent! Navigating to verification page...");
+      // Navigate to OTP verification page
       navigate('/component/otp');
+      
     } catch (err) {
       console.error('❌ Registration error:', err);
-      setError(`Network error: ${err.message || 'Unknown error'}. Please check your connection and try again.`);
+      setError(`Registration failed: ${err.message || 'Unknown error'}. Please try again.`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    console.log(`📝 Field updated: ${field} = ${value}`);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -184,7 +179,8 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 and begin your journey with us!
               </div>
 
-              <div className="absolute w-[445px] h-[65px] top-[281px] left-[89px]">
+              {/* User Type Selection */}
+              <div className="absolute w-[445px] h-[65px] top-[241px] left-[89px]">
                 <div className="relative h-[65px]">
                   <Select onValueChange={(value) => handleInputChange('userType', value)}>
                     <SelectTrigger className="w-[445px] h-[54px] absolute top-[11px] left-0 bg-white rounded-3xl border border-solid border-[#e2e2ea]">
@@ -210,7 +206,8 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 </div>
               </div>
 
-              <div className="absolute w-[445px] h-[53px] top-[377px] left-[89px]">
+              {/* Email Field */}
+              <div className="absolute w-[445px] h-[53px] top-[327px] left-[89px]">
                 <Input
                   className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
                   placeholder="Mail Address"
@@ -223,7 +220,8 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 </div>
               </div>
 
-              <div className="absolute w-[443px] h-[54px] top-[461px] left-[90px] flex gap-1">
+              {/* Phone Field */}
+              <div className="absolute w-[443px] h-[54px] top-[401px] left-[90px] flex gap-1">
                 <Input
                   className="w-14 h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-[13px] text-center"
                   value={formData.countryCode}
@@ -239,7 +237,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
               </div>
 
               {/* Password Field */}
-              <div className="absolute w-[445px] h-[53px] top-[545px] left-[89px]">
+              <div className="absolute w-[445px] h-[53px] top-[475px] left-[89px]">
                 <Input
                   type="password"
                   className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
@@ -250,7 +248,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
               </div>
 
               {/* Confirm Password Field */}
-              <div className="absolute w-[445px] h-[53px] top-[629px] left-[89px]">
+              <div className="absolute w-[445px] h-[53px] top-[549px] left-[89px]">
                 <Input
                   type="password"
                   className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
@@ -259,13 +257,16 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                 />
               </div>
+
+              {/* Error Message */}
               {error && (
-                <div className="absolute w-[445px] top-[695px] left-[89px] text-red-500 text-sm text-center">
+                <div className="absolute w-[445px] top-[615px] left-[89px] text-red-500 text-sm text-center">
                   {error}
                 </div>
               )}
 
-              <div className="absolute w-[340px] h-[53px] top-[720px] left-[142px]">
+              {/* Sign Up Button */}
+              <div className="absolute w-[340px] h-[53px] top-[640px] left-[142px]">
                 <Button 
                   onClick={handleSignUp}
                   disabled={loading}
@@ -277,7 +278,8 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 </Button>
               </div>
 
-              <div className="absolute w-[403px] h-[163px] top-[790px] left-[110px]">
+              {/* Social Login Section */}
+              <div className="absolute w-[403px] h-[163px] top-[710px] left-[110px]">
                 <div className="absolute w-[400px] h-[15px] top-0 left-[3px]">
                   <div className="relative h-3.5">
                     <div className="flex w-5 items-center justify-center gap-2.5 px-[3px] py-0 absolute top-0 left-[190px] bg-white">

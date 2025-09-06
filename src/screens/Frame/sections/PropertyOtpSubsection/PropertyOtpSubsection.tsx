@@ -7,6 +7,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "../../../../components/ui/input-otp";
+import { authHelpers } from "../../../../lib/supabase";
 import { useState, useEffect } from "react";
 
 export const PropertyOtpSubsection = (): JSX.Element => {
@@ -18,6 +19,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [isLoginFlow, setIsLoginFlow] = useState(false);
   const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
 
@@ -27,11 +29,10 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     if (pendingUser) {
       const userData = JSON.parse(pendingUser);
       setUserEmail(userData.email);
+      setIsLoginFlow(userData.isLogin || false);
       
-      // Check if this is a login verification
-      if (userData.isLogin) {
-        console.log("🔐 Login verification mode - user needs to verify email");
-      }
+      console.log("📧 OTP page loaded for:", userData.email);
+      console.log("🔄 Flow type:", userData.isLogin ? "Login verification" : "Registration");
     } else {
       // If no pending user, redirect to registration
       navigate('/component/comman');
@@ -63,37 +64,25 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     setSuccessMessage("");
 
     try {
-      // Verify OTP with Supabase
-      const verifyResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          email: userEmail,
-          otp_code: otp,
-          otp_type: 'email'
-        })
-      });
+      const pendingUser = localStorage.getItem('pendingUser');
+      const userData = pendingUser ? JSON.parse(pendingUser) : null;
 
-      const verifyResult = await verifyResponse.json();
-      
-      if (!verifyResponse.ok || !verifyResult.success) {
-        setError(verifyResult.error || 'Invalid OTP. Please try again.');
+      if (!userData) {
+        setError("Session expired. Please start over.");
+        navigate('/component/comman');
         return;
       }
 
-      // OTP verified successfully - user account already exists
-      console.log("✅ OTP verified successfully!");
-      
-      // Check if this is a login verification or registration
-      const pendingUser = localStorage.getItem('pendingUser');
-      const userData = pendingUser ? JSON.parse(pendingUser) : null;
-      
-      if (userData?.isLogin) {
-        // For login verification, complete the login process
-        console.log("🚀 Login verification complete, going to dashboard");
+      if (isLoginFlow) {
+        // For login verification - verify OTP token
+        const { data, error } = await authHelpers.verifyOTP(userEmail, otp, 'email');
+        
+        if (error) {
+          setError("Invalid OTP. Please try again.");
+          return;
+        }
+
+        console.log("✅ Login OTP verified, signing in user...");
         
         // Now sign in the user with their credentials
         const { data: loginData, error: loginError } = await authHelpers.signIn(userData.email, userData.password);
@@ -113,35 +102,23 @@ export const PropertyOtpSubsection = (): JSX.Element => {
         // Clear pending user data
         localStorage.removeItem('pendingUser');
         navigate('/component/dashboard');
-      } else {
-        // For registration, create the user account now
-        console.log("🎉 Registration complete, going to success page");
         
-        // Create user account with Supabase Auth
-        const { data: signupData, error: signupError } = await authHelpers.signUp(
-          userData.email,
-          userData.password,
-          {
-            user_type: userData.userType,
-            phone: `${userData.countryCode}${userData.phone}`,
-            full_name: "",
-            country_code: userData.countryCode
-          }
-        );
-
-        if (signupError) {
-          console.error("❌ Account creation failed:", signupError);
-          setError("Failed to create account. Please try again.");
+      } else {
+        // For registration verification - verify OTP token
+        const { data, error } = await authHelpers.verifyOTP(userEmail, otp, 'signup');
+        
+        if (error) {
+          setError("Invalid OTP. Please try again.");
           return;
         }
 
-        console.log("✅ User account created:", signupData);
+        console.log("✅ Registration OTP verified successfully!");
         
-        // Store user session info
+        // Store user session info (user account was already created during signup)
         localStorage.setItem('currentUser', JSON.stringify({
-          id: signupData.user.id,
-          email: signupData.user.email,
-          user_metadata: signupData.user.user_metadata
+          id: data.user.id,
+          email: data.user.email,
+          user_metadata: data.user.user_metadata
         }));
         
         // Clear pending user data
@@ -165,68 +142,25 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     setSuccessMessage("");
     
     try {
-      // Get pending user data
       const pendingUser = localStorage.getItem('pendingUser');
       if (!pendingUser) {
-        setError("Registration data not found. Please start over.");
+        setError("Session expired. Please start over.");
         return;
       }
 
       const userData = JSON.parse(pendingUser);
       
-      console.log("🔄 Resending OTP to:", userData.email);
+      console.log("🔄 Resending confirmation email to:", userData.email);
       
-      // Resend OTP - check if it's login or registration
-      if (userData.isLogin) {
-        // For login verification, send magic link again
-        const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            email: userData.email,
-            otp_type: 'email_confirmation'
-          })
-        });
-
-        const otpResult = await otpResponse.json();
-        
-        if (!otpResponse.ok || !otpResult.success) {
-          setError("Failed to resend verification email");
-          return;
-        }
-        
-        setSuccessMessage("Verification email resent successfully!");
-      } else {
-        // For registration, send OTP
-        const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            email: userData.email,
-            phone: `${userData.countryCode}${userData.phone}`,
-            otp_type: 'registration',
-            user_type: userData.userType,
-            password: userData.password,
-            country_code: userData.countryCode
-          })
-        });
-
-        const otpResult = await otpResponse.json();
-        console.log("📥 Resend OTP result:", otpResult);
-        
-        if (!otpResponse.ok || !otpResult.success) {
-          setError(otpResult.error || 'Failed to resend OTP');
-          return;
-        }
-
-        setSuccessMessage("OTP resent successfully! Check your email.");
+      // Resend confirmation email using Supabase's default system
+      const { error } = await authHelpers.resendConfirmation(userData.email);
+      
+      if (error) {
+        setError("Failed to resend confirmation email. Please try again.");
+        return;
       }
+      
+      setSuccessMessage("Confirmation email resent successfully! Check your email.");
       
       // Reset timer
       setTimer(120);
@@ -245,13 +179,12 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       }, 1000);
       
     } catch (err) {
-      console.error('Resend OTP error:', err);
-      setError("Failed to resend OTP");
+      console.error('Resend confirmation error:', err);
+      setError("Failed to resend confirmation email");
     } finally {
       setResendLoading(false);
     }
   };
-
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -261,7 +194,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
 
   const maskedEmail = userEmail ? 
     userEmail.replace(/(.{2})(.*)(@.*)/, '$1****$3') : 
-    '+91-81xxxxxx24';
+    'user@example.com';
 
   return (
     <div className="w-full min-h-screen bg-white relative">
@@ -269,21 +202,12 @@ export const PropertyOtpSubsection = (): JSX.Element => {
         {/* Background Container */}
         <div className="absolute inset-0 bg-[#edf0fa] rounded-[101px]" />
 
-        {/* Mask Image (aligned fully to the right) */}
-<img
-  className="
-    absolute
-    w-[1250px]
-    h-[970px]
-    top-0
-    right-0
-    lg:right-[-40px]
-    rounded-tr-[100px]
-    rounded-br-[100px]
-  "
-  alt="Mask group"
-  src="/Mask group.png"
-/>
+        {/* Mask Image */}
+        <img
+          className="absolute w-[1250px] h-[970px] top-0 right-0 lg:right-[-40px] rounded-tr-[100px] rounded-br-[100px]"
+          alt="Mask group"
+          src="/Mask group.png"
+        />
 
         {/* Blurred Background Circles */}
         <div className="absolute w-[598px] h-[535px] top-[338px] left-[352px] bg-[#007fff59] rounded-[299px/267.5px] blur-[125px]" />
@@ -325,29 +249,35 @@ export const PropertyOtpSubsection = (): JSX.Element => {
 
                 {/* Heading */}
                 <h1 className="font-poppins font-semibold text-[#0062ff] text-[38px] tracking-[0.10px] leading-normal text-center">
-                  OTP VERIFICATION
+                  {isLoginFlow ? "EMAIL VERIFICATION" : "EMAIL CONFIRMATION"}
                 </h1>
 
                 {/* Subheading */}
                 <p className="font-poppins font-medium text-xl text-center tracking-[0] leading-normal max-w-[340px]">
-                  <span className="text-black">Enter the OTP sent to&nbsp;</span>
+                  <span className="text-black">
+                    {isLoginFlow 
+                      ? "Enter the verification code sent to " 
+                      : "Please check your email and click the confirmation link sent to "}
+                  </span>
                   <span className="text-[#007fff]">{maskedEmail}</span>
                 </p>
 
-                {/* OTP Inputs */}
-                <div className="flex items-center gap-3.5">
-                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                    <InputOTPGroup className="gap-3.5">
-                      {otpSlots.map((slot) => (
-                        <InputOTPSlot
-                          key={slot.id}
-                          index={slot.id}
-                          className="w-[68px] h-[68px] bg-white rounded-3xl border border-[#e2e2ea] font-roboto font-normal text-[#7f7f7f] text-xl tracking-[0.10px] leading-normal flex items-center justify-center"
-                        />
-                      ))}
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
+                {/* OTP Inputs - Only show for login flow */}
+                {isLoginFlow && (
+                  <div className="flex items-center gap-3.5">
+                    <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                      <InputOTPGroup className="gap-3.5">
+                        {otpSlots.map((slot) => (
+                          <InputOTPSlot
+                            key={slot.id}
+                            index={slot.id}
+                            className="w-[68px] h-[68px] bg-white rounded-3xl border border-[#e2e2ea] font-roboto font-normal text-[#7f7f7f] text-xl tracking-[0.10px] leading-normal flex items-center justify-center"
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+                )}
 
                 {/* Timer */}
                 <div className="font-poppins font-medium text-black text-xl text-center tracking-[0] leading-normal">
@@ -365,42 +295,53 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                   </div>
                 )}
 
-                {/* Resend Options */}
+                {/* Resend Button */}
                 <div className="flex flex-col items-center gap-4">
                   <p className="font-poppins font-medium text-lg text-center tracking-[0] leading-normal">
-                    <span className="text-black">Didn't receive code? </span>
+                    <span className="text-black">Didn't receive the email? </span>
                   </p>
                   
-                  <div className="flex flex-col gap-3 items-center w-full">
-                    <Button
-                      variant="outline"
-                      onClick={handleResend}
-                      disabled={!canResend || resendLoading}
-                      className="w-[280px] h-[45px] border-[#007fff] text-[#007fff] hover:bg-[#007fff] hover:text-white"
-                    >
-                      {resendLoading ? (
-                        "Resending..."
-                      ) : canResend ? (
-                        "🔄 Resend OTP"
-                      ) : (
-                        `Resend in ${formatTime(timer)}`
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <div className="relative w-[340px] h-[53px]">
-                  <Button 
-                    onClick={handleSubmit}
-                    disabled={loading || otp.length !== 6}
-                    className="relative w-[342px] h-[55px] -top-px -left-px bg-[#007fff] rounded-3xl hover:bg-[#007fff]/90"
+                  <Button
+                    variant="outline"
+                    onClick={handleResend}
+                    disabled={!canResend || resendLoading}
+                    className="w-[280px] h-[45px] border-[#007fff] text-[#007fff] hover:bg-[#007fff] hover:text-white"
                   >
-                    <span className="font-poppins font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-normal">
-                      {loading ? "Verifying..." : "Submit"}
-                    </span>
+                    {resendLoading ? (
+                      "Resending..."
+                    ) : canResend ? (
+                      "🔄 Resend Email"
+                    ) : (
+                      `Resend in ${formatTime(timer)}`
+                    )}
                   </Button>
                 </div>
+
+                {/* Submit Button - Only for login flow */}
+                {isLoginFlow && (
+                  <div className="relative w-[340px] h-[53px]">
+                    <Button 
+                      onClick={handleSubmit}
+                      disabled={loading || otp.length !== 6}
+                      className="relative w-[342px] h-[55px] -top-px -left-px bg-[#007fff] rounded-3xl hover:bg-[#007fff]/90"
+                    >
+                      <span className="font-poppins font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-normal">
+                        {loading ? "Verifying..." : "Verify"}
+                      </span>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Registration flow message */}
+                {!isLoginFlow && (
+                  <div className="text-center">
+                    <p className="font-poppins font-medium text-gray-600 text-sm">
+                      After clicking the confirmation link in your email,
+                      <br />
+                      you'll be automatically redirected to continue.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
