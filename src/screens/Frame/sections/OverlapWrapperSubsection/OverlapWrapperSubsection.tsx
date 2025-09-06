@@ -10,17 +10,17 @@ export const OverlapWrapperSubsection = (): JSX.Element => {
 
   useEffect(() => {
     // Get user data from localStorage or current session
-    const pendingUser = localStorage.getItem('pendingUser');
     const currentUser = localStorage.getItem('currentUser');
     
-    if (pendingUser) {
-      const userData = JSON.parse(pendingUser);
-      setUserName(userData.email?.split('@')[0] || "User");
-    } else if (currentUser) {
+    if (currentUser) {
       const userData = JSON.parse(currentUser);
       setUserName(userData.email?.split('@')[0] || "User");
+    } else {
+      // If no user data, redirect to login
+      navigate('/component/login');
     }
   }, []);
+
   const handleContinue = () => {
     // Clear any pending user data since registration is complete
     localStorage.removeItem('pendingUser');
