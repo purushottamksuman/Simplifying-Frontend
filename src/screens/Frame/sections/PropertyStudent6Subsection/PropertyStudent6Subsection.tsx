@@ -8,121 +8,60 @@ import {
   RadioGroupItem,
 } from "../../../../components/ui/radio-group";
 
-const decorativeElements = [
-  {
-    className: "w-[61px] h-[78px] top-[74px] left-[37px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[61px] h-[59px] top-[119px] left-[512px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[99px] h-[19px] top-[18px] left-[257px]",
-    alt: "Group",
-  },
-  {
-    className: "w-9 h-[67px] top-[357px] left-24",
-    alt: "Group",
-  },
-  {
-    className: "w-[63px] h-[52px] -top-1.5 left-[426px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[61px] h-[55px] top-[72px] left-[305px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[52px] h-[70px] top-[487px] left-[17px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[52px] h-14 top-[41px] left-[158px]",
-    alt: "Group",
-  },
-  {
-    className: "w-14 h-[18px] top-[33px] left-[51px]",
-    alt: "Group",
-  },
-  {
-    className: "w-14 h-[18px] top-[543px] left-48",
-    alt: "Group",
-  },
-  {
-    className: "w-[62px] h-[21px] top-[42px] left-[540px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[62px] h-[21px] top-[561px] left-[403px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[34px] h-[45px] top-[285px] left-0",
-    alt: "Group",
-  },
-  {
-    className: "w-12 h-[52px] top-[496px] left-[603px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[37px] h-[81px] top-[296px] left-[614px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[45px] h-[23px] top-[604px] left-[547px]",
-    alt: "Group",
-  },
-];
+// ✅ React Icons
+import { FaInstagram, FaFacebook, FaUserFriends, FaTv } from "react-icons/fa";
+
+const decorativeElements = [];
 
 const textElements = [
-  {
-    className:
-      "w-[23px] top-[167px] left-[120px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff1a] text-[76px] tracking-[2.28px] leading-[normal]",
-    text: "X",
-  },
-  {
-    className:
-      "top-[148px] left-[459px] w-3.5 [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]",
-    text: "B",
-  },
-  {
-    className:
-      "w-[27px] top-[339px] left-[489px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff1a] text-[90px] tracking-[2.70px] leading-[normal]",
-    text: "g",
-  },
-  {
-    className:
-      "top-[249px] left-[462px] w-[17px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]",
-    text: "M",
-  },
-  {
-    className:
-      "w-3.5 top-[126px] left-[194px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]",
-    text: "D",
-  },
+  // {
+  //   className:
+  //     "w-[23px] top-[167px] left-[120px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff1a] text-[76px] tracking-[2.28px] leading-[normal]",
+  //   text: "X",
+  // },
+  // {
+  //   className:
+  //     "top-[148px] left-[459px] w-3.5 [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]",
+  //   text: "B",
+  // },
+  // {
+  //   className:
+  //     "w-[27px] top-[339px] left-[489px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff1a] text-[90px] tracking-[2.70px] leading-[normal]",
+  //   text: "g",
+  // },
+  // {
+  //   className:
+  //     "top-[249px] left-[462px] w-[17px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]",
+  //   text: "M",
+  // },
+  // {
+  //   className:
+  //     "w-3.5 top-[126px] left-[194px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]",
+  //   text: "D",
+  // },
 ];
 
+// ✅ Replace icons with React Icon components
 const surveyOptions = [
   {
     id: "instagram",
     label: "Instagram",
-    icon: "Instagram",
+    icon: <FaInstagram className="w-[28px] h-[28px] text-[#E1306C]" />,
   },
   {
     id: "ott",
     label: "OTT Ads",
-    icon: "Ott media",
+    icon: <FaTv className="w-[28px] h-[28px] text-[#007fff]" />,
   },
   {
     id: "facebook",
     label: "Facebook",
-    icon: "Facebook",
+    icon: <FaFacebook className="w-[28px] h-[28px] text-[#1877F2]" />,
   },
   {
     id: "friend",
     label: "Refer By Friend",
-    icon: "Friend",
+    icon: <FaUserFriends className="w-[28px] h-[28px] text-[#007fff]" />,
   },
 ];
 
@@ -132,6 +71,7 @@ export const PropertyStudent6Subsection = (): JSX.Element => {
   return (
     <div className="w-full h-auto bg-white rounded-[37px] overflow-hidden relative">
       <div className="flex flex-col lg:flex-row min-h-[835px]">
+        {/* Left Side */}
         <div className="flex-1 lg:w-[655px] p-3">
           <div className="bg-[#007fff] rounded-[23px] overflow-hidden shadow-[0px_0px_20px_#3479ff40] h-full relative">
             <div className="absolute w-[342px] top-[593px] left-[46px] [font-family:'Playfair_Display',Helvetica] font-black text-white text-[28.7px] tracking-[0] leading-[normal]">
@@ -144,7 +84,14 @@ export const PropertyStudent6Subsection = (): JSX.Element => {
             </div>
 
             <img
-              className="absolute w-[406px] h-[342px] top-[158px] left-[122px]"
+              className="w-[651px] h-[633px] left-px absolute top-0"
+              src="/framestudent.png"
+              alt="Frame"
+            />
+
+            <img
+              className="absolute w-[406px] h-[342px] top-[158px] left-[60px]"
+              src="/programmer.png"
               alt="Group"
             />
 
@@ -169,9 +116,11 @@ export const PropertyStudent6Subsection = (): JSX.Element => {
           </div>
         </div>
 
+        {/* Right Side */}
         <div className="flex-1 lg:w-[450px] flex flex-col items-center gap-[51px] p-[51px] pt-[51px]">
           <img
             className="w-[366px] h-[91px] object-cover"
+            src="/logosimplify.png"
             alt="Simplifying SKILLS"
           />
 
@@ -193,6 +142,7 @@ export const PropertyStudent6Subsection = (): JSX.Element => {
               </div>
             </div>
 
+            {/* Survey Options */}
             <div className="flex flex-col w-full max-w-[420px] items-start justify-center gap-[26px]">
               <div className="[font-family:'Roboto',Helvetica] font-semibold text-[#007fff] text-lg text-center tracking-[0.10px] leading-[normal]">
                 How did you hear about us ?
@@ -222,7 +172,7 @@ export const PropertyStudent6Subsection = (): JSX.Element => {
                           id={option.id}
                           className="sr-only"
                         />
-                        <img className="w-[42px] h-[42px]" alt={option.icon} />
+                        {option.icon}
                         <span className="[font-family:'Roboto',Helvetica] font-normal text-[#007fff] text-lg text-center tracking-[0.10px] leading-[normal]">
                           {option.label}
                         </span>
@@ -240,6 +190,7 @@ export const PropertyStudent6Subsection = (): JSX.Element => {
         </div>
       </div>
 
+      {/* Close Button */}
       <Button
         variant="ghost"
         size="icon"

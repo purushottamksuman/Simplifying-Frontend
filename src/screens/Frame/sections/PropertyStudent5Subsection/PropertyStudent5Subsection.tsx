@@ -1,91 +1,44 @@
 import { XIcon } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Progress } from "../../../../components/ui/progress";
+import { FaLanguage } from "react-icons/fa"; // English icon
+import { SiGoogletranslate } from "react-icons/si"; // Hindi/translation icon
 
-const decorativeElements = [
-  {
-    className: "w-[61px] h-[78px] top-[74px] left-[37px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[61px] h-[59px] top-[119px] left-[512px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[99px] h-[19px] top-[18px] left-[257px]",
-    alt: "Group",
-  },
-  {
-    className: "w-9 h-[67px] top-[357px] left-24",
-    alt: "Group",
-  },
-  {
-    className: "w-[63px] h-[52px] -top-1.5 left-[426px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[61px] h-[55px] top-[72px] left-[305px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[52px] h-[70px] top-[487px] left-[17px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[52px] h-14 top-[41px] left-[158px]",
-    alt: "Group",
-  },
-  {
-    className: "w-14 h-[18px] top-[33px] left-[51px]",
-    alt: "Group",
-  },
-  {
-    className: "w-14 h-[18px] top-[543px] left-48",
-    alt: "Group",
-  },
-  {
-    className: "w-[62px] h-[21px] top-[42px] left-[540px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[62px] h-[21px] top-[561px] left-[403px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[34px] h-[45px] top-[285px] left-0",
-    alt: "Group",
-  },
-  {
-    className: "w-12 h-[52px] top-[496px] left-[603px]",
-    alt: "Group",
-  },
-  {
-    className: "w-[37px] h-[81px] top-[296px] left-[614px]",
-    alt: "Group",
-  },
-];
+const decorativeElements = [];
 
-const languageOptions = [
+const initialLanguageOptions = [
   {
     id: "english",
     name: "English",
-    icon: "Abc",
+    icon: <FaLanguage className="w-6 h-6" />,
     selected: false,
   },
   {
     id: "hindi",
     name: "Hindi",
-    icon: "Chatgpt image aug",
+    icon: <SiGoogletranslate className="w-6 h-6" />,
     selected: true,
   },
 ];
 
 export const PropertyStudent5Subsection = (): JSX.Element => {
+  const [languageOptions, setLanguageOptions] = useState(initialLanguageOptions);
+
+  const handleSelect = (id: string) => {
+    setLanguageOptions((prev) =>
+      prev.map((lang) => ({
+        ...lang,
+        selected: lang.id === id,
+      }))
+    );
+  };
+
   return (
     <div className="w-full bg-white rounded-[37px] overflow-hidden p-5 relative">
       <div className="flex flex-col lg:flex-row gap-8 h-full">
+        {/* Left section with images */}
         <div className="flex-1 relative">
           <Card className="bg-[#007fff] rounded-[23px] overflow-hidden shadow-[0px_0px_20px_#3479ff40] border-0 h-full min-h-[810px] relative">
             <CardContent className="p-0 relative h-full">
@@ -99,7 +52,14 @@ export const PropertyStudent5Subsection = (): JSX.Element => {
               </div>
 
               <img
+                className="w-[651px] h-[633px] left-px absolute top-0"
+                src="/framestudent.png"
+                alt="Frame"
+              />
+
+              <img
                 className="absolute w-[463px] h-[464px] top-[125px] left-[94px] object-cover"
+                src="/hindi_student.png"
                 alt="Image"
               />
 
@@ -113,21 +73,20 @@ export const PropertyStudent5Subsection = (): JSX.Element => {
                 ))}
 
                 <div className="absolute w-[73px] h-72 top-[339px] left-[519px]">
-                  <img
+                  {/* <img
                     className="absolute w-[45px] h-[23px] top-[265px] left-7"
                     alt="Group"
-                  />
-
-                  <div className="w-[62px] top-0 left-0 absolute [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff1a] text-[90px] tracking-[2.70px] leading-[normal]">
+                  /> */}
+                  {/* <div className="w-[62px] top-0 left-0 absolute [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff1a] text-[90px] tracking-[2.70px] leading-[normal]">
                     g
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="absolute w-[23px] top-[167px] left-[120px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff1a] text-[76px] tracking-[2.28px] leading-[normal]">
-                  XIcon
+                  {/* XIcon */}
                 </div>
 
-                <div className="top-72 left-[136px] absolute w-3.5 [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]">
+                {/* <div className="top-72 left-[136px] absolute w-3.5 [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]">
                   B
                 </div>
 
@@ -137,15 +96,17 @@ export const PropertyStudent5Subsection = (): JSX.Element => {
 
                 <div className="absolute w-3.5 top-[126px] left-[194px] [-webkit-text-stroke:3px_#ffc909] [font-family:'Righteous',Helvetica] font-normal text-[#ffffff33] text-[42px] tracking-[1.26px] leading-[normal]">
                   D
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Right section with progress + language selection */}
         <div className="flex flex-col w-full lg:w-[450px] items-center gap-[51px] pt-32">
           <img
             className="w-[366px] h-[91px] object-cover"
+            src="/logosimplify.png"
             alt="Simplifying SKILLS"
           />
 
@@ -174,6 +135,7 @@ export const PropertyStudent5Subsection = (): JSX.Element => {
                   {languageOptions.map((language) => (
                     <Card
                       key={language.id}
+                      onClick={() => handleSelect(language.id)}
                       className={`w-[420px] h-[54px] bg-white rounded-3xl border border-solid cursor-pointer transition-all ${
                         language.selected
                           ? "border-[#007fff57] shadow-[0px_0px_20px_#007fff33]"
@@ -182,13 +144,13 @@ export const PropertyStudent5Subsection = (): JSX.Element => {
                     >
                       <CardContent className="p-0">
                         <div
-                          className={`gap-[13px] ${language.selected ? "top-1.5 left-6" : "top-[5px] left-[23px]"} inline-flex items-center relative`}
+                          className={`gap-[13px] ${
+                            language.selected
+                              ? "top-1.5 left-6"
+                              : "top-[5px] left-[23px]"
+                          } inline-flex items-center relative`}
                         >
-                          <img
-                            className={`${language.selected ? "w-[42px] h-[42px]" : "w-12 h-[42px]"} ${language.selected ? "object-cover" : ""}`}
-                            alt={language.icon}
-                          />
-
+                          {language.icon}
                           <div className="[font-family:'Roboto',Helvetica] font-normal text-[#007fff] text-lg text-center tracking-[0.10px] leading-[normal] whitespace-nowrap">
                             {language.name}
                           </div>
@@ -207,12 +169,13 @@ export const PropertyStudent5Subsection = (): JSX.Element => {
         </div>
       </div>
 
+      {/* Close button */}
       <Button
         variant="ghost"
         size="icon"
         className="absolute w-[30px] h-[30px] top-7 right-[30px] p-0 h-auto"
       >
-        <XIcon className="w-[30px] h-[30px]" />
+        {/* <XIcon className="w-[30px] h-[30px]" /> */}
       </Button>
     </div>
   );

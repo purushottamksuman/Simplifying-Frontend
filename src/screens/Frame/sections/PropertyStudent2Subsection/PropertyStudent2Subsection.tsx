@@ -2,6 +2,8 @@ import { XIcon } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
+import { FaUserMd, FaChalkboardTeacher, FaGavel } from "react-icons/fa";
+import { GiGearHammer } from "react-icons/gi"; // ✅ Added missing import
 import { Label } from "../../../../components/ui/label";
 import { Progress } from "../../../../components/ui/progress";
 import {
@@ -16,64 +18,70 @@ export const PropertyStudent2Subsection = (): JSX.Element => {
     {
       id: "doctor",
       label: "Doctor",
-      icon: "https://c.animaapp.com/OpLUDWyw/img/doctor-icon.svg",
+      icon: <FaUserMd size={28} className="text-[#007fff]" />,
     },
     {
       id: "engineer",
       label: "Engineer",
-      icon: "https://c.animaapp.com/OpLUDWyw/img/engineer-icon.svg",
+      icon: <GiGearHammer size={28} className="text-[#007fff]" />,
     },
     {
       id: "teacher",
       label: "Teacher",
-      icon: "https://c.animaapp.com/OpLUDWyw/img/teacher-icon.svg",
+      icon: <FaChalkboardTeacher size={28} className="text-[#007fff]" />,
     },
     {
       id: "lawyer",
       label: "Lawyer",
-      icon: "https://c.animaapp.com/OpLUDWyw/img/judge-icon.svg",
+      icon: <FaGavel size={28} className="text-[#007fff]" />,
     },
   ];
 
   return (
     <div className="w-full h-[835px] bg-white rounded-[37px] overflow-hidden relative">
       <div className="flex h-full">
+        {/* Left Section */}
         <div className="w-[655px] h-[810px] mt-[13px] ml-[11px] rounded-[23px]">
           <Card className="w-full h-full bg-[#007fff] rounded-[23px] overflow-hidden shadow-[0px_0px_20px_#3479ff40] border-0">
             <CardContent className="relative w-full h-full p-0">
-              <h2 className="absolute w-[342px] top-[593px] left-[46px] [font-family:'Playfair_Display',Helvetica] font-black text-white text-[28.7px] tracking-[0] leading-[normal]">
+              <h2 className="absolute w-[342px] top-[593px] left-[46px] font-black text-white text-[28.7px] leading-normal">
                 Learning Became Easy
               </h2>
 
-              <p className="absolute w-[508px] top-[679px] left-[46px] [font-family:'Poppins',Helvetica] font-medium text-white text-sm tracking-[0] leading-[normal]">
+              <p className="absolute w-[508px] top-[679px] left-[46px] font-medium text-white text-sm leading-normal">
                 Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut
                 Nec Vitae Gravida Ullamcorper .
               </p>
 
               <img
                 className="absolute w-[365px] h-[457px] top-[103px] left-[145px]"
-                alt="Group"
+                src="/topper_girl.png"
+                alt="Student"
               />
 
               <img
                 className="absolute w-[651px] h-[627px] top-0 left-0"
+                src="/framestudent.png"
                 alt="Frame"
               />
             </CardContent>
           </Card>
         </div>
 
+        {/* Right Section */}
         <div className="flex flex-col w-[450px] items-center gap-[51px] mt-[51px] ml-[113px]">
           <img
             className="w-[366px] h-[91px] object-cover"
+            src="/logosimplify.png"
             alt="Simplifying SKILLS"
           />
 
           <div className="flex flex-col w-[420px] items-center gap-8">
-            <h3 className="w-[379px] [font-family:'Poppins',Helvetica] font-medium text-[#13377c] text-xl text-center tracking-[0] leading-[normal]">
+            <h3 className="w-[379px] font-medium text-[#13377c] text-xl text-center">
               Map your dreams, chart your career
             </h3>
 
+            {/* Progress Bar */}
             <div className="flex flex-col w-[410px] items-center gap-[18px]">
               <div className="w-[410px] h-[18px] bg-[#bddeff] rounded-[100px] overflow-hidden">
                 <Progress value={35} className="h-full bg-transparent border-0">
@@ -84,17 +92,18 @@ export const PropertyStudent2Subsection = (): JSX.Element => {
                 </Progress>
               </div>
 
-              <p className="[font-family:'DM_Sans',Helvetica] font-medium text-[#81b3ff] text-lg text-center tracking-[0] leading-[normal]">
+              <p className="font-medium text-[#81b3ff] text-lg text-center">
                 35% Completed
               </p>
             </div>
 
+            {/* Career Options */}
             <div className="flex flex-col w-[420px] items-start gap-[26px]">
-              <h4 className="[font-family:'Roboto',Helvetica] font-semibold text-[#007fff] text-lg text-center tracking-[0.10px] leading-[normal] whitespace-nowrap">
+              <h4 className="font-semibold text-[#007fff] text-lg">
                 Select Preferred Career Domain
               </h4>
 
-              <div className="flex flex-col items-center gap-[53px] w-full">
+              <div className="flex flex-col items-center gap-[23px] w-full">
                 <RadioGroup
                   value={selectedCareer}
                   onValueChange={setSelectedCareer}
@@ -118,13 +127,9 @@ export const PropertyStudent2Subsection = (): JSX.Element => {
                           id={option.id}
                           className="sr-only"
                         />
-                        <div className="flex items-center gap-1.5 ml-6">
-                          <img
-                            className="w-[42px] h-[42px]"
-                            alt={option.label}
-                            src={option.icon}
-                          />
-                          <span className="[font-family:'Roboto',Helvetica] font-normal text-[#007fff] text-lg text-center tracking-[0.10px] leading-[normal] whitespace-nowrap">
+                        <div className="flex items-center gap-2 ml-6">
+                          {option.icon} {/* ✅ Fixed (no <img>) */}
+                          <span className="font-normal text-[#007fff] text-lg">
                             {option.label}
                           </span>
                         </div>
@@ -133,8 +138,9 @@ export const PropertyStudent2Subsection = (): JSX.Element => {
                   ))}
                 </RadioGroup>
 
-                <Button className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl border-0 hover:bg-[#0066cc] h-auto">
-                  <span className="[font-family:'Poppins',Helvetica] font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-[normal]">
+                {/* Next Button */}
+                <Button className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc]">
+                  <span className="font-semibold text-white text-2xl">
                     Next
                   </span>
                 </Button>
@@ -144,6 +150,7 @@ export const PropertyStudent2Subsection = (): JSX.Element => {
         </div>
       </div>
 
+      {/* Close Button */}
       <Button
         variant="ghost"
         size="icon"
