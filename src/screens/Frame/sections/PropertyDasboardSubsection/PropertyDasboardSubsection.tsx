@@ -26,7 +26,6 @@ import { authHelpers } from "../../../../lib/supabase";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 const navigationItems = [
   { icon: HomeIcon, label: "Dashboard", active: true },
   { icon: UserIcon, label: "Profile Settings", active: false },
@@ -45,285 +44,291 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [userName, setUserName] = useState("User");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated
     const checkAuth = async () => {
-      const { user, error } = await authHelpers.getCurrentUser();
-      
-      if (error || !user) {
-        // If no authenticated user, redirect to login
+      try {
+        const { user, error } = await authHelpers.getCurrentUser();
+        
+        if (error || !user) {
+          console.log("❌ No authenticated user, redirecting to login");
+          navigate('/component/login');
+          return;
+        }
+        
+        setUser(user);
+        const name = user.email?.split('@')[0] || user.user_metadata?.full_name || "User";
+        setUserName(name);
+        console.log("✅ Dashboard loaded for user:", name);
+        
+      } catch (err) {
+        console.error("❌ Auth check error:", err);
         navigate('/component/login');
-        return;
+      } finally {
+        setLoading(false);
       }
-      
-      setUser(user);
-      setUserName(user.email?.split('@')[0] || user.user_metadata?.full_name || "User");
     };
 
     checkAuth();
   }, [navigate]);
 
   const handleLogout = async () => {
-    const { error } = await authHelpers.signOut();
-    if (!error) {
+    try {
+      console.log("🔄 Logging out user...");
+      const { error } = await authHelpers.signOut();
+      
+      if (error) {
+        console.error("❌ Logout error:", error);
+        return;
+      }
+      
+      // Clear all stored user data
       localStorage.removeItem('currentUser');
+      localStorage.removeItem('pendingUser');
+      
+      console.log("✅ User logged out successfully");
       navigate('/component/login');
+      
+    } catch (err) {
+      console.error("❌ Logout error:", err);
     }
   };
 
-  if (!user) {
+  if (loading) {
     return (
-      <div className="flex w-full h-full bg-[#3479ff] items-center justify-center">
+      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
   }
 
-  return (
-    <div className="flex w-full h-full bg-[#3479ff] relative rounded-tl-[40px] rounded-bl-[40px] overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-[315px] h-full bg-[#3479ff] flex flex-col shadow-[0px_4px_25px_rgba(0,0,0,0.2)] relative">
+  if (!user) {
+    return (
+      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
+        <div className="text-white text-xl">Redirecting to login...</div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="flex w-full h-screen bg-[#3479ff] overflow-hidden">
+      {/* Fixed Sidebar */}
+      <aside className="w-[280px] h-full bg-[#3479ff] flex flex-col shadow-lg relative z-10">
         {/* Logo */}
-        <div className="p-[35px_19px_0_19px]">
+        <div className="p-6 border-b border-[#ffffff20]">
           <img
-            className="w-[262px] h-[68px]"
+            className="w-[220px] h-[55px] object-contain"
             alt="Simplifying Skills Logo"
             src="/Simplifying.png"
           />
         </div>
 
         {/* Navigation */}
-        <nav className="flex flex-col gap-[90px] p-[70px_30px_0_30px]">
-          <div className="flex flex-col gap-[20px]">
+        <nav className="flex-1 px-4 py-6">
+          <div className="flex flex-col gap-2">
             {navigationItems.map((item, index) => (
-              <div
+              <Button
                 key={index}
-                className={`flex items-center gap-[15px] z-10 cursor-pointer transition-all duration-300 relative`}
+                variant="ghost"
+                className={`w-full justify-start gap-3 px-4 py-3 h-auto rounded-xl transition-all duration-200 ${
+                  item.active 
+                    ? "bg-white text-[#3479ff] hover:bg-white shadow-sm" 
+                    : "text-white hover:bg-[#ffffff15] hover:text-white"
+                }`}
               >
-                {/* Active Background */}
-                {item.active && (
-                  <div
-                    className="absolute inset-0 bg-white transition-all duration-300"
-                    style={{
-                      left: "-20px", // bleed into sidebar padding
-                      right: "-40px", // extend a bit into main content
-                      borderTopLeftRadius: "40px",
-                      borderBottomLeftRadius: "40px",
-                      
-                    }}
-                  ></div>
-                )}
-
-                {/* Icon + Label */}
-                <div className="flex items-center gap-[15px] px-6 py-4 relative z-10">
-                  <item.icon
-                    className={`w-[24px] h-[24px] transition-colors ${
-                      item.active ? "text-[#3479ff]" : "text-white"
-                    }`}
-                  />
-                  <span
-                    className={`font-semibold text-base [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] ${
-                      item.active ? "text-[#3479ff]" : "text-white"
-                    }`}
-                  >
-                    {item.label}
-                  </span>
-                </div>
-              </div>
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium text-sm">
+                  {item.label}
+                </span>
+              </Button>
             ))}
           </div>
-
-          {/* Logout Button */}
-            <div 
-              className="flex items-center gap-[15px] cursor-pointer px-6 py-3 rounded-[15px] hover:bg-[#ffffff1a] transition-all duration-300"
-              onClick={handleLogout}
-            >
-            <LogOutIcon className="w-6 h-6 text-white" />
-            <span className="[font-family:'Poppins',Helvetica] font-medium text-white text-lg tracking-[0.40px] leading-[normal]">
-              Log Out
-            </span>
-          </div>
         </nav>
+
+        {/* Logout Button */}
+        <div className="p-4 border-t border-[#ffffff20]">
+          <Button
+            onClick={handleLogout}
+            variant="ghost"
+            className="w-full justify-start gap-3 px-4 py-3 h-auto rounded-xl text-white hover:bg-red-500/20 hover:text-red-200 transition-all duration-200"
+          >
+            <LogOutIcon className="w-5 h-5 flex-shrink-0" />
+            <span className="font-medium text-sm">Log Out</span>
+          </Button>
+        </div>
       </aside>
 
-      {/* Main Content */}
-     <main
-  className="flex-1 bg-white relative"
-  style={{
-    borderTopLeftRadius: "80px",   // big smooth top-left curve
-    borderBottomLeftRadius: "80px", // big smooth bottom-left curve
-  }}
->
-
-        <div className="p-[46px_0_0_0] relative">
+      {/* Main Content - Scrollable */}
+      <main className="flex-1 bg-white overflow-y-auto">
+        <div className="min-h-full">
           {/* Header */}
-          <header className="flex items-center justify-between px-8 py-0 mb-[46px]">
-            <div className="flex items-center gap-[57px]">
-              <img
-                className="w-[158px] h-[30px]"
-                alt="Component"
-                src="/NavbarArrow.png"
-              />
-            </div>
-
-            <div className="flex items-center gap-[23px]">
-              <div className="w-6 h-6">
-                <div className="w-[17px] h-5 mt-0.5 ml-1 bg-[100%_100%]" />
+          <header className="sticky top-0 bg-white border-b border-gray-200 px-8 py-4 z-20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <img
+                  className="w-[120px] h-[24px] object-contain"
+                  alt="Navigation Arrow"
+                  src="/NavbarArrow.png"
+                />
               </div>
-              <Avatar className="w-14 h-14">
-                <AvatarImage src="/Profile.png" />
-                <AvatarFallback className="bg-cover bg-[50%_50%] border-4 border-solid border-[#3479ff99]" />
-              </Avatar>
-              <img className="w-6 h-6" alt="Iconly light outline" />
+
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" className="w-10 h-10">
+                  <div className="w-4 h-4 bg-gray-300 rounded" />
+                </Button>
+                <Avatar className="w-12 h-12 border-2 border-[#3479ff]">
+                  <AvatarImage src="/Profile.png" />
+                  <AvatarFallback className="bg-[#3479ff] text-white">
+                    {userName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <Button variant="ghost" size="icon" className="w-10 h-10">
+                  <div className="w-4 h-4 bg-gray-300 rounded" />
+                </Button>
+              </div>
             </div>
           </header>
 
           {/* Dashboard Content */}
-          <div className="flex gap-[62px] px-8">
-            {/* Left Content */}
-            <div className="flex-1 max-w-[887px]">
-              {/* Welcome Card */}
-              <Card className="mb-[29px] rounded-[25px] shadow-[0px_0px_30px_#3479ff40] border-[#e0e6ed]">
-                <CardContent className="p-0">
-                  <div className="h-[287px] bg-[#3479ff] rounded-[25px] border border-solid border-[#e0e6ed] relative overflow-hidden">
-                    <div className="p-[21px_31px] relative z-10">
-                      <h2 className="[font-family:'Poppins',Helvetica] font-bold text-white text-5xl tracking-[0] leading-[55px] whitespace-nowrap mb-[38px]">
-                          Good Morning {userName}
-                      </h2>
-                      <p className="[font-family:'Poppins',Helvetica] font-normal text-white text-xl tracking-[0] leading-[30px] max-w-[555px]">
-                        Don't miss out! Your child's future starts with one smart step complete the payment today.
-                      </p>
-                    </div>
-                    <div className="absolute w-[264px] h-[264px] top-0 right-[31px] bg-[#697ffc] rounded-[132px]" />
-                    <SunIcon className="absolute w-[57px] h-[57px] top-[25px] right-[88px] text-white" />
-                    <img
-                      className="absolute w-[268px] h-80 top-0 right-0"
-                      alt="Gradient purple"
-                      src="/GradientPurple.png"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Summary Card */}
-              <Card className="rounded-[25px] border border-solid border-[#e0e6ed] shadow-[0px_0px_30px_#3479ff40]">
-                <CardContent className="p-6">
-                  <h3 className="[font-family:'Poppins',Helvetica] font-bold text-[#13377c] text-2xl tracking-[0] leading-[55px] whitespace-nowrap mb-6">
-                    Summary
-                  </h3>
-
-                  {/* Payment Section */}
-                  <div className="bg-[#e9efff] rounded-[10px] p-3 mb-4 relative">
-                    <div className="max-w-[480px]">
-                      <h4 className="[font-family:'Poppins',Helvetica] font-semibold text-black text-[32px] tracking-[0] leading-[55px] whitespace-nowrap mb-2">
-                        Complete Your Payment
-                      </h4>
-                      <p className="[font-family:'Poppins',Helvetica] font-normal text-black text-base tracking-[0] leading-[25px] mb-6">
-                        Please select a plan that suits you best and complete
-                        your payment to unlock the assessment.
-                      </p>
-                      <Button className="bg-[#3479ff] rounded-[5px] h-auto px-[25px] py-[5px]">
-                        <span className="[font-family:'Montserrat',Helvetica] font-medium text-white text-base tracking-[1.00px] leading-[22.5px]">
-                          Pay Now
-                        </span>
-                      </Button>
-                    </div>
-                    <img
-                      className="absolute w-[157px] h-[184px] top-[7px] right-[40px]"
-                      alt="Element hand making"
-                      src="/CashlessPayment.png"
-                    />
-                  </div>
-
-                  {/* Cashback Section */}
-                  <div className="bg-[#fff4fb] rounded-[10px] p-[22px_17px] relative">
-                    <h4 className="[font-family:'Poppins',Helvetica] font-semibold text-black text-[32px] tracking-[0] leading-[45px] mb-1">
-                      You Have ₹200 Cashback
-                    </h4>
-                    <p className="[font-family:'Poppins',Helvetica] font-normal text-[#6f6d6d] text-xs tracking-[0] leading-[30px] mb-[25px]">
-                      T&C Apply
-                    </p>
-                    <Button className="bg-[#3479ff] rounded-[5px] h-auto px-[18px] py-[5px]">
-                      <span className="[font-family:'Montserrat',Helvetica] font-medium text-white text-base tracking-[1.00px] leading-[22.5px]">
-                        Refer & Earn
-                      </span>
-                    </Button>
-                    <img
-                      className="absolute w-[205px] h-[171px] top-3.5 right-[40px]"
-                      alt="Gradient purple"
-                      src="/Wallet.png"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Right Sidebar */}
-            <div className="w-[521px]">
-              <Card className="rounded-[25px] shadow-[0px_0px_30px_5px_#3479ff40] border-0">
-                <CardContent className="p-[42px_37px]">
-                  <h3 className="[font-family:'Poppins',Helvetica] font-bold text-[#13377c] text-[26px] tracking-[1.00px] leading-[22.5px] whitespace-nowrap mb-[66px]">
-                    Unlock Premium Features
-                  </h3>
-
-                  <div className="space-y-[42px]">
-                    {/* Expert Guidance Card */}
-                    <div className="rounded-[40px] bg-[linear-gradient(180deg,rgba(123,88,242,1)_0%,rgba(164,147,255,1)_100%)] p-[17px_29px_0_29px] h-[331px] relative overflow-hidden">
-                      <h4 className="[font-family:'Inter',Helvetica] font-semibold text-white text-4xl tracking-[0] leading-[normal] mb-4">
-                        Get Expert Guidance
-                      </h4>
-                      <p className="[font-family:'Inter',Helvetica] font-light text-white text-base tracking-[0] leading-[normal] mb-[35px] max-w-[360px]">
-                        Unlock your test results with a 1:1 counselling call and
-                        get a personalized growth plan.
-                      </p>
-                      <Button className="bg-white rounded-[25px] h-auto px-9 py-[18px] flex items-center gap-2">
-                        <LockIcon className="w-4 h-[19px] text-black" />
-                        <span className="[font-family:'Montserrat',Helvetica] font-bold text-black text-base tracking-[1.00px] leading-[22.5px]">
-                          Unlock Session
-                        </span>
-                      </Button>
+          <div className="p-8">
+            <div className="flex gap-8">
+              {/* Left Content */}
+              <div className="flex-1 max-w-4xl">
+                {/* Welcome Card */}
+                <Card className="mb-8 rounded-3xl shadow-lg border-0 overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="h-[280px] bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-hidden">
+                      <div className="p-8 relative z-10">
+                        <h2 className="font-bold text-white text-4xl mb-6">
+                          Good Morning {userName}! 👋
+                        </h2>
+                        <p className="text-white/90 text-lg max-w-lg leading-relaxed">
+                          Don't miss out! Your child's future starts with one smart step - complete the payment today.
+                        </p>
+                      </div>
+                      
+                      {/* Decorative Elements */}
+                      <div className="absolute w-64 h-64 top-0 right-8 bg-[#697ffc] rounded-full opacity-30" />
+                      <SunIcon className="absolute w-14 h-14 top-6 right-20 text-white/80" />
                       <img
-                        className="absolute w-[244px] h-[183px] top-[87px] right-[50px]"
-                        alt="Ellipse"
-                        src="/Ellipse.png"
-                      />
-                      <img
-                        className="absolute w-[364px] h-[235px] top-[95px] right-[6px]"
-                        alt="Untitled design"
-                        src="/GoodKid.png"
+                        className="absolute w-64 h-80 top-0 right-0 opacity-80"
+                        alt="Gradient decoration"
+                        src="/GradientPurple.png"
                       />
                     </div>
+                  </CardContent>
+                </Card>
 
-                    {/* Join Clubs Card */}
-                    <div className="rounded-[40px] bg-[linear-gradient(180deg,rgba(254,200,84,1)_0%,rgba(255,223,153,1)_100%)] p-[17px_28px_0_28px] h-[331px] relative overflow-hidden">
-                      <h4 className="[font-family:'Inter',Helvetica] font-semibold text-black text-4xl tracking-[0] leading-[normal] mb-4">
-                        Join Our Clubs
-                      </h4>
-                      <p className="[font-family:'Inter',Helvetica] font-light text-black text-base tracking-[0] leading-[normal] mb-[52px] max-w-[397px]">
-                        Discover your interests, learn new skills, and connect
-                        with like-minded students by joining a club that fits
-                        your passion.
-                      </p>
-                      <Button className="bg-white rounded-[25px] h-auto px-[23px] py-[10px]">
-                        <span className="[font-family:'Montserrat',Helvetica] font-bold text-black text-base tracking-[1.00px] leading-[22.5px]">
-                          Explore Now
-                        </span>
-                      </Button>
-                      <img
-                        className="absolute w-[244px] h-[183px] top-[123px] right-[50px]"
-                        alt="Ellipse"
-                        src="/Ellipse.png"
-                      />
-                      <img
-                        className="absolute w-[353px] h-[206px] top-[125px] right-0"
-                        alt="Untitled design"
-                        src="/SorryMother.png"
-                      />
+                {/* Summary Card */}
+                <Card className="rounded-3xl border-0 shadow-lg">
+                  <CardContent className="p-8">
+                    <h3 className="font-bold text-[#13377c] text-3xl mb-8">
+                      Summary
+                    </h3>
+
+                    <div className="space-y-6">
+                      {/* Payment Section */}
+                      <div className="bg-gradient-to-r from-[#e9efff] to-[#f0f4ff] rounded-2xl p-6 relative overflow-hidden">
+                        <div className="max-w-lg relative z-10">
+                          <h4 className="font-bold text-gray-900 text-2xl mb-3">
+                            Complete Your Payment
+                          </h4>
+                          <p className="text-gray-700 text-base mb-6 leading-relaxed">
+                            Please select a plan that suits you best and complete your payment to unlock the assessment.
+                          </p>
+                          <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
+                            Pay Now
+                          </Button>
+                        </div>
+                        <img
+                          className="absolute w-40 h-44 top-2 right-8 opacity-90"
+                          alt="Payment illustration"
+                          src="/CashlessPayment.png"
+                        />
+                      </div>
+
+                      {/* Cashback Section */}
+                      <div className="bg-gradient-to-r from-[#fff4fb] to-[#fef7fc] rounded-2xl p-6 relative overflow-hidden">
+                        <div className="max-w-lg relative z-10">
+                          <h4 className="font-bold text-gray-900 text-2xl mb-2">
+                            You Have ₹200 Cashback
+                          </h4>
+                          <p className="text-gray-600 text-sm mb-6">
+                            T&C Apply
+                          </p>
+                          <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
+                            Refer & Earn
+                          </Button>
+                        </div>
+                        <img
+                          className="absolute w-48 h-40 top-4 right-8 opacity-90"
+                          alt="Wallet illustration"
+                          src="/Wallet.png"
+                        />
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Sidebar - Premium Features */}
+              <div className="w-[480px] flex-shrink-0">
+                <Card className="rounded-3xl shadow-lg border-0 sticky top-24">
+                  <CardContent className="p-8">
+                    <h3 className="font-bold text-[#13377c] text-2xl mb-8">
+                      Unlock Premium Features
+                    </h3>
+
+                    <div className="space-y-8">
+                      {/* Expert Guidance Card */}
+                      <div className="rounded-3xl bg-gradient-to-br from-[#7b58f2] to-[#a493ff] p-6 h-80 relative overflow-hidden">
+                        <div className="relative z-10">
+                          <h4 className="font-bold text-white text-3xl mb-4">
+                            Get Expert Guidance
+                          </h4>
+                          <p className="text-white/90 text-base mb-8 leading-relaxed max-w-sm">
+                            Unlock your test results with a 1:1 counselling call and get a personalized growth plan.
+                          </p>
+                          <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
+                            <LockIcon className="w-4 h-4" />
+                            Unlock Session
+                          </Button>
+                        </div>
+                        <div className="absolute bottom-0 right-0">
+                          <img
+                            className="w-56 h-44 object-contain"
+                            alt="Expert guidance illustration"
+                            src="/GoodKid.png"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Join Clubs Card */}
+                      <div className="rounded-3xl bg-gradient-to-br from-[#fec854] to-[#ffdf99] p-6 h-80 relative overflow-hidden">
+                        <div className="relative z-10">
+                          <h4 className="font-bold text-gray-900 text-3xl mb-4">
+                            Join Our Clubs
+                          </h4>
+                          <p className="text-gray-800/90 text-base mb-8 leading-relaxed max-w-sm">
+                            Discover your interests, learn new skills, and connect with like-minded students.
+                          </p>
+                          <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold">
+                            Explore Now
+                          </Button>
+                        </div>
+                        <div className="absolute bottom-0 right-0">
+                          <img
+                            className="w-56 h-48 object-contain"
+                            alt="Clubs illustration"
+                            src="/SorryMother.png"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
