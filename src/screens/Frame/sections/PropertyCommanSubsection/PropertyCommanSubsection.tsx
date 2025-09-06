@@ -254,7 +254,15 @@ export const PropertyCommanSubsection = (): JSX.Element => {
               
               {/* Debug info */}
               <div className="absolute w-[445px] top-[560px] left-[89px] text-xs text-gray-500 text-center">
-           
+                <div className="bg-gray-100 p-2 rounded text-left">
+                  <div><strong>Debug Info:</strong></div>
+                  <div>User Type: {formData.userType || 'Not selected'}</div>
+                  <div>Email: {formData.email || 'Empty'}</div>
+                  <div>Phone: {formData.phone || 'Empty'}</div>
+                  <div>Country Code: {formData.countryCode}</div>
+                </div>
+              </div>
+
               <div className="absolute w-[340px] h-[53px] top-[546px] left-[142px]">
                 <Button 
                   onClick={handleSignUp}
