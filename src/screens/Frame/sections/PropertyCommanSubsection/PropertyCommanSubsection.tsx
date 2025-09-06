@@ -97,7 +97,8 @@ export const PropertyCommanSubsection = (): JSX.Element => {
         phone: formData.phone,
         userType: formData.userType,
         countryCode: formData.countryCode,
-        isRegistration: true
+        isRegistration: true,
+        userId: data.user?.id
       }));
 
       // Navigate to OTP verification page

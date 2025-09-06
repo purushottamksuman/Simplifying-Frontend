@@ -31,11 +31,11 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       setUserEmail(userData.email);
       setIsLoginFlow(userData.isLogin || false);
       
-      console.log("📧 OTP page loaded for:", userData.email);
-      console.log("🔄 Flow type:", userData.isLogin ? "Login verification" : "Registration");
+      console.log("📧 OTP verification page loaded for:", userData.email);
+      console.log("🔄 Flow type:", userData.isLogin ? "Login verification" : "Registration verification");
     } else {
-      // If no pending user, redirect to registration
-      navigate('/component/comman');
+      // If no pending user, redirect to login
+      navigate('/component/login');
     }
 
     // Start timer
@@ -249,21 +249,18 @@ export const PropertyOtpSubsection = (): JSX.Element => {
 
                 {/* Heading */}
                 <h1 className="font-poppins font-semibold text-[#0062ff] text-[38px] tracking-[0.10px] leading-normal text-center">
-                  {isLoginFlow ? "EMAIL VERIFICATION" : "EMAIL CONFIRMATION"}
+                  OTP VERIFICATION
                 </h1>
 
                 {/* Subheading */}
                 <p className="font-poppins font-medium text-xl text-center tracking-[0] leading-normal max-w-[340px]">
                   <span className="text-black">
-                    {isLoginFlow 
-                      ? "Enter the verification code sent to " 
-                      : "Please check your email and click the confirmation link sent to "}
+                    Enter the 6-digit verification code sent to{" "}
                   </span>
                   <span className="text-[#007fff]">{maskedEmail}</span>
                 </p>
 
-                {/* OTP Inputs - Only show for login flow */}
-                {isLoginFlow && (
+                {/* OTP Inputs */}
                   <div className="flex items-center gap-3.5">
                     <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                       <InputOTPGroup className="gap-3.5">
@@ -277,7 +274,6 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                       </InputOTPGroup>
                     </InputOTP>
                   </div>
-                )}
 
                 {/* Timer */}
                 <div className="font-poppins font-medium text-black text-xl text-center tracking-[0] leading-normal">
@@ -318,7 +314,6 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                 </div>
 
                 {/* Submit Button - Only for login flow */}
-                {isLoginFlow && (
                   <div className="relative w-[340px] h-[53px]">
                     <Button 
                       onClick={handleSubmit}
@@ -330,18 +325,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                       </span>
                     </Button>
                   </div>
-                )}
 
-                {/* Registration flow message */}
-                {!isLoginFlow && (
-                  <div className="text-center">
-                    <p className="font-poppins font-medium text-gray-600 text-sm">
-                      After clicking the confirmation link in your email,
-                      <br />
-                      you'll be automatically redirected to continue.
-                    </p>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
