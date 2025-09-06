@@ -25,6 +25,8 @@ export const PropertyCommanSubsection = (): JSX.Element => {
   const [error, setError] = useState("");
 
   const handleSignUp = async () => {
+    console.log("Form data:", formData); // Debug log
+    
     if (!formData.email || !formData.phone || !formData.userType) {
       setError("Please fill in all required fields");
       return;
@@ -138,7 +140,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
 
               <div className="absolute w-[445px] h-[65px] top-[281px] left-[89px]">
                 <div className="relative h-[65px]">
-                  <Select>
+                  <Select onValueChange={(value) => handleInputChange('userType', value)}>
                     <SelectTrigger className="w-[445px] h-[54px] absolute top-[11px] left-0 bg-white rounded-3xl border border-solid border-[#e2e2ea]">
                       <div className="absolute w-32 h-[25px] top-[-11px] left-7 overflow-hidden">
                         <div className="relative w-[119px] h-[27px] -top-px -left-px">
@@ -154,9 +156,9 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="student" onClick={() => handleInputChange('userType', 'student')}>Student</SelectItem>
-                      <SelectItem value="parent" onClick={() => handleInputChange('userType', 'parent')}>Parent</SelectItem>
-                      <SelectItem value="teacher" onClick={() => handleInputChange('userType', 'teacher')}>Teacher</SelectItem>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
+                      <SelectItem value="teacher">Teacher</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
