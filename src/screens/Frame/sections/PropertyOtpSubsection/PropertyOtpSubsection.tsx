@@ -7,7 +7,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "../../../../components/ui/input-otp";
-import { authHelpers } from "../../../../lib/supabase";
+import { authHelpers, supabase } from "../../../../lib/supabase";
 import { useState, useEffect } from "react";
 
 export const PropertyOtpSubsection = (): JSX.Element => {
