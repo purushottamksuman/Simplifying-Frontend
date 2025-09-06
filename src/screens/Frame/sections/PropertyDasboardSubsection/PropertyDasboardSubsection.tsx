@@ -287,9 +287,8 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                           </div>
                           
                           {/* Decorative Elements */}
-                          <div className="absolute w-64 h-64 top-0 right-8 bg-[#697ffc] rounded-full opacity-30" />
-                          <SunIcon className="absolute w-14 h-14 top-6 right-20 text-white/80" />
                         </div>
+                        
                       </CardContent>
                     </Card>
 
