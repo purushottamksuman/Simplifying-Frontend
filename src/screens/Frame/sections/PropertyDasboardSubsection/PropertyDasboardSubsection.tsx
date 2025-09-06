@@ -8,6 +8,7 @@ import {
   HomeIcon,
   LockIcon,
   LogOutIcon,
+  MenuIcon,
   PresentationIcon,
   SearchIcon,
   SettingsIcon,
@@ -16,7 +17,6 @@ import {
   UserIcon,
   UserPlusIcon,
   UsersIcon,
-  MenuIcon,
   XIcon,
 } from "lucide-react";
 import React from "react";
@@ -104,7 +104,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
   if (loading) {
     return (
-      <div className="flex w-full min-h-screen bg-[#3479ff] items-center justify-center">
+      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -112,18 +112,18 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
   if (!user) {
     return (
-      <div className="flex w-full min-h-screen bg-[#3479ff] items-center justify-center">
+      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
         <div className="text-white text-xl">Redirecting to login...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex w-full min-h-screen bg-[#3479ff] overflow-hidden">
-      {/* Collapsible Sidebar */}
-      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-72'} h-screen bg-[#3479ff] flex flex-col shadow-xl transition-all duration-300 ease-in-out flex-shrink-0 relative z-10`}>
-        {/* Logo Section - Fixed at top */}
-        <div className="p-4 border-b border-[#ffffff15] flex-shrink-0 flex items-center justify-between">
+    <div className="flex w-full h-screen bg-[#3479ff] overflow-hidden">
+      {/* Fixed Sidebar */}
+      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-72'} h-screen bg-[#3479ff] flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 relative z-10`}>
+        {/* Fixed Logo Section */}
+        <div className="p-4 border-b border-[#ffffff15] flex-shrink-0 flex items-center justify-between h-20">
           {!sidebarCollapsed && (
             <img
               className="w-48 h-12 object-contain"
@@ -135,14 +135,14 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             variant="ghost"
             size="icon"
-            className="w-8 h-8 text-white hover:bg-[#ffffff15] rounded-lg"
+            className="w-8 h-8 text-white hover:bg-[#ffffff15] rounded-lg transition-colors duration-200"
           >
             {sidebarCollapsed ? <MenuIcon className="w-5 h-5" /> : <XIcon className="w-5 h-5" />}
           </Button>
         </div>
 
-        {/* Navigation - Scrollable with custom scrollbar */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar">
+        {/* Scrollable Navigation */}
+        <nav className="flex-1 px-3 py-4 overflow-y-auto sidebar-scrollbar">
           <div className="flex flex-col gap-1">
             {navigationItems.map((item, index) => (
               <div key={index} className="relative group">
@@ -176,7 +176,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
           </div>
         </nav>
 
-        {/* Logout Button - Fixed at bottom */}
+        {/* Fixed Logout Button */}
         <div className="p-3 border-t border-[#ffffff15] flex-shrink-0">
           <div className="relative group">
             <Button
@@ -200,198 +200,200 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 min-h-screen flex flex-col bg-[#3479ff] rounded-l-3xl ml-1">
-        {/* Header - Fixed with transparent background */}
-        <header className="sticky top-0 bg-transparent px-8 py-6 z-20 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            {/* Left: Breadcrumbs */}
-            <div className="flex items-center gap-2">
-              <span className="text-[#3479ff] text-2xl font-bold">Dashboard</span>
-            </div>
+      {/* Main Content Container - Fixed Height */}
+      <main className="flex-1 h-screen bg-[#3479ff] rounded-l-3xl ml-1 overflow-hidden">
+        <div className="h-full bg-white rounded-l-3xl flex flex-col">
+          {/* Header with Search and Controls */}
+          <header className="flex-shrink-0 px-8 py-6 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              {/* Left: Breadcrumbs */}
+              <div className="flex items-center gap-2">
+                <span className="text-[#3479ff] text-2xl font-bold">Dashboard</span>
+              </div>
 
-            {/* Center: Search Bar */}
-            <div className="flex-1 max-w-md mx-8">
-              <div className="relative">
-                <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Search anything..."
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  className="pl-12 pr-4 py-3 bg-white/90 backdrop-blur-sm border-0 rounded-2xl shadow-lg focus:bg-white focus:shadow-xl transition-all duration-200 placeholder:text-gray-500"
-                />
+              {/* Center: Beautiful Search Bar */}
+              <div className="flex-1 max-w-md mx-8">
+                <div className="relative">
+                  <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Input
+                    placeholder="Search anything..."
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    className="pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-2xl shadow-sm focus:bg-white focus:shadow-md transition-all duration-200 placeholder:text-gray-500"
+                  />
+                </div>
+              </div>
+
+              {/* Right: User Controls */}
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-600 transition-all duration-200"
+                >
+                  <BellIcon className="w-5 h-5" />
+                </Button>
+                
+                <Avatar className="w-10 h-10 border-2 border-gray-200 shadow-sm">
+                  <AvatarImage src="/Profile.png" />
+                  <AvatarFallback className="bg-[#3479ff] text-white text-sm font-semibold">
+                    {userName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-600 transition-all duration-200"
+                >
+                  <SettingsIcon className="w-5 h-5" />
+                </Button>
               </div>
             </div>
+          </header>
 
-            {/* Right: User Controls */}
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-white transition-all duration-200"
-              >
-                <BellIcon className="w-5 h-5" />
-              </Button>
-              
-              <Avatar className="w-10 h-10 border-2 border-white/20 shadow-lg">
-                <AvatarImage src="/Profile.png" />
-                <AvatarFallback className="bg-white text-[#3479ff] text-sm font-semibold">
-                  {userName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-white transition-all duration-200"
-              >
-                <SettingsIcon className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Dashboard Content - Scrollable with custom scrollbar */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-white rounded-tl-3xl">
-          <div className="p-8">
-            <div className="max-w-7xl mx-auto">
-              <div className="flex gap-8 min-h-full">
-                {/* Left Content */}
-                <div className="flex-1 max-w-4xl">
-                  {/* Welcome Card */}
-                  <Card className="mb-8 rounded-3xl shadow-xl border-0 overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="h-72 bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-hidden">
-                        <div className="p-8 relative z-10">
-                          <h2 className="font-bold text-white text-4xl mb-6">
-                            Hello {userName}! 👋
-                          </h2>
-                          <p className="text-white/90 text-lg max-w-lg leading-relaxed">
-                            Don't miss out! Your child's future starts with one smart step - complete the payment today.
-                          </p>
-                        </div>
-                        
-                        {/* Decorative Elements */}
-                        <div className="absolute w-64 h-64 top-0 right-8 bg-[#697ffc] rounded-full opacity-30" />
-                        <SunIcon className="absolute w-14 h-14 top-6 right-20 text-white/80" />
-                        <img
-                          className="absolute w-64 h-80 top-0 right-0 opacity-80"
-                          alt="Gradient decoration"
-                          src="/GradientPurple.png"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Summary Card */}
-                  <Card className="rounded-3xl border-0 shadow-xl">
-                    <CardContent className="p-8">
-                      <h3 className="font-bold text-[#13377c] text-3xl mb-8">
-                        Summary
-                      </h3>
-
-                      <div className="space-y-6">
-                        {/* Payment Section */}
-                        <div className="bg-gradient-to-r from-[#e9efff] to-[#f0f4ff] rounded-2xl p-6 relative overflow-hidden">
-                          <div className="max-w-lg relative z-10">
-                            <h4 className="font-bold text-gray-900 text-2xl mb-3">
-                              Complete Your Payment
-                            </h4>
-                            <p className="text-gray-700 text-base mb-6 leading-relaxed">
-                              Please select a plan that suits you best and complete your payment to unlock the assessment.
+          {/* Scrollable Dashboard Content */}
+          <div className="flex-1 overflow-y-auto main-scrollbar">
+            <div className="p-8">
+              <div className="max-w-7xl mx-auto">
+                <div className="flex gap-8">
+                  {/* Left Content */}
+                  <div className="flex-1 max-w-4xl">
+                    {/* Welcome Card */}
+                    <Card className="mb-8 rounded-3xl shadow-xl border-0 overflow-hidden">
+                      <CardContent className="p-0">
+                        <div className="h-72 bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-hidden">
+                          <div className="p-8 relative z-10">
+                            <h2 className="font-bold text-white text-4xl mb-6">
+                              Hello {userName}! 👋
+                            </h2>
+                            <p className="text-white/90 text-lg max-w-lg leading-relaxed">
+                              Don't miss out! Your child's future starts with one smart step - complete the payment today.
                             </p>
-                            <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
-                              Pay Now
-                            </Button>
                           </div>
+                          
+                          {/* Decorative Elements */}
+                          <div className="absolute w-64 h-64 top-0 right-8 bg-[#697ffc] rounded-full opacity-30" />
+                          <SunIcon className="absolute w-14 h-14 top-6 right-20 text-white/80" />
                           <img
-                            className="absolute w-40 h-44 top-2 right-8 opacity-90"
-                            alt="Payment illustration"
-                            src="/CashlessPayment.png"
+                            className="absolute w-64 h-80 top-0 right-0 opacity-80"
+                            alt="Gradient decoration"
+                            src="/GradientPurple.png"
                           />
                         </div>
+                      </CardContent>
+                    </Card>
 
-                        {/* Cashback Section */}
-                        <div className="bg-gradient-to-r from-[#fff4fb] to-[#fef7fc] rounded-2xl p-6 relative overflow-hidden">
-                          <div className="max-w-lg relative z-10">
-                            <h4 className="font-bold text-gray-900 text-2xl mb-2">
-                              You Have ₹200 Cashback
-                            </h4>
-                            <p className="text-gray-600 text-sm mb-6">
-                              T&C Apply
-                            </p>
-                            <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
-                              Refer & Earn
-                            </Button>
-                          </div>
-                          <img
-                            className="absolute w-48 h-40 top-4 right-8 opacity-90"
-                            alt="Wallet illustration"
-                            src="/Wallet.png"
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Right Sidebar - Premium Features */}
-                <div className="w-96 flex-shrink-0">
-                  <div className="sticky top-8">
-                    <Card className="rounded-3xl shadow-xl border-0 bg-[#3479ff] text-white">
+                    {/* Summary Card */}
+                    <Card className="rounded-3xl border-0 shadow-xl">
                       <CardContent className="p-8">
-                        <h3 className="font-bold text-white text-2xl mb-8">
-                          Unlock Premium Features
+                        <h3 className="font-bold text-[#13377c] text-3xl mb-8">
+                          Summary
                         </h3>
 
                         <div className="space-y-6">
-                          {/* Expert Guidance Card */}
-                          <div className="rounded-3xl bg-gradient-to-br from-[#7b58f2] to-[#a493ff] p-6 h-80 relative overflow-hidden">
-                            <div className="relative z-10">
-                              <h4 className="font-bold text-white text-2xl mb-4">
-                                Get Expert Guidance
+                          {/* Payment Section */}
+                          <div className="bg-gradient-to-r from-[#e9efff] to-[#f0f4ff] rounded-2xl p-6 relative overflow-hidden">
+                            <div className="max-w-lg relative z-10">
+                              <h4 className="font-bold text-gray-900 text-2xl mb-3">
+                                Complete Your Payment
                               </h4>
-                              <p className="text-white/90 text-base mb-8 leading-relaxed max-w-sm">
-                                Unlock your test results with a 1:1 counselling call and get a personalized growth plan.
+                              <p className="text-gray-700 text-base mb-6 leading-relaxed">
+                                Please select a plan that suits you best and complete your payment to unlock the assessment.
                               </p>
-                              <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
-                                <LockIcon className="w-4 h-4" />
-                                Unlock Session
+                              <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
+                                Pay Now
                               </Button>
                             </div>
-                            <div className="absolute bottom-0 right-0">
-                              <img
-                                className="w-48 h-36 object-contain"
-                                alt="Expert guidance illustration"
-                                src="/GoodKid.png"
-                              />
-                            </div>
+                            <img
+                              className="absolute w-40 h-44 top-2 right-8 opacity-90"
+                              alt="Payment illustration"
+                              src="/CashlessPayment.png"
+                            />
                           </div>
 
-                          {/* Join Clubs Card */}
-                          <div className="rounded-3xl bg-gradient-to-br from-[#fec854] to-[#ffdf99] p-6 h-80 relative overflow-hidden">
-                            <div className="relative z-10">
-                              <h4 className="font-bold text-gray-900 text-2xl mb-4">
-                                Join Our Clubs
+                          {/* Cashback Section */}
+                          <div className="bg-gradient-to-r from-[#fff4fb] to-[#fef7fc] rounded-2xl p-6 relative overflow-hidden">
+                            <div className="max-w-lg relative z-10">
+                              <h4 className="font-bold text-gray-900 text-2xl mb-2">
+                                You Have ₹200 Cashback
                               </h4>
-                              <p className="text-gray-800/90 text-base mb-8 leading-relaxed max-w-sm">
-                                Discover your interests, learn new skills, and connect with like-minded students.
+                              <p className="text-gray-600 text-sm mb-6">
+                                T&C Apply
                               </p>
-                              <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold">
-                                Explore Now
+                              <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
+                                Refer & Earn
                               </Button>
                             </div>
-                            <div className="absolute bottom-0 right-0">
-                              <img
-                                className="w-48 h-40 object-contain"
-                                alt="Clubs illustration"
-                                src="/SorryMother.png"
-                              />
-                            </div>
+                            <img
+                              className="absolute w-48 h-40 top-4 right-8 opacity-90"
+                              alt="Wallet illustration"
+                              src="/Wallet.png"
+                            />
                           </div>
                         </div>
                       </CardContent>
                     </Card>
+                  </div>
+
+                  {/* Right Sidebar - Premium Features */}
+                  <div className="w-96 flex-shrink-0">
+                    <div className="sticky top-8">
+                      <Card className="rounded-3xl shadow-xl border-0 bg-white">
+                        <CardContent className="p-8">
+                          <h3 className="font-bold text-[#13377c] text-2xl mb-8">
+                            Unlock Premium Features
+                          </h3>
+
+                          <div className="space-y-6">
+                            {/* Expert Guidance Card */}
+                            <div className="rounded-3xl bg-gradient-to-br from-[#7b58f2] to-[#a493ff] p-6 h-80 relative overflow-hidden">
+                              <div className="relative z-10">
+                                <h4 className="font-bold text-white text-2xl mb-4">
+                                  Get Expert Guidance
+                                </h4>
+                                <p className="text-white/90 text-base mb-8 leading-relaxed max-w-sm">
+                                  Unlock your test results with a 1:1 counselling call and get a personalized growth plan.
+                                </p>
+                                <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
+                                  <LockIcon className="w-4 h-4" />
+                                  Unlock Session
+                                </Button>
+                              </div>
+                              <div className="absolute bottom-0 right-0">
+                                <img
+                                  className="w-48 h-36 object-contain"
+                                  alt="Expert guidance illustration"
+                                  src="/GoodKid.png"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Join Clubs Card */}
+                            <div className="rounded-3xl bg-gradient-to-br from-[#fec854] to-[#ffdf99] p-6 h-80 relative overflow-hidden">
+                              <div className="relative z-10">
+                                <h4 className="font-bold text-gray-900 text-2xl mb-4">
+                                  Join Our Clubs
+                                </h4>
+                                <p className="text-gray-800/90 text-base mb-8 leading-relaxed max-w-sm">
+                                  Discover your interests, learn new skills, and connect with like-minded students.
+                                </p>
+                                <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold">
+                                  Explore Now
+                                </Button>
+                              </div>
+                              <div className="absolute bottom-0 right-0">
+                                <img
+                                  className="w-48 h-40 object-contain"
+                                  alt="Clubs illustration"
+                                  src="/SorryMother.png"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -402,30 +404,39 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
       {/* Custom Scrollbar Styles */}
       <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
+        .sidebar-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
         
-        .custom-scrollbar::-webkit-scrollbar-track {
+        .sidebar-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
         
-        .custom-scrollbar::-webkit-scrollbar-thumb {
+        .sidebar-scrollbar::-webkit-scrollbar-thumb {
           background: rgba(255, 255, 255, 0.2);
           border-radius: 10px;
           transition: background 0.2s ease;
         }
         
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(255, 255, 255, 0.3);
         }
         
-        /* For main content scrollbar */
-        .bg-white .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(52, 121, 255, 0.2);
+        .main-scrollbar::-webkit-scrollbar {
+          width: 6px;
         }
         
-        .bg-white .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        .main-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .main-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(52, 121, 255, 0.2);
+          border-radius: 10px;
+          transition: background 0.2s ease;
+        }
+        
+        .main-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(52, 121, 255, 0.3);
         }
       `}</style>
