@@ -56,26 +56,57 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     setError("");
 
     try {
-      // In a real app, you would verify the OTP with Supabase
-      // For now, we'll simulate OTP verification
-      // You can implement actual OTP verification using Supabase's phone auth or email confirmation
+      // Verify OTP with Supabase
+      const verifyResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          otp_code: otp
+        })
+      });
+
+      const verifyResult = await verifyResponse.json();
       
-      // Simulate OTP verification (accept any 6-digit code for demo)
-      if (otp === "123456" || otp.length === 6) {
-        // Get current user and update their email_confirmed status
-        const { user } = await authHelpers.getCurrentUser();
+      if (!verifyResponse.ok || !verifyResult.success) {
+        setError(verifyResult.error || 'Invalid OTP. Please try again.');
+        return;
+      }
+
+      // Get pending user data
+      const pendingUser = localStorage.getItem('pendingUser');
+      if (pendingUser) {
+        const userData = JSON.parse(pendingUser);
         
-        if (user) {
-          // Clear pending user data
-          localStorage.removeItem('pendingUser');
-          navigate('/component/overlap-wrapper');
-        } else {
-          setError("User session expired. Please register again.");
+        // Create Supabase user account
+        const tempPassword = "TempPass123!";
+        const { data, error } = await authHelpers.signUp(
+          userData.email,
+          tempPassword,
+          {
+            user_type: userData.userType,
+            phone: `${userData.countryCode}${userData.phone}`,
+            full_name: "",
+            email_verified: true
+          }
+        );
+
+        if (error) {
+          setError("Failed to create account. Please try again.");
+          return;
         }
+
+        // Clear pending user data and navigate to success
+        localStorage.removeItem('pendingUser');
+        navigate('/component/overlap-wrapper');
       } else {
-        setError("Invalid OTP. Please try again.");
+        setError("Registration data not found. Please start over.");
       }
     } catch (err) {
+      console.error('OTP verification error:', err);
       setError("Failed to verify OTP. Please try again.");
     } finally {
       setLoading(false);
@@ -89,8 +120,37 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     setError("");
     
     try {
-      // In a real app, you would resend the OTP here
-      // For demo purposes, we'll just reset the timer
+      // Get pending user data
+      const pendingUser = localStorage.getItem('pendingUser');
+      if (!pendingUser) {
+        setError("Registration data not found. Please start over.");
+        return;
+      }
+
+      const userData = JSON.parse(pendingUser);
+      
+      // Resend OTP
+      const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          email: userData.email,
+          phone: `${userData.countryCode}${userData.phone}`,
+          otp_type: 'registration'
+        })
+      });
+
+      const otpResult = await otpResponse.json();
+      
+      if (!otpResponse.ok || !otpResult.success) {
+        setError(otpResult.error || 'Failed to resend OTP');
+        return;
+      }
+
+      // Reset timer
       setTimer(120);
       setCanResend(false);
       
@@ -107,6 +167,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       }, 1000);
       
     } catch (err) {
+      console.error('Resend OTP error:', err);
       setError("Failed to resend OTP");
     } finally {
       setLoading(false);
