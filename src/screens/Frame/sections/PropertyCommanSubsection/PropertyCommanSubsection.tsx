@@ -71,27 +71,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     setError("");
 
     try {
-      // Create user account with Supabase Auth
-      const { data, error } = await authHelpers.signUp(
-        formData.email.trim(),
-        formData.password,
-        {
-          user_type: formData.userType,
-          phone: `${formData.countryCode}${formData.phone.trim()}`,
-          full_name: "",
-          country_code: formData.countryCode
-        }
-      );
-
-      if (error) {
-        console.error("❌ Signup failed:", error);
-        setError(error.message || "Failed to create account. Please try again.");
-        return;
-      }
-
-      console.log("✅ User created:", data);
-
-      // Send OTP for email verification
+      // Send OTP for registration (this will use your custom email template)
       const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
         method: 'POST',
         headers: {
@@ -101,7 +81,10 @@ export const PropertyCommanSubsection = (): JSX.Element => {
         body: JSON.stringify({
           email: formData.email.trim(),
           phone: `${formData.countryCode}${formData.phone.trim()}`,
-          otp_type: 'registration'
+          otp_type: 'registration',
+          user_type: formData.userType,
+          password: formData.password,
+          country_code: formData.countryCode
         })
       });
 
@@ -109,7 +92,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
       
       if (!otpResponse.ok || !otpResult.success) {
         console.error("❌ OTP sending failed:", otpResult);
-        setError("Account created but failed to send OTP. Please try logging in.");
+        setError(otpResult.error || "Failed to send OTP. Please try again.");
         return;
       }
 
@@ -119,10 +102,10 @@ export const PropertyCommanSubsection = (): JSX.Element => {
         phone: formData.phone,
         userType: formData.userType,
         countryCode: formData.countryCode,
-        userId: data.user?.id
+        password: formData.password
       }));
 
-      console.log("✅ Account created and OTP sent! Navigating to verification page...");
+      console.log("✅ OTP sent! Navigating to verification page...");
       navigate('/component/otp');
     } catch (err) {
       console.error('❌ Registration error:', err);

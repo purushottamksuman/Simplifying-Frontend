@@ -90,16 +90,61 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       const pendingUser = localStorage.getItem('pendingUser');
       const userData = pendingUser ? JSON.parse(pendingUser) : null;
       
-      // Clear pending user data
-      localStorage.removeItem('pendingUser');
-      
       if (userData?.isLogin) {
-        // For login verification, go directly to dashboard
+        // For login verification, complete the login process
         console.log("🚀 Login verification complete, going to dashboard");
+        
+        // Now sign in the user with their credentials
+        const { data: loginData, error: loginError } = await authHelpers.signIn(userData.email, userData.password);
+        
+        if (loginError) {
+          setError("Failed to complete login. Please try again.");
+          return;
+        }
+        
+        // Store user session info
+        localStorage.setItem('currentUser', JSON.stringify({
+          id: loginData.user.id,
+          email: loginData.user.email,
+          user_metadata: loginData.user.user_metadata
+        }));
+        
+        // Clear pending user data
+        localStorage.removeItem('pendingUser');
         navigate('/component/dashboard');
       } else {
-        // For registration, go to success message first
+        // For registration, create the user account now
         console.log("🎉 Registration complete, going to success page");
+        
+        // Create user account with Supabase Auth
+        const { data: signupData, error: signupError } = await authHelpers.signUp(
+          userData.email,
+          userData.password,
+          {
+            user_type: userData.userType,
+            phone: `${userData.countryCode}${userData.phone}`,
+            full_name: "",
+            country_code: userData.countryCode
+          }
+        );
+
+        if (signupError) {
+          console.error("❌ Account creation failed:", signupError);
+          setError("Failed to create account. Please try again.");
+          return;
+        }
+
+        console.log("✅ User account created:", signupData);
+        
+        // Store user session info
+        localStorage.setItem('currentUser', JSON.stringify({
+          id: signupData.user.id,
+          email: signupData.user.email,
+          user_metadata: signupData.user.user_metadata
+        }));
+        
+        // Clear pending user data
+        localStorage.removeItem('pendingUser');
         navigate('/component/overlap-wrapper');
       }
       
@@ -133,12 +178,21 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       // Resend OTP - check if it's login or registration
       if (userData.isLogin) {
         // For login verification, send magic link again
-        const { data, error } = await authHelpers.signInWithMagicLink(
-          userData.email,
-          { email: userData.email }
-        );
+        const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            email: userData.email,
+            otp_type: 'email_confirmation'
+          })
+        });
+
+        const otpResult = await otpResponse.json();
         
-        if (error) {
+        if (!otpResponse.ok || !otpResult.success) {
           setError("Failed to resend verification email");
           return;
         }
@@ -155,7 +209,10 @@ export const PropertyOtpSubsection = (): JSX.Element => {
           body: JSON.stringify({
             email: userData.email,
             phone: `${userData.countryCode}${userData.phone}`,
-            otp_type: 'registration'
+            otp_type: 'registration',
+            user_type: userData.userType,
+            password: userData.password,
+            country_code: userData.countryCode
           })
         });
 

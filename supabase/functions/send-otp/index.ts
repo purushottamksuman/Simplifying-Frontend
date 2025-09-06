@@ -10,6 +10,9 @@ interface OTPRequest {
   email: string;
   phone?: string;
   otp_type: string;
+  user_type?: string;
+  password?: string;
+  country_code?: string;
 }
 
 // Generate 6-digit OTP

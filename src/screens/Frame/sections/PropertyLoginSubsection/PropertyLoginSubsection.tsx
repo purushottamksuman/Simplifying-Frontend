@@ -33,25 +33,35 @@ export const PropertyLoginSubsection = (): JSX.Element => {
         if (error.message === "Email not confirmed" || error.message.includes("email_not_confirmed")) {
           console.log("📧 Email not confirmed, sending magic link...");
           
-          // Send magic link for email verification
-          const { data: magicData, error: magicError } = await authHelpers.signInWithMagicLink(
-            formData.email,
-            { email: formData.email }
-          );
+          // Send OTP for email verification using custom template
+          const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+              email: formData.email.trim(),
+              otp_type: 'email_confirmation'
+            })
+          });
+
+          const otpResult = await otpResponse.json();
           
-          if (magicError) {
-            setError("Failed to send verification email. Please try again.");
+          if (!otpResponse.ok || !otpResult.success) {
+            setError(otpResult.error || "Failed to send verification email. Please try again.");
             return;
           }
           
           // Store user data for OTP verification
           localStorage.setItem('pendingUser', JSON.stringify({
             email: formData.email,
+            password: formData.password,
             userType: 'existing_user',
             isLogin: true
           }));
           
-          console.log("✅ Magic link sent, redirecting to OTP verification...");
+          console.log("✅ OTP sent for email confirmation, redirecting to OTP verification...");
           navigate('/component/otp');
           return;
         }
