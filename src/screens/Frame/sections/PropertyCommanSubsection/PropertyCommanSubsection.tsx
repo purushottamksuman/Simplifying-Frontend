@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
@@ -12,6 +13,12 @@ import {
 } from "../../../../components/ui/select";
 
 export const PropertyCommanSubsection = (): JSX.Element => {
+  const navigate = useNavigate();
+
+  const handleSignUp = () => {
+    navigate('/component/otp');
+  };
+
   const navigate = useNavigate();
 
   const handleSignUp = () => {
@@ -128,6 +135,9 @@ export const PropertyCommanSubsection = (): JSX.Element => {
 
               <div className="absolute w-[340px] h-[53px] top-[546px] left-[142px]">
                 <Button 
+                  onClick={handleSignUp}
+                  className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc] h-auto"
+                >
                   onClick={handleSignUp}
                   className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc] h-auto"
                 >

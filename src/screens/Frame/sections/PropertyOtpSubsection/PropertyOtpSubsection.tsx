@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import {
@@ -9,6 +10,11 @@ import {
 
 export const PropertyOtpSubsection = (): JSX.Element => {
   const otpSlots = Array.from({ length: 6 }, (_, index) => ({ id: index }));
+  const navigate = useNavigate();
+
+  const handleSubmit = () => {
+    navigate('/component/overlap-wrapper');
+  };
 
   return (
     <div className="w-full min-h-screen bg-white relative">
@@ -111,7 +117,10 @@ export const PropertyOtpSubsection = (): JSX.Element => {
 
                 {/* Submit Button */}
                 <div className="relative w-[340px] h-[53px]">
-                  <Button className="relative w-[342px] h-[55px] -top-px -left-px bg-[#007fff] rounded-3xl hover:bg-[#007fff]/90">
+                  <Button 
+                    onClick={handleSubmit}
+                    className="relative w-[342px] h-[55px] -top-px -left-px bg-[#007fff] rounded-3xl hover:bg-[#007fff]/90"
+                  >
                     <span className="font-poppins font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-normal">
                       Submit
                     </span>

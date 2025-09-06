@@ -271,7 +271,7 @@ export const HomePage: React.FC = () => {
                     {component.description}
                   </p>
                   <Link to={`/component/${component.id}`}>
-                    <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+                    <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" size="sm">
                       View Component
                     </Button>
                   </Link>

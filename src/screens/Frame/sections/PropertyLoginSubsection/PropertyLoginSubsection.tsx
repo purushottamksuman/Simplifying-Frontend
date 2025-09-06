@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
@@ -26,6 +27,12 @@ const socialLoginOptions = [
 ];
 
 export const PropertyLoginSubsection = (): JSX.Element => {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate('/component/dashboard');
+  };
+
   return (
     <div className="w-full bg-white relative">
       <div className="relative w-full max-w-[1884px] top-[54px] left-9 mx-auto">
@@ -124,7 +131,10 @@ export const PropertyLoginSubsection = (): JSX.Element => {
 
                   {/* Login Button */}
                   <div className="flex justify-center mt-8">
-                    <Button className="w-[340px] h-[53px] bg-[#007fff] hover:bg-[#0066cc] rounded-3xl font-poppins font-semibold text-[#fafafb] text-2xl">
+                    <Button 
+                      onClick={handleLogin}
+                      className="w-[340px] h-[53px] bg-[#007fff] hover:bg-[#0066cc] rounded-3xl font-poppins font-semibold text-[#fafafb] text-2xl"
+                    >
                       Log In
                     </Button>
                   </div>

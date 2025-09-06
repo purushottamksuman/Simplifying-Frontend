@@ -1,8 +1,15 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 
 export const OverlapWrapperSubsection = (): JSX.Element => {
+  const navigate = useNavigate();
+
+  const handleContinue = () => {
+    navigate('/component/dashboard');
+  };
+
   return (
     <div className="w-full h-[1080px] bg-white relative">
       <div className="relative w-full max-w-[1884px] h-[1026px] top-[54px] left-9 mx-auto">
@@ -84,7 +91,10 @@ export const OverlapWrapperSubsection = (): JSX.Element => {
                 <div className="relative w-[340px] h-[53px]">
                   <div className="h-[53px]">
                     <div className="w-[340px] h-[53px] overflow-hidden">
-                      <Button className="relative w-[342px] h-[55px] -top-px -left-px bg-[#007fff] rounded-3xl hover:bg-[#007fff]/90 h-auto">
+                      <Button 
+                        onClick={handleContinue}
+                        className="relative w-[342px] h-[55px] -top-px -left-px bg-[#007fff] rounded-3xl hover:bg-[#007fff]/90 h-auto"
+                      >
                         <div className="[font-family:'Poppins',Helvetica] font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-[normal]">
                           Continue
                         </div>
