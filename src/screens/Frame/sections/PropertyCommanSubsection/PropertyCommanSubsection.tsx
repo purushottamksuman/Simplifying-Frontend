@@ -327,7 +327,6 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                   </Button>
                 </div>
               </div>
-              </div>
             </CardContent>
           </Card>
         </div>
