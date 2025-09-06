@@ -97,7 +97,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
   if (loading) {
     return (
-      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
+      <div className="flex w-full min-h-screen bg-[#3479ff] items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -105,18 +105,18 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
   if (!user) {
     return (
-      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
+      <div className="flex w-full min-h-screen bg-[#3479ff] items-center justify-center">
         <div className="text-white text-xl">Redirecting to login...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex w-full h-screen bg-[#3479ff] overflow-hidden">
+    <div className="flex w-full min-h-screen bg-[#3479ff]">
       {/* Fixed Sidebar */}
-      <aside className="w-[280px] h-full bg-[#3479ff] flex flex-col shadow-lg relative z-10">
+      <aside className="w-[280px] min-h-screen bg-[#3479ff] flex flex-col shadow-lg relative z-10 flex-shrink-0">
         {/* Logo */}
-        <div className="p-6 border-b border-[#ffffff20]">
+        <div className="p-6 border-b border-[#ffffff20] flex-shrink-0">
           <img
             className="w-[220px] h-[55px] object-contain"
             alt="Simplifying Skills Logo"
@@ -125,29 +125,36 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6">
+        <nav className="flex-1 px-4 py-6 overflow-y-auto">
           <div className="flex flex-col gap-2">
             {navigationItems.map((item, index) => (
-              <Button
+              <div
                 key={index}
-                variant="ghost"
-                className={`w-full justify-start gap-3 px-4 py-3 h-auto rounded-xl transition-all duration-200 ${
-                  item.active 
-                    ? "bg-white text-[#3479ff] hover:bg-white shadow-sm" 
-                    : "text-white hover:bg-[#ffffff15] hover:text-white"
-                }`}
+                className="relative"
               >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                <span className="font-medium text-sm">
-                  {item.label}
-                </span>
-              </Button>
+                {item.active && (
+                  <div className="absolute inset-0 bg-white rounded-l-2xl" />
+                )}
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start gap-3 px-4 py-3 h-auto relative z-10 transition-all duration-200 ${
+                    item.active 
+                      ? "text-[#3479ff] hover:text-[#3479ff] hover:bg-transparent" 
+                      : "text-white hover:bg-[#ffffff15] hover:text-white rounded-xl"
+                  }`}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-medium text-sm">
+                    {item.label}
+                  </span>
+                </Button>
+              </div>
             ))}
           </div>
         </nav>
 
         {/* Logout Button */}
-        <div className="p-4 border-t border-[#ffffff20]">
+        <div className="p-4 border-t border-[#ffffff20] flex-shrink-0">
           <Button
             onClick={handleLogout}
             variant="ghost"
@@ -160,10 +167,10 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
       </aside>
 
       {/* Main Content - Scrollable */}
-      <main className="flex-1 bg-white overflow-y-auto">
-        <div className="min-h-full">
+      <main className="flex-1 bg-white min-h-screen">
+        <div className="h-full flex flex-col">
           {/* Header */}
-          <header className="sticky top-0 bg-white border-b border-gray-200 px-8 py-4 z-20">
+          <header className="sticky top-0 bg-white border-b border-gray-200 px-8 py-4 z-20 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <img
@@ -191,14 +198,15 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
           </header>
 
           {/* Dashboard Content */}
-          <div className="p-8">
-            <div className="flex gap-8">
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-8">
+              <div className="flex gap-8 min-h-full">
               {/* Left Content */}
-              <div className="flex-1 max-w-4xl">
+                <div className="flex-1 max-w-4xl">
                 {/* Welcome Card */}
-                <Card className="mb-8 rounded-3xl shadow-lg border-0 overflow-hidden">
+                  <Card className="mb-8 rounded-3xl shadow-lg border-0 overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="h-[280px] bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-hidden">
+                      <div className="h-[280px] bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-hidden">
                       <div className="p-8 relative z-10">
                         <h2 className="font-bold text-white text-4xl mb-6">
                           Good Morning {userName}! 👋
@@ -216,12 +224,12 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                         alt="Gradient decoration"
                         src="/GradientPurple.png"
                       />
-                    </div>
+                      </div>
                   </CardContent>
                 </Card>
 
                 {/* Summary Card */}
-                <Card className="rounded-3xl border-0 shadow-lg">
+                  <Card className="rounded-3xl border-0 shadow-lg">
                   <CardContent className="p-8">
                     <h3 className="font-bold text-[#13377c] text-3xl mb-8">
                       Summary
@@ -270,11 +278,11 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+                </div>
 
-              {/* Right Sidebar - Premium Features */}
-              <div className="w-[480px] flex-shrink-0">
-                <Card className="rounded-3xl shadow-lg border-0 sticky top-24">
+                {/* Right Sidebar - Premium Features */}
+                <div className="w-[480px] flex-shrink-0">
+                  <Card className="rounded-3xl shadow-lg border-0 sticky top-24">
                   <CardContent className="p-8">
                     <h3 className="font-bold text-[#13377c] text-2xl mb-8">
                       Unlock Premium Features
@@ -328,11 +336,11 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                     </div>
                   </CardContent>
                 </Card>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
     </div>
   );
 };
