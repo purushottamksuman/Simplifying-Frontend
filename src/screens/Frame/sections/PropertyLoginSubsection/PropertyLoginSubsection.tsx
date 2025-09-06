@@ -32,7 +32,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
         if (error.message === "Email not confirmed" || error.message.includes("email_not_confirmed")) {
           console.log("📧 Email not confirmed, sending confirmation email...");
           
-          // Resend confirmation email using Supabase's default system
+          // Resend confirmation email with your custom template containing {{.Token}}
           const { error: resendError } = await authHelpers.resendConfirmation(formData.email);
           
           if (resendError) {
@@ -47,7 +47,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
             isLogin: true
           }));
           
-          console.log("✅ Confirmation email sent, redirecting to verification...");
+          console.log("✅ Confirmation email sent with OTP token, redirecting to verification...");
           navigate('/component/otp');
           return;
         }

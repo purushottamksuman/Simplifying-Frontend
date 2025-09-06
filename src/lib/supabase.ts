@@ -54,7 +54,7 @@ export const authHelpers = {
     return { data, error }
   },
 
-  // Verify OTP
+  // Verify OTP using Supabase's native verification
   verifyOTP: async (email: string, token: string, type: 'signup' | 'email') => {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
@@ -80,39 +80,6 @@ export const authHelpers = {
       .from('user_profiles')
       .update(updates)
       .eq('id', userId)
-      .select()
-      .single()
-    return { data, error }
-  },
-
-  // Create OTP verification
-  createOTPVerification: async (email: string, phone: string, otpCode: string, otpType: string = 'registration') => {
-    const { data, error } = await supabase
-      .from('otp_verifications')
-      .insert({
-        email,
-        phone,
-        otp_code: otpCode,
-        otp_type: otpType
-      })
-      .select()
-      .single()
-    return { data, error }
-  },
-
-  // Verify OTP
-  verifyOTP: async (email: string, otpCode: string) => {
-    const { data, error } = await supabase
-      .from('otp_verifications')
-      .update({ 
-        is_verified: true, 
-        verified_at: new Date().toISOString(),
-        attempts: supabase.raw('attempts + 1')
-      })
-      .eq('email', email)
-      .eq('otp_code', otpCode)
-      .eq('is_verified', false)
-      .gt('expires_at', new Date().toISOString())
       .select()
       .single()
     return { data, error }

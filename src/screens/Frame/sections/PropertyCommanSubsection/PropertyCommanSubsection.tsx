@@ -71,7 +71,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     setError("");
 
     try {
-      // Sign up with Supabase (this will send your custom confirmation email)
+      // Sign up with Supabase - this will send your custom confirmation email with {{.Token}}
       const { data, error } = await authHelpers.signUp(
         formData.email.trim(),
         formData.password,
@@ -89,7 +89,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
         return;
       }
 
-      console.log("✅ Registration successful! Confirmation email sent.");
+      console.log("✅ Registration successful! Confirmation email sent with OTP token.");
       
       // Store user data for OTP verification page
       localStorage.setItem('pendingUser', JSON.stringify({
