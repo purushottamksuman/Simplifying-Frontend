@@ -46,11 +46,12 @@ export const authHelpers = {
   },
 
   // Sign in with magic link
-  signInWithMagicLink: async (email: string) => {
+  signInWithMagicLink: async (email: string, userData?: any) => {
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/component/overlap-wrapper`
+        emailRedirectTo: `${window.location.origin}/component/overlap-wrapper`,
+        data: userData
       }
     })
     return { data, error }

@@ -199,12 +199,23 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       const userData = JSON.parse(pendingUser);
       console.log("🔗 Sending magic link to:", userData.email);
       
-      // Send magic link using Supabase auth
-      const { data, error } = await authHelpers.signInWithMagicLink(userData.email);
+      // Send magic link with user metadata for profile creation
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: userData.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/component/overlap-wrapper`,
+          data: {
+            user_type: userData.userType,
+            phone: `${userData.countryCode}${userData.phone}`,
+            full_name: userData.fullName || '',
+            country_code: userData.countryCode
+          }
+        }
+      });
       
       if (error) {
         console.error("Magic link error:", error);
-        setError("Failed to send magic link. Please try again.");
+        setError(`Failed to send magic link: ${error.message}`);
         return;
       }
       
@@ -213,7 +224,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       
     } catch (err) {
       console.error('Magic link error:', err);
-      setError("Failed to send magic link");
+      setError(`Failed to send magic link: ${err.message}`);
     } finally {
       setMagicLinkLoading(false);
     }
