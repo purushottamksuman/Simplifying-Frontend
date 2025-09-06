@@ -121,7 +121,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
   return (
     <div className="flex w-full h-screen bg-[#3479ff] overflow-hidden">
       {/* Fixed Sidebar */}
-      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-72'} h-screen bg-[#3479ff] flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 relative z-10`}>
+      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-64'} h-screen bg-[#3479ff] flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 relative z-10`}>
         {/* Fixed Logo Section */}
         <div className="p-4 border-b border-[#ffffff15] flex-shrink-0 flex items-center justify-between h-20">
           {!sidebarCollapsed && (
@@ -137,7 +137,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
             size="icon"
             className="w-8 h-8 text-white hover:bg-[#ffffff15] rounded-lg transition-colors duration-200 flex items-center justify-center"
           >
-            {sidebarCollapsed ? <MenuIcon className="w-5 h-5" /> : <XIcon className="w-5 h-5" />}
+            {sidebarCollapsed ? <MenuIcon className="w-5 h-5 text-white" /> : <XIcon className="w-5 h-5 text-white" />}
           </Button>
         </div>
 
@@ -204,7 +204,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
       {/* Vertical separator line */}
       {!sidebarCollapsed && (
-        <div className="w-px bg-white opacity-20 absolute left-[287px] top-20 bottom-20 z-20" />
+        <div className="w-px bg-white opacity-20 absolute left-[255px] top-20 bottom-20 z-20" />
       )}
 
       {/* Main Content Container - Fixed Height */}
@@ -270,6 +270,13 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                     <Card className="mb-8 rounded-3xl shadow-xl border-0 overflow-hidden">
                       <CardContent className="p-0">
                         <div className="h-72 bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-hidden">
+                          {/* Background Image */}
+                          <img
+                            className="absolute w-64 h-80 top-0 right-0 opacity-80"
+                            alt="Gradient decoration"
+                            src="/GradientPurple.png"
+                          />
+                          
                           <div className="p-8 relative z-10">
                             <h2 className="font-bold text-white text-4xl mb-6">
                               Hello {userName}! 👋
@@ -282,11 +289,6 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                           {/* Decorative Elements */}
                           <div className="absolute w-64 h-64 top-0 right-8 bg-[#697ffc] rounded-full opacity-30" />
                           <SunIcon className="absolute w-14 h-14 top-6 right-20 text-white/80" />
-                          <img
-                            className="absolute w-64 h-80 top-0 right-0 opacity-80"
-                            alt="Gradient decoration"
-                            src="/GradientPurple.png"
-                          />
                         </div>
                       </CardContent>
                     </Card>
