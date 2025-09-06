@@ -186,7 +186,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                     <div className="flex items-center gap-3">
                       <img className="w-6 h-6" src="/google.png" alt="Google" />
                       <span className="font-poppins font-medium text-black text-sm">
-                        Sign up with Google
+                        Sign in with Google
                       </span>
                     </div>
                   </Button>
@@ -199,7 +199,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                     <div className="flex items-center gap-3">
                       <img className="w-6 h-6" src="/apple.png" alt="Apple" />
                       <span className="font-poppins font-medium text-black text-sm">
-                        Sign up with Apple
+                        Sign in with Apple
                       </span>
                     </div>
                   </Button>
@@ -212,7 +212,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                     <div className="flex items-center gap-3">
                       <img className="w-6 h-6" src="/linkedin.png" alt="LinkedIn" />
                       <span className="font-poppins font-medium text-black text-sm">
-                        Sign up with LinkedIn
+                        Sign in with LinkedIn
                       </span>
                     </div>
                   </Button>

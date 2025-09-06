@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../../components/ui/select";
+import { authHelpers } from "../../../../lib/supabase";
 import { useState } from "react";
 
 export const PropertyCommanSubsection = (): JSX.Element => {
@@ -18,7 +19,9 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     userType: "",
     email: "",
     phone: "",
-    countryCode: "+91"
+    countryCode: "+91",
+    password: "",
+    confirmPassword: ""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -43,6 +46,20 @@ export const PropertyCommanSubsection = (): JSX.Element => {
       return;
     }
 
+    if (!formData.password.trim()) {
+      setError("Please enter a password");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
@@ -54,66 +71,58 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     setError("");
 
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      console.log("🔧 Environment check:");
-      console.log("- Supabase URL:", supabaseUrl ? "✅ Set" : "❌ Missing");
-      console.log("- Supabase Key:", supabaseKey ? "✅ Set" : "❌ Missing");
-      
-      if (!supabaseUrl || !supabaseKey) {
-        setError("Configuration error: Supabase credentials missing");
+      // Create user account with Supabase Auth
+      const { data, error } = await authHelpers.signUp(
+        formData.email.trim(),
+        formData.password,
+        {
+          user_type: formData.userType,
+          phone: `${formData.countryCode}${formData.phone.trim()}`,
+          full_name: "",
+          country_code: formData.countryCode
+        }
+      );
+
+      if (error) {
+        console.error("❌ Signup failed:", error);
+        setError(error.message || "Failed to create account. Please try again.");
         return;
       }
 
-      const requestData = {
-        email: formData.email.trim(),
-        phone: `${formData.countryCode}${formData.phone.trim()}`,
-        otp_type: 'registration'
-      };
-      
-      console.log("📤 Sending OTP request:", requestData);
-      console.log("🌐 Request URL:", `${supabaseUrl}/functions/v1/send-otp`);
-      
-      const otpResponse = await fetch(`${supabaseUrl}/functions/v1/send-otp`, {
+      console.log("✅ User created:", data);
+
+      // Send OTP for email verification
+      const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          phone: `${formData.countryCode}${formData.phone.trim()}`,
+          otp_type: 'registration'
+        })
       });
 
-      console.log("📥 OTP Response status:", otpResponse.status);
-      console.log("📥 OTP Response ok:", otpResponse.ok);
-      
       const otpResult = await otpResponse.json();
-      console.log("📥 OTP Result:", otpResult);
       
       if (!otpResponse.ok || !otpResult.success) {
         console.error("❌ OTP sending failed:", otpResult);
-        setError(otpResult.error || `Failed to send OTP. Please try again.`);
+        setError("Account created but failed to send OTP. Please try logging in.");
         return;
       }
 
-      // Store user data in localStorage for OTP verification
-      const pendingUserData = {
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        userType: formData.userType,
-        countryCode: formData.countryCode,
-        otpId: otpResult.otp_id
-      };
-      
-      console.log("💾 Storing pending user data:", pendingUserData);
+      // Store user data for OTP verification
       localStorage.setItem('pendingUser', JSON.stringify({
         email: formData.email,
         phone: formData.phone,
         userType: formData.userType,
-        countryCode: formData.countryCode
+        countryCode: formData.countryCode,
+        userId: data.user?.id
       }));
 
-      console.log("✅ OTP sent successfully! Navigating to verification page...");
+      console.log("✅ Account created and OTP sent! Navigating to verification page...");
       navigate('/component/otp');
     } catch (err) {
       console.error('❌ Registration error:', err);
@@ -172,7 +181,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
 
         {/* Card Section */}
         <div className="absolute w-[623px] h-[858px] top-[57px] left-36 shadow-[0px_4px_4px_#00000040]">
-          <Card className="w-[623px] h-[858px] bg-white rounded-[20px] shadow-[0px_4px_4px_#00000040,3px_-5px_40px_#cdcdd31a] rounded-[20px]">
+          <Card className="w-[625px] h-[900px] bg-white rounded-[20px] shadow-[3px_-5px_40px_#cdcdd31a]">
             <CardContent className="p-0 relative w-full h-full">
               <img
                 className="absolute top-3.5 left-[129px] w-[366px] h-[91px] object-cover"
@@ -246,13 +255,34 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 />
               </div>
 
+              {/* Password Field */}
+              <div className="absolute w-[445px] h-[53px] top-[545px] left-[89px]">
+                <Input
+                  type="password"
+                  className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                />
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="absolute w-[445px] h-[53px] top-[629px] left-[89px]">
+                <Input
+                  type="password"
+                  className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                />
+              </div>
               {error && (
-                <div className="absolute w-[445px] top-[530px] left-[89px] text-red-500 text-sm text-center">
+                <div className="absolute w-[445px] top-[695px] left-[89px] text-red-500 text-sm text-center">
                   {error}
                 </div>
               )}
 
-              <div className="absolute w-[340px] h-[53px] top-[546px] left-[142px]">
+              <div className="absolute w-[340px] h-[53px] top-[720px] left-[142px]">
                 <Button 
                   onClick={handleSignUp}
                   disabled={loading}
@@ -264,7 +294,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 </Button>
               </div>
 
-              <div className="absolute w-[403px] h-[163px] top-[630px] left-[110px]">
+              <div className="absolute w-[403px] h-[163px] top-[790px] left-[110px]">
                 <div className="absolute w-[400px] h-[15px] top-0 left-[3px]">
                   <div className="relative h-3.5">
                     <div className="flex w-5 items-center justify-center gap-2.5 px-[3px] py-0 absolute top-0 left-[190px] bg-white">

@@ -7,7 +7,6 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "../../../../components/ui/input-otp";
-import { authHelpers, supabase } from "../../../../lib/supabase";
 import { useState, useEffect } from "react";
 
 export const PropertyOtpSubsection = (): JSX.Element => {
@@ -16,7 +15,6 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [magicLinkLoading, setMagicLinkLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [userEmail, setUserEmail] = useState("");
@@ -80,35 +78,13 @@ export const PropertyOtpSubsection = (): JSX.Element => {
         return;
       }
 
-      // Get pending user data
-      const pendingUser = localStorage.getItem('pendingUser');
-      if (pendingUser) {
-        const userData = JSON.parse(pendingUser);
-        
-        // Create Supabase user account
-        const tempPassword = "TempPass123!";
-        const { data, error } = await authHelpers.signUp(
-          userData.email,
-          tempPassword,
-          {
-            user_type: userData.userType,
-            phone: `${userData.countryCode}${userData.phone}`,
-            full_name: "",
-            email_verified: true
-          }
-        );
-
-        if (error) {
-          setError("Failed to create account. Please try again.");
-          return;
-        }
-
-        // Clear pending user data and navigate to success
-        localStorage.removeItem('pendingUser');
-        navigate('/component/overlap-wrapper');
-      } else {
-        setError("Registration data not found. Please start over.");
-      }
+      // OTP verified successfully - user account already exists
+      console.log("✅ OTP verified successfully!");
+      
+      // Clear pending user data and navigate to success
+      localStorage.removeItem('pendingUser');
+      navigate('/component/overlap-wrapper');
+      
     } catch (err) {
       console.error('OTP verification error:', err);
       setError("Failed to verify OTP. Please try again.");
@@ -184,51 +160,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     }
   };
 
-  const handleMagicLink = async () => {
-    setMagicLinkLoading(true);
-    setError("");
-    setSuccessMessage("");
-    
-    try {
-      const pendingUser = localStorage.getItem('pendingUser');
-      if (!pendingUser) {
-        setError("Registration data not found. Please start over.");
-        return;
-      }
 
-      const userData = JSON.parse(pendingUser);
-      console.log("🔗 Sending magic link to:", userData.email);
-      
-      // Send magic link with user metadata for profile creation
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: userData.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/component/overlap-wrapper`,
-          data: {
-            user_type: userData.userType,
-            phone: `${userData.countryCode}${userData.phone}`,
-            full_name: userData.fullName || '',
-            country_code: userData.countryCode
-          }
-        }
-      });
-      
-      if (error) {
-        console.error("Magic link error:", error);
-        setError(`Failed to send magic link: ${error.message}`);
-        return;
-      }
-      
-      console.log("✅ Magic link sent:", data);
-      setSuccessMessage("Magic link sent to your email! Check your inbox and click the link to verify.");
-      
-    } catch (err) {
-      console.error('Magic link error:', err);
-      setError(`Failed to send magic link: ${err.message}`);
-    } finally {
-      setMagicLinkLoading(false);
-    }
-  };
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -347,7 +279,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                     <span className="text-black">Didn't receive code? </span>
                   </p>
                   
-                  <div className="flex flex-col gap-3 items-center">
+                  <div className="flex flex-col gap-3 items-center w-full">
                     <Button
                       variant="outline"
                       onClick={handleResend}
@@ -360,25 +292,6 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                         "🔄 Resend OTP"
                       ) : (
                         `Resend in ${formatTime(timer)}`
-                      )}
-                    </Button>
-                    
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <div className="h-px bg-gray-300 flex-1 w-20"></div>
-                      <span className="text-sm">OR</span>
-                      <div className="h-px bg-gray-300 flex-1 w-20"></div>
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      onClick={handleMagicLink}
-                      disabled={magicLinkLoading}
-                      className="w-[280px] h-[45px] border-[#28a745] text-[#28a745] hover:bg-[#28a745] hover:text-white"
-                    >
-                      {magicLinkLoading ? (
-                        "Sending Magic Link..."
-                      ) : (
-                        "✨ Send Magic Link"
                       )}
                     </Button>
                   </div>
