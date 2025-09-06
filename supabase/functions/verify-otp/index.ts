@@ -65,12 +65,16 @@ Deno.serve(async (req: Request) => {
       if (otpError || !otpRecord) {
         console.error("❌ Invalid OTP or not found:", otpError);
         
-        // Increment attempts for failed verification
-        await supabase
+        // Increment attempts for failed verification - using separate query
+        const { error: incrementError } = await supabase
           .from('otp_verifications')
-          .update({ attempts: supabase.raw('attempts + 1') })
+          .update({ attempts: (otpRecord?.attempts || 0) + 1 })
           .eq('email', email)
           .eq('otp_code', otp_code);
+
+        if (incrementError) {
+          console.error("⚠️ Failed to increment attempts:", incrementError);
+        }
 
         return new Response(
           JSON.stringify({ error: 'Invalid or expired OTP' }),
@@ -83,14 +87,14 @@ Deno.serve(async (req: Request) => {
 
       console.log("✅ Valid OTP found:", otpRecord);
 
-      // Mark OTP as verified
+      // Mark OTP as verified - using separate query without supabase.raw
       console.log("✅ Marking OTP as verified...");
       const { error: updateError } = await supabase
         .from('otp_verifications')
         .update({ 
           is_verified: true, 
           verified_at: new Date().toISOString(),
-          attempts: supabase.raw('attempts + 1')
+          attempts: otpRecord.attempts + 1
         })
         .eq('id', otpRecord.id);
 
