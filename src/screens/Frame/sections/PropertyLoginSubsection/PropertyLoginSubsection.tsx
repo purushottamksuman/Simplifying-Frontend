@@ -29,6 +29,33 @@ export const PropertyLoginSubsection = (): JSX.Element => {
       const { data, error } = await authHelpers.signIn(formData.email, formData.password);
       
       if (error) {
+        // Check if email is not confirmed
+        if (error.message === "Email not confirmed" || error.message.includes("email_not_confirmed")) {
+          console.log("📧 Email not confirmed, sending magic link...");
+          
+          // Send magic link for email verification
+          const { data: magicData, error: magicError } = await authHelpers.signInWithMagicLink(
+            formData.email,
+            { email: formData.email }
+          );
+          
+          if (magicError) {
+            setError("Failed to send verification email. Please try again.");
+            return;
+          }
+          
+          // Store user data for OTP verification
+          localStorage.setItem('pendingUser', JSON.stringify({
+            email: formData.email,
+            userType: 'existing_user',
+            isLogin: true
+          }));
+          
+          console.log("✅ Magic link sent, redirecting to OTP verification...");
+          navigate('/component/otp');
+          return;
+        }
+        
         setError(error.message);
         return;
       }

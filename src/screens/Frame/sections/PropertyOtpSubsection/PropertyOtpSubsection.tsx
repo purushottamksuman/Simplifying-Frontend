@@ -27,6 +27,11 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     if (pendingUser) {
       const userData = JSON.parse(pendingUser);
       setUserEmail(userData.email);
+      
+      // Check if this is a login verification
+      if (userData.isLogin) {
+        console.log("🔐 Login verification mode - user needs to verify email");
+      }
     } else {
       // If no pending user, redirect to registration
       navigate('/component/comman');
@@ -81,9 +86,22 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       // OTP verified successfully - user account already exists
       console.log("✅ OTP verified successfully!");
       
-      // Clear pending user data and navigate to success
+      // Check if this is a login verification or registration
+      const pendingUser = localStorage.getItem('pendingUser');
+      const userData = pendingUser ? JSON.parse(pendingUser) : null;
+      
+      // Clear pending user data
       localStorage.removeItem('pendingUser');
-      navigate('/component/overlap-wrapper');
+      
+      if (userData?.isLogin) {
+        // For login verification, go directly to dashboard
+        console.log("🚀 Login verification complete, going to dashboard");
+        navigate('/component/dashboard');
+      } else {
+        // For registration, go to success message first
+        console.log("🎉 Registration complete, going to success page");
+        navigate('/component/overlap-wrapper');
+      }
       
     } catch (err) {
       console.error('OTP verification error:', err);
@@ -112,29 +130,45 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       
       console.log("🔄 Resending OTP to:", userData.email);
       
-      // Resend OTP
-      const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          email: userData.email,
-          phone: `${userData.countryCode}${userData.phone}`,
-          otp_type: 'registration'
-        })
-      });
+      // Resend OTP - check if it's login or registration
+      if (userData.isLogin) {
+        // For login verification, send magic link again
+        const { data, error } = await authHelpers.signInWithMagicLink(
+          userData.email,
+          { email: userData.email }
+        );
+        
+        if (error) {
+          setError("Failed to resend verification email");
+          return;
+        }
+        
+        setSuccessMessage("Verification email resent successfully!");
+      } else {
+        // For registration, send OTP
+        const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            email: userData.email,
+            phone: `${userData.countryCode}${userData.phone}`,
+            otp_type: 'registration'
+          })
+        });
 
-      const otpResult = await otpResponse.json();
-      console.log("📥 Resend OTP result:", otpResult);
-      
-      if (!otpResponse.ok || !otpResult.success) {
-        setError(otpResult.error || 'Failed to resend OTP');
-        return;
+        const otpResult = await otpResponse.json();
+        console.log("📥 Resend OTP result:", otpResult);
+        
+        if (!otpResponse.ok || !otpResult.success) {
+          setError(otpResult.error || 'Failed to resend OTP');
+          return;
+        }
+
+        setSuccessMessage("OTP resent successfully! Check your email.");
       }
-
-      setSuccessMessage("OTP resent successfully! Check your email.");
       
       // Reset timer
       setTimer(120);
