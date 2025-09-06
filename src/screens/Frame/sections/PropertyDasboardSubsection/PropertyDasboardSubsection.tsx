@@ -22,6 +22,9 @@ import {
 } from "../../../../components/ui/avatar";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
+import { authHelpers } from "../../../../lib/supabase";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 const navigationItems = [
@@ -39,6 +42,44 @@ const navigationItems = [
 ];
 
 export const PropertyDasboardSubsection = (): JSX.Element => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+  const [userName, setUserName] = useState("User");
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const checkAuth = async () => {
+      const { user, error } = await authHelpers.getCurrentUser();
+      
+      if (error || !user) {
+        // If no authenticated user, redirect to login
+        navigate('/component/login');
+        return;
+      }
+      
+      setUser(user);
+      setUserName(user.email?.split('@')[0] || user.user_metadata?.full_name || "User");
+    };
+
+    checkAuth();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    const { error } = await authHelpers.signOut();
+    if (!error) {
+      localStorage.removeItem('currentUser');
+      navigate('/component/login');
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="flex w-full h-full bg-[#3479ff] items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full h-full bg-[#3479ff] relative rounded-tl-[40px] rounded-bl-[40px] overflow-hidden">
       {/* Sidebar */}
@@ -95,7 +136,10 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
           </div>
 
           {/* Logout Button */}
-          <div className="flex items-center gap-[15px] cursor-pointer px-6 py-3 rounded-[15px] hover:bg-[#ffffff1a] transition-all duration-300">
+            <div 
+              className="flex items-center gap-[15px] cursor-pointer px-6 py-3 rounded-[15px] hover:bg-[#ffffff1a] transition-all duration-300"
+              onClick={handleLogout}
+            >
             <LogOutIcon className="w-6 h-6 text-white" />
             <span className="[font-family:'Poppins',Helvetica] font-medium text-white text-lg tracking-[0.40px] leading-[normal]">
               Log Out
@@ -146,7 +190,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                   <div className="h-[287px] bg-[#3479ff] rounded-[25px] border border-solid border-[#e0e6ed] relative overflow-hidden">
                     <div className="p-[21px_31px] relative z-10">
                       <h2 className="[font-family:'Poppins',Helvetica] font-bold text-white text-5xl tracking-[0] leading-[55px] whitespace-nowrap mb-[38px]">
-                        Good Morning Sid
+                          Good Morning {userName}
                       </h2>
                       <p className="[font-family:'Poppins',Helvetica] font-normal text-white text-xl tracking-[0] leading-[30px] max-w-[555px]">
                         Don't miss out! Your child's future starts with one smart step complete the payment today.

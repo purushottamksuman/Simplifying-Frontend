@@ -10,12 +10,69 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../../components/ui/select";
+import { authHelpers } from "../../../../lib/supabase";
+import { useState } from "react";
 
 export const PropertyCommanSubsection = (): JSX.Element => {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    userType: "",
+    email: "",
+    phone: "",
+    countryCode: "+91"
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSignUp = () => {
-    navigate('/component/otp');
+  const handleSignUp = async () => {
+    if (!formData.email || !formData.phone || !formData.userType) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Create a temporary password (in real app, you might want to generate this or ask user)
+      const tempPassword = "TempPass123!";
+      
+      const { data, error } = await authHelpers.signUp(
+        formData.email,
+        tempPassword,
+        {
+          user_type: formData.userType,
+          phone: `${formData.countryCode}${formData.phone}`,
+          full_name: "", // Will be filled in later steps
+        }
+      );
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      // Store user data in localStorage for OTP verification
+      localStorage.setItem('pendingUser', JSON.stringify({
+        email: formData.email,
+        phone: formData.phone,
+        userType: formData.userType,
+        userId: data.user?.id
+      }));
+
+      navigate('/component/otp');
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
@@ -97,9 +154,9 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="parent">Parent</SelectItem>
-                      <SelectItem value="teacher">Teacher</SelectItem>
+                      <SelectItem value="student" onClick={() => handleInputChange('userType', 'student')}>Student</SelectItem>
+                      <SelectItem value="parent" onClick={() => handleInputChange('userType', 'parent')}>Parent</SelectItem>
+                      <SelectItem value="teacher" onClick={() => handleInputChange('userType', 'teacher')}>Teacher</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -109,6 +166,9 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 <Input
                   className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
                   placeholder="Mail Address"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  type="email"
                 />
                 <div className="absolute top-[17px] right-[24px] [font-family:'Roboto',Helvetica] font-normal text-[#7f7f7f] text-sm tracking-[0.10px] leading-[normal]">
                   @gmail.com
@@ -118,21 +178,32 @@ export const PropertyCommanSubsection = (): JSX.Element => {
               <div className="absolute w-[443px] h-[54px] top-[461px] left-[90px] flex gap-1">
                 <Input
                   className="w-14 h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-[13px] text-center"
-                  defaultValue="+91"
+                  value={formData.countryCode}
+                  onChange={(e) => handleInputChange('countryCode', e.target.value)}
                 />
                 <Input
                   className="flex-1 h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-[15px]"
                   placeholder="Phone Number"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  type="tel"
                 />
               </div>
+
+              {error && (
+                <div className="absolute w-[445px] top-[530px] left-[89px] text-red-500 text-sm text-center">
+                  {error}
+                </div>
+              )}
 
               <div className="absolute w-[340px] h-[53px] top-[546px] left-[142px]">
                 <Button 
                   onClick={handleSignUp}
+                  disabled={loading}
                   className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc] h-auto"
                 >
                   <span className="[font-family:'Poppins',Helvetica] font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-[normal]">
-                    Sign Up
+                    {loading ? "Signing Up..." : "Sign Up"}
                   </span>
                 </Button>
               </div>

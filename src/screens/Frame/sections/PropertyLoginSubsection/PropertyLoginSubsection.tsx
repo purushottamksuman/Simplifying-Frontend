@@ -4,33 +4,57 @@ import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { Separator } from "../../../../components/ui/separator";
-
-const socialLoginOptions = [
-  {
-    name: "Google",
-    icon: "/google.png",
-    text: "Log in with Google",
-    className: "w-[390px], p-[20px]",
-  },
-  {
-    name: "Apple",
-    icon: "/apple.png",
-    text: "Log in with Apple",
-    className: "w-[100px]",
-  },
-  {
-    name: "LinkedIn",
-    icon: "/linkedin.png",
-    text: "Log in with LinkedIn",
-    className: "w-[190px]",
-  },
-];
+import { authHelpers } from "../../../../lib/supabase";
+import { useState } from "react";
 
 export const PropertyLoginSubsection = (): JSX.Element => {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = () => {
-    navigate('/component/dashboard');
+  const handleLogin = async () => {
+    if (!formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const { data, error } = await authHelpers.signIn(formData.email, formData.password);
+      
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      if (data.user) {
+        // Store user session info
+        localStorage.setItem('currentUser', JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          user_metadata: data.user.user_metadata
+        }));
+        
+        navigate('/component/dashboard');
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
@@ -103,6 +127,9 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                     <Input
                       className="h-[53px] bg-white rounded-3xl border border-[#e2e2ea] pl-3.5 pr-24 font-roboto font-normal text-sm tracking-[0.10px]"
                       placeholder="Mail Address"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      type="email"
                     />
                     <div className="absolute top-[17px] right-3.5 font-roboto font-normal text-[#7f7f7f] text-sm tracking-[0.10px] leading-normal">
                       @gmail.com
@@ -116,6 +143,8 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                         type="password"
                         className="h-[54px] bg-white rounded-3xl border border-[#e2e2ea] pl-3.5 pr-12 font-roboto font-normal text-sm tracking-[0.10px]"
                         placeholder="Password"
+                        value={formData.password}
+                        onChange={(e) => handleInputChange('password', e.target.value)}
                       />
                       <img
                         className="absolute w-[19px] h-[18px] top-[17px] right-[26px]"
@@ -129,13 +158,20 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                     </div>
                   </div>
 
+                  {error && (
+                    <div className="text-red-500 text-sm text-center">
+                      {error}
+                    </div>
+                  )}
+
                   {/* Login Button */}
                   <div className="flex justify-center mt-8">
                     <Button 
                       onClick={handleLogin}
+                      disabled={loading}
                       className="w-[340px] h-[53px] bg-[#007fff] hover:bg-[#0066cc] rounded-3xl font-poppins font-semibold text-[#fafafb] text-2xl"
                     >
-                      Log In
+                      {loading ? "Logging In..." : "Log In"}
                     </Button>
                   </div>
                 </div>

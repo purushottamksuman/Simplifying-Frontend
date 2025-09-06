@@ -2,11 +2,28 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
+import { useEffect, useState } from "react";
 
 export const OverlapWrapperSubsection = (): JSX.Element => {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState("User");
 
+  useEffect(() => {
+    // Get user data from localStorage or current session
+    const pendingUser = localStorage.getItem('pendingUser');
+    const currentUser = localStorage.getItem('currentUser');
+    
+    if (pendingUser) {
+      const userData = JSON.parse(pendingUser);
+      setUserName(userData.email?.split('@')[0] || "User");
+    } else if (currentUser) {
+      const userData = JSON.parse(currentUser);
+      setUserName(userData.email?.split('@')[0] || "User");
+    }
+  }, []);
   const handleContinue = () => {
+    // Clear any pending user data since registration is complete
+    localStorage.removeItem('pendingUser');
     navigate('/component/dashboard');
   };
 
@@ -81,10 +98,9 @@ export const OverlapWrapperSubsection = (): JSX.Element => {
                   <img className="relative w-60 h-[52px]" alt="Otp heading" src="/image (62).png" />
 
                   <div className="relative self-stretch [font-family:'Poppins',Helvetica] font-medium text-black text-xl text-center tracking-[0] leading-[normal]">
-                    🎉 Excellent! Congratulations on starting your journey
+                    🎉 Excellent! Congratulations {userName} on starting your journey
                     towards a successful career with Simplifying Skills.
-                    Let&#39;s personalize your dashboard for the best
-                    experience!&#34;
+                    Let's personalize your dashboard for the best experience!
                   </div>
                 </div>
 

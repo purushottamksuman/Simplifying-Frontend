@@ -7,14 +7,121 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "../../../../components/ui/input-otp";
+import { authHelpers } from "../../../../lib/supabase";
+import { useState, useEffect } from "react";
 
 export const PropertyOtpSubsection = (): JSX.Element => {
   const otpSlots = Array.from({ length: 6 }, (_, index) => ({ id: index }));
   const navigate = useNavigate();
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [timer, setTimer] = useState(120);
+  const [canResend, setCanResend] = useState(false);
 
-  const handleSubmit = () => {
-    navigate('/component/overlap-wrapper');
+  useEffect(() => {
+    // Get pending user data
+    const pendingUser = localStorage.getItem('pendingUser');
+    if (pendingUser) {
+      const userData = JSON.parse(pendingUser);
+      setUserEmail(userData.email);
+    } else {
+      // If no pending user, redirect to registration
+      navigate('/component/comman');
+    }
+
+    // Start timer
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          setCanResend(true);
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [navigate]);
+
+  const handleSubmit = async () => {
+    if (otp.length !== 6) {
+      setError("Please enter a valid 6-digit OTP");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // In a real app, you would verify the OTP with Supabase
+      // For now, we'll simulate OTP verification
+      // You can implement actual OTP verification using Supabase's phone auth or email confirmation
+      
+      // Simulate OTP verification (accept any 6-digit code for demo)
+      if (otp === "123456" || otp.length === 6) {
+        // Get current user and update their email_confirmed status
+        const { user } = await authHelpers.getCurrentUser();
+        
+        if (user) {
+          // Clear pending user data
+          localStorage.removeItem('pendingUser');
+          navigate('/component/overlap-wrapper');
+        } else {
+          setError("User session expired. Please register again.");
+        }
+      } else {
+        setError("Invalid OTP. Please try again.");
+      }
+    } catch (err) {
+      setError("Failed to verify OTP. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleResend = async () => {
+    if (!canResend) return;
+    
+    setLoading(true);
+    setError("");
+    
+    try {
+      // In a real app, you would resend the OTP here
+      // For demo purposes, we'll just reset the timer
+      setTimer(120);
+      setCanResend(false);
+      
+      // Restart timer
+      const interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+    } catch (err) {
+      setError("Failed to resend OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const maskedEmail = userEmail ? 
+    userEmail.replace(/(.{2})(.*)(@.*)/, '$1****$3') : 
+    '+91-81xxxxxx24';
 
   return (
     <div className="w-full min-h-screen bg-white relative">
@@ -84,12 +191,12 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                 {/* Subheading */}
                 <p className="font-poppins font-medium text-xl text-center tracking-[0] leading-normal max-w-[340px]">
                   <span className="text-black">Enter the OTP sent to&nbsp;</span>
-                  <span className="text-[#007fff]">+91-81xxxxxx24</span>
+                  <span className="text-[#007fff]">{maskedEmail}</span>
                 </p>
 
                 {/* OTP Inputs */}
                 <div className="flex items-center gap-3.5">
-                  <InputOTP maxLength={6} value="">
+                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                     <InputOTPGroup className="gap-3.5">
                       {otpSlots.map((slot) => (
                         <InputOTPSlot
@@ -104,14 +211,23 @@ export const PropertyOtpSubsection = (): JSX.Element => {
 
                 {/* Timer */}
                 <div className="font-poppins font-medium text-black text-xl text-center tracking-[0] leading-normal">
-                  00:120 Sec
+                  {formatTime(timer)} Sec
                 </div>
+
+                {error && (
+                  <div className="text-red-500 text-sm text-center">
+                    {error}
+                  </div>
+                )}
 
                 {/* Resend Link */}
                 <p className="font-poppins font-medium text-xl text-center tracking-[0] leading-normal">
                   <span className="text-black">Didn't receive code? </span>
-                  <span className="text-[#007fff] cursor-pointer">
-                    Re-send
+                  <span 
+                    className={`cursor-pointer ${canResend ? 'text-[#007fff]' : 'text-gray-400'}`}
+                    onClick={handleResend}
+                  >
+                    {canResend ? 'Re-send' : `Re-send in ${formatTime(timer)}`}
                   </span>
                 </p>
 
@@ -119,10 +235,11 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                 <div className="relative w-[340px] h-[53px]">
                   <Button 
                     onClick={handleSubmit}
+                    disabled={loading || otp.length !== 6}
                     className="relative w-[342px] h-[55px] -top-px -left-px bg-[#007fff] rounded-3xl hover:bg-[#007fff]/90"
                   >
                     <span className="font-poppins font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-normal">
-                      Submit
+                      {loading ? "Verifying..." : "Submit"}
                     </span>
                   </Button>
                 </div>
