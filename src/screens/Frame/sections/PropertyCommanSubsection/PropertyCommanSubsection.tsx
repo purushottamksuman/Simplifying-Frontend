@@ -36,21 +36,24 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     setError("");
 
     try {
-      // Create a temporary password (in real app, you might want to generate this or ask user)
-      const tempPassword = "TempPass123!";
-      
-      const { data, error } = await authHelpers.signUp(
-        formData.email,
-        tempPassword,
-        {
-          user_type: formData.userType,
+      // Generate OTP and send email
+      const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          email: formData.email,
           phone: `${formData.countryCode}${formData.phone}`,
-          full_name: "", // Will be filled in later steps
-        }
-      );
+          otp_type: 'registration'
+        })
+      });
 
-      if (error) {
-        setError(error.message);
+      const otpResult = await otpResponse.json();
+      
+      if (!otpResponse.ok || !otpResult.success) {
+        setError(otpResult.error || 'Failed to send OTP');
         return;
       }
 
@@ -59,12 +62,13 @@ export const PropertyCommanSubsection = (): JSX.Element => {
         email: formData.email,
         phone: formData.phone,
         userType: formData.userType,
-        userId: data.user?.id
+        countryCode: formData.countryCode
       }));
 
       navigate('/component/otp');
     } catch (err) {
-      setError("An unexpected error occurred");
+      console.error('Registration error:', err);
+      setError("Failed to send OTP. Please try again.");
     } finally {
       setLoading(false);
     }
