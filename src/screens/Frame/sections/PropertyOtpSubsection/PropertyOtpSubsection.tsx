@@ -73,7 +73,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
         body: JSON.stringify({
           email: userEmail,
           otp_code: otp
-        })
+         otp_type: 'email'
       });
 
       const verifyResult = await verifyResponse.json();

@@ -42,7 +42,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
             },
             body: JSON.stringify({
               email: formData.email.trim(),
-              otp_type: 'email_confirmation'
+              otp_type: 'email'
             })
           });
 
@@ -262,4 +262,3 @@ export const PropertyLoginSubsection = (): JSX.Element => {
     </div>
   );
 };
-
