@@ -7,7 +7,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "../../../../components/ui/input-otp";
-import { authHelpers } from "../../../../lib/supabase";
+import { authHelpers, supabase } from "../../../../lib/supabase";
 import { useState, useEffect } from "react";
 
 export const PropertyOtpSubsection = (): JSX.Element => {
@@ -199,16 +199,19 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       const userData = JSON.parse(pendingUser);
       console.log("🔗 Sending magic link to:", userData.email);
       
-      // Send magic link using authHelpers
-      const { data, error } = await authHelpers.signInWithMagicLink(
-        userData.email,
-        {
-          user_type: userData.userType,
-          phone: `${userData.countryCode}${userData.phone}`,
-          full_name: userData.fullName || '',
-          country_code: userData.countryCode
+      // Send magic link with user metadata for profile creation
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: userData.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/component/overlap-wrapper`,
+          data: {
+            user_type: userData.userType,
+            phone: `${userData.countryCode}${userData.phone}`,
+            full_name: userData.fullName || '',
+            country_code: userData.countryCode
+          }
         }
-      );
+      });
       
       if (error) {
         console.error("Magic link error:", error);
@@ -222,66 +225,6 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     } catch (err) {
       console.error('Magic link error:', err);
       setError(`Failed to send magic link: ${err.message}`);
-    } finally {
-      setMagicLinkLoading(false);
-    }
-  };
-
-  const handleAlternativeSignup = async () => {
-    setMagicLinkLoading(true);
-    setError("");
-    setSuccessMessage("");
-    
-    try {
-      const pendingUser = localStorage.getItem('pendingUser');
-      if (!pendingUser) {
-        setError("Registration data not found. Please start over.");
-        return;
-      }
-
-      const userData = JSON.parse(pendingUser);
-      console.log("🔗 Creating user account directly for:", userData.email);
-      
-      // Create user account directly with a temporary password
-      const tempPassword = `TempPass${Math.random().toString(36).slice(2)}!`;
-      const { data, error } = await authHelpers.signUp(
-        userData.email,
-        tempPassword,
-        {
-          user_type: userData.userType,
-          phone: `${userData.countryCode}${userData.phone}`,
-          full_name: userData.fullName || '',
-          country_code: userData.countryCode,
-          email_verified: true
-        }
-      );
-      
-      if (error) {
-        console.error("Account creation error:", error);
-        setError(`Failed to create account: ${error.message}`);
-        return;
-      }
-      
-      console.log("✅ Account created:", data);
-      
-      if (data.user) {
-        // Store user session info
-        localStorage.setItem('currentUser', JSON.stringify({
-          id: data.user.id,
-          email: data.user.email,
-          user_metadata: data.user.user_metadata
-        }));
-        
-        // Clear pending user data
-        localStorage.removeItem('pendingUser');
-        
-        // Navigate to success page
-        navigate('/component/overlap-wrapper');
-      }
-      
-    } catch (err) {
-      console.error('Account creation error:', err);
-      setError(`Failed to create account: ${err.message}`);
     } finally {
       setMagicLinkLoading(false);
     }
@@ -428,11 +371,15 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                     
                     <Button
                       variant="outline"
-                      onClick={handleAlternativeSignup}
+                      onClick={handleMagicLink}
                       disabled={magicLinkLoading}
                       className="w-[280px] h-[45px] border-[#28a745] text-[#28a745] hover:bg-[#28a745] hover:text-white"
                     >
-                      {magicLinkLoading ? "Creating Account..." : "✨ Skip OTP & Create Account"}
+                      {magicLinkLoading ? (
+                        "Sending Magic Link..."
+                      ) : (
+                        "✨ Send Magic Link"
+                      )}
                     </Button>
                   </div>
                 </div>
