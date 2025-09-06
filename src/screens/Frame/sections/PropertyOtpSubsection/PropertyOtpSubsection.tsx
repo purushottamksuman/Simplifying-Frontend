@@ -15,7 +15,10 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const navigate = useNavigate();
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [magicLinkLoading, setMagicLinkLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
@@ -54,6 +57,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
 
     setLoading(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       // Verify OTP with Supabase
@@ -116,8 +120,9 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const handleResend = async () => {
     if (!canResend) return;
     
-    setLoading(true);
+    setResendLoading(true);
     setError("");
+    setSuccessMessage("");
     
     try {
       // Get pending user data
@@ -128,6 +133,8 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       }
 
       const userData = JSON.parse(pendingUser);
+      
+      console.log("🔄 Resending OTP to:", userData.email);
       
       // Resend OTP
       const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
@@ -144,12 +151,15 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       });
 
       const otpResult = await otpResponse.json();
+      console.log("📥 Resend OTP result:", otpResult);
       
       if (!otpResponse.ok || !otpResult.success) {
         setError(otpResult.error || 'Failed to resend OTP');
         return;
       }
 
+      setSuccessMessage("OTP resent successfully! Check your email.");
+      
       // Reset timer
       setTimer(120);
       setCanResend(false);
@@ -170,10 +180,44 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       console.error('Resend OTP error:', err);
       setError("Failed to resend OTP");
     } finally {
-      setLoading(false);
+      setResendLoading(false);
     }
   };
 
+  const handleMagicLink = async () => {
+    setMagicLinkLoading(true);
+    setError("");
+    setSuccessMessage("");
+    
+    try {
+      const pendingUser = localStorage.getItem('pendingUser');
+      if (!pendingUser) {
+        setError("Registration data not found. Please start over.");
+        return;
+      }
+
+      const userData = JSON.parse(pendingUser);
+      console.log("🔗 Sending magic link to:", userData.email);
+      
+      // Send magic link using Supabase auth
+      const { data, error } = await authHelpers.signInWithMagicLink(userData.email);
+      
+      if (error) {
+        console.error("Magic link error:", error);
+        setError("Failed to send magic link. Please try again.");
+        return;
+      }
+      
+      console.log("✅ Magic link sent:", data);
+      setSuccessMessage("Magic link sent to your email! Check your inbox and click the link to verify.");
+      
+    } catch (err) {
+      console.error('Magic link error:', err);
+      setError("Failed to send magic link");
+    } finally {
+      setMagicLinkLoading(false);
+    }
+  };
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -275,22 +319,59 @@ export const PropertyOtpSubsection = (): JSX.Element => {
                   {formatTime(timer)} Sec
                 </div>
 
+                {successMessage && (
+                  <div className="text-green-500 text-sm text-center max-w-[340px]">
+                    {successMessage}
+                  </div>
+                )}
                 {error && (
                   <div className="text-red-500 text-sm text-center">
                     {error}
                   </div>
                 )}
 
-                {/* Resend Link */}
-                <p className="font-poppins font-medium text-xl text-center tracking-[0] leading-normal">
-                  <span className="text-black">Didn't receive code? </span>
-                  <span 
-                    className={`cursor-pointer ${canResend ? 'text-[#007fff]' : 'text-gray-400'}`}
-                    onClick={handleResend}
-                  >
-                    {canResend ? 'Re-send' : `Re-send in ${formatTime(timer)}`}
-                  </span>
-                </p>
+                {/* Resend Options */}
+                <div className="flex flex-col items-center gap-4">
+                  <p className="font-poppins font-medium text-lg text-center tracking-[0] leading-normal">
+                    <span className="text-black">Didn't receive code? </span>
+                  </p>
+                  
+                  <div className="flex flex-col gap-3 items-center">
+                    <Button
+                      variant="outline"
+                      onClick={handleResend}
+                      disabled={!canResend || resendLoading}
+                      className="w-[280px] h-[45px] border-[#007fff] text-[#007fff] hover:bg-[#007fff] hover:text-white"
+                    >
+                      {resendLoading ? (
+                        "Resending..."
+                      ) : canResend ? (
+                        "🔄 Resend OTP"
+                      ) : (
+                        `Resend in ${formatTime(timer)}`
+                      )}
+                    </Button>
+                    
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <div className="h-px bg-gray-300 flex-1 w-20"></div>
+                      <span className="text-sm">OR</span>
+                      <div className="h-px bg-gray-300 flex-1 w-20"></div>
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={handleMagicLink}
+                      disabled={magicLinkLoading}
+                      className="w-[280px] h-[45px] border-[#28a745] text-[#28a745] hover:bg-[#28a745] hover:text-white"
+                    >
+                      {magicLinkLoading ? (
+                        "Sending Magic Link..."
+                      ) : (
+                        "✨ Send Magic Link"
+                      )}
+                    </Button>
+                  </div>
+                </div>
 
                 {/* Submit Button */}
                 <div className="relative w-[340px] h-[53px]">

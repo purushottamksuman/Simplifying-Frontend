@@ -26,6 +26,18 @@ async function sendOTPEmail(email: string, otpCode: string): Promise<boolean> {
     console.log(`📧 Email would be sent to: ${email}`);
     console.log(`🔢 OTP Code: ${otpCode}`);
     
+    // Show OTP in a more visible way for testing
+    console.log(`
+    ╔══════════════════════════════════════╗
+    ║           🔐 OTP CODE                ║
+    ║                                      ║
+    ║  Email: ${email.padEnd(20)}    ║
+    ║  Code:  ${otpCode}                      ║
+    ║                                      ║
+    ║  ⏰ Valid for 10 minutes             ║
+    ╚══════════════════════════════════════╝
+    `);
+    
     // Simulate email sending delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
