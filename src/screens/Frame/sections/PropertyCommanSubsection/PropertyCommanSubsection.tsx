@@ -27,21 +27,44 @@ export const PropertyCommanSubsection = (): JSX.Element => {
   const handleSignUp = async () => {
     console.log("Form data:", formData); // Debug log
     
-    if (!formData.email || !formData.phone || !formData.userType) {
+    // Validate required fields
+    if (!formData.email.trim()) {
+      setError("Please enter your email address");
+      return;
+    }
+    
+    if (!formData.phone.trim()) {
+      setError("Please enter your phone number");
+      return;
+    }
+    
+    if (!formData.userType.trim()) {
       setError("Please fill in all required fields");
       return;
     }
+
+    console.log("Sending OTP request with data:", {
+      email: formData.email,
+      phone: `${formData.countryCode}${formData.phone}`,
+      otp_type: 'registration'
+    });
 
     setLoading(true);
     setError("");
 
     try {
       // Generate OTP and send email
-      const otpResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      console.log("Supabase URL:", supabaseUrl);
+      console.log("Making request to:", `${supabaseUrl}/functions/v1/send-otp`);
+      
+      const otpResponse = await fetch(`${supabaseUrl}/functions/v1/send-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${supabaseKey}`
         },
         body: JSON.stringify({
           email: formData.email,
@@ -50,10 +73,14 @@ export const PropertyCommanSubsection = (): JSX.Element => {
         })
       });
 
+      console.log("OTP Response status:", otpResponse.status);
+      console.log("OTP Response headers:", otpResponse.headers);
+      
       const otpResult = await otpResponse.json();
+      console.log("OTP Result:", otpResult);
       
       if (!otpResponse.ok || !otpResult.success) {
-        setError(otpResult.error || 'Failed to send OTP');
+        setError(otpResult.error || `Failed to send OTP. Status: ${otpResponse.status}`);
         return;
       }
 
@@ -65,10 +92,11 @@ export const PropertyCommanSubsection = (): JSX.Element => {
         countryCode: formData.countryCode
       }));
 
+      console.log("Navigating to OTP page...");
       navigate('/component/otp');
     } catch (err) {
       console.error('Registration error:', err);
-      setError("Failed to send OTP. Please try again.");
+      setError(`Network error: ${err.message}. Please check your connection and try again.`);
     } finally {
       setLoading(false);
     }
@@ -201,6 +229,11 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                   {error}
                 </div>
               )}
+              
+              {/* Debug info - remove in production */}
+              <div className="text-xs text-gray-500 text-center">
+                Debug: {JSON.stringify(formData, null, 2)}
+              </div>
 
               <div className="absolute w-[340px] h-[53px] top-[546px] left-[142px]">
                 <Button 
@@ -273,6 +306,3 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     </div>
   );
 };
-
-
-
