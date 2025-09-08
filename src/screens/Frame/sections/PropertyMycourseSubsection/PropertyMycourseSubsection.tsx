@@ -1,4 +1,4 @@
-import { HeartIcon, PlayIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { HeartIcon, PlayIcon, PlusIcon, SearchIcon, LogOutIcon } from "lucide-react";
 import React from "react";
 import {
   Avatar,
@@ -216,13 +216,28 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
 
         {/* Icon + Label */}
         <div className="flex items-center gap-[15px] px-6 py-4 relative z-10 w-full">
-          <item.icon
-            className={`w-[24px] h-[24px] transition-colors duration-300 ${
-              item.active
-                ? "text-[#3479ff]"
-                : "text-white group-hover:text-[#dbe9ff]"
-            }`}
-          />
+  {typeof item.icon === "string" ? (
+    <span
+      className={`w-[24px] h-[24px] text-lg transition-colors duration-300 ${
+        item.active
+          ? "text-[#3479ff]"
+          : "text-white group-hover:text-[#dbe9ff]"
+      }`}
+    >
+      {item.icon}
+    </span>
+  ) : (
+    <item.icon
+      className={`w-[24px] h-[24px] transition-colors duration-300 ${
+        item.active
+          ? "text-[#3479ff]"
+          : "text-white group-hover:text-[#dbe9ff]"
+      }`}
+    />
+  )}
+
+
+
           <span
             className={`font-semibold text-base [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] transition-colors duration-300 ${
               item.active
@@ -305,27 +320,33 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
                       <img
                         className="absolute w-20 h-20 top-[45px] left-[71px]"
                         alt="Star"
-                        src="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop"
+                        src="/Star1.png"
+                        
+
                       />
                       <img
                         className="absolute w-20 h-20 top-[93px] left-[141px]"
                         alt="Star"
-                        src="https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop"
+                        src="/Star 3.png"
                       />
                       <img
                         className="absolute w-20 h-[59px] top-[122px] left-0"
                         alt="Star"
-                        src="https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=80&h=59&fit=crop"
+                        src="/Star 4.png"
+
                       />
                       <img
                         className="absolute w-[61px] h-[59px] top-0 left-[141px]"
                         alt="Star"
-                        src="https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=61&h=59&fit=crop"
+                        src="/Star 2.png"
+
                       />
                       <img
                         className="absolute w-[61px] h-[60px] top-5 left-2.5"
                         alt="Star"
-                        src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=61&h=60&fit=crop"
+                        src="/Star 3.png"
+
+                        
                       />
                     </div>
                   </div>
@@ -338,13 +359,21 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
             <div className="flex items-center justify-center mb-8">
               <div className="flex items-center gap-3 max-w-[508px] w-full">
                 <div className="flex-1 relative">
-                  <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9e9e9e]" />
-                  <Input
-                    placeholder="SearchIcon your course here...."
-                    className="pl-10 py-5 border-[#cccccccc] [font-family:'Inter',Helvetica] font-medium text-[#9e9e9e] text-xs"
-                  />
-                </div>
-              </div>
+  {/* Replace SearchIcon with Image */}
+  <img
+    src="/search-normal.png"
+    alt="Search"
+    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4"
+  />
+
+  {/* Input Field */}
+  <Input
+    placeholder="Your course here..."
+    className="pl-10 py-5 border-[#cccccccc] [font-family:'Inter',Helvetica] font-medium text-[#9e9e9e] text-xs"
+  />
+</div>    
+
+              </div>        
             </div>
 
             <div className="flex items-center justify-between mb-8">
@@ -381,64 +410,68 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-6">
-              {courseData.map((course) => (
-                <Card
-                  key={course.id}
-                  className="shadow-cards-long-default rounded-[20px] overflow-hidden"
-                >
-                  <CardContent className="p-3 relative">
-                    <div className="relative mb-3">
-                      <img
-                        className="w-full h-[113px] object-cover rounded-lg"
-                        alt="Course thumbnail"
-                        src={course.image}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 w-5 h-5 p-0 bg-[#cccccc80] hover:bg-[#cccccc] rounded-full"
-                      >
-                        <HeartIcon className="w-3 h-3" />
-                      </Button>
-                    </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+  {courseData.map((course) => (
+    <Card
+  key={course.id}
+  className="shadow-cards-long-default rounded-[20px] overflow-hidden h-[340px] flex flex-col justify-between"
+>
+  <CardContent className="p-3 relative flex flex-col justify-between h-full">
+    <div>
+      <div className="relative mb-3">
+        <img
+          className="w-full h-[150px] object-cover rounded-lg"
+          alt="Course thumbnail"
+          src={course.image}
+          loading="lazy"
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2 w-5 h-5 p-0 bg-[#cccccc80] hover:bg-[#cccccc] rounded-full"
+        >
+          <HeartIcon className="w-3 h-3" />
+        </Button>
+      </div>
 
-                    <Badge className="bg-[#75a4ff87] text-[#083a50] text-[8px] font-semibold mb-3 h-[15px] px-3">
-                      {course.category}
-                    </Badge>
+      <Badge className="bg-[#75a4ff87] text-[#083a50] text-[8px] font-semibold mb-3 h-[15px] px-3">
+        {course.category}
+      </Badge>
 
-                    <h3 className="[font-family:'Inter',Helvetica] font-medium text-[#202020] text-sm tracking-[0] leading-[normal] mb-3">
-                      {course.title}
-                    </h3>
+      <h3 className="[font-family:'Inter',Helvetica] font-medium text-[#202020] text-sm tracking-[0] leading-[normal] mb-3 line-clamp-2">
+        {course.title}
+      </h3>
+    </div>
 
-                    <div className="mb-2">
-                      <Progress
-                        value={course.progress}
-                        className="h-1.5 mb-1"
-                      />
-                      <p className="[font-family:'Poppins',Helvetica] font-normal text-[#7f7f7f] text-[6px] text-right tracking-[0] leading-[9px]">
-                        {course.videosCompleted}
-                      </p>
-                    </div>
+    <div>
+      <div className="mb-2">
+        <Progress value={course.progress} className="h-1.5 mb-1" />
+        <p className="[font-family:'Poppins',Helvetica] font-normal text-[#7f7f7f] text-[6px] text-right tracking-[0] leading-[9px]">
+          {course.videosCompleted}
+        </p>
+      </div>
 
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-6 h-6">
-                        <AvatarImage src={course.avatar} />
-                        <AvatarFallback>PK</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="[font-family:'Inter',Helvetica] font-medium text-[#202020] text-[10px] tracking-[0] leading-[normal]">
-                          {course.instructor}
-                        </p>
-                        <p className="[font-family:'Inter',Helvetica] font-normal text-[#202020] text-[8px] tracking-[0] leading-[normal]">
-                          {course.lastAccessed}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+      <div className="flex items-center gap-2">
+        <Avatar className="w-6 h-6">
+          <AvatarImage src={course.avatar} />
+          <AvatarFallback>PK</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <p className="[font-family:'Inter',Helvetica] font-medium text-[#202020] text-[10px] tracking-[0] leading-[normal]">
+            {course.instructor}
+          </p>
+          <p className="[font-family:'Inter',Helvetica] font-normal text-[#202020] text-[8px] tracking-[0] leading-[normal]">
+            {course.lastAccessed}
+          </p>
+        </div>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
+  ))}
+</div>
+
           </div>
         </div>
       </main>
@@ -469,7 +502,7 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
               <img
                 className="w-4 h-4"
                 alt="Icon"
-                src="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=16&h=16&fit=crop"
+                src="/notification.png"
               />
             </Button>
             <Button
@@ -480,7 +513,7 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
               <img
                 className="w-4 h-4"
                 alt="Icon"
-                src="https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=16&h=16&fit=crop"
+                src="/direct-normal.png"
               />
             </Button>
             <Button
@@ -491,7 +524,7 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
               <img
                 className="w-4 h-4"
                 alt="Icon"
-                src="https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=16&h=16&fit=crop"
+                src="/direct-normal.png"
               />
             </Button>
           </div>
@@ -501,7 +534,7 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
           <img
             className="w-[204px] h-[116px] mx-auto"
             alt="Graph"
-            src="https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=204&h=116&fit=crop"
+            src="/graph.png"
           />
         </div>
 

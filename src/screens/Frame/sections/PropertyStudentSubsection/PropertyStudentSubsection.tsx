@@ -128,7 +128,7 @@ export const PropertyStudentSubsection = (): JSX.Element => {
               <header className="relative">
                 <div className="flex items-center justify-between px-8 py-4">
                   <div className="flex items-center gap-[57px]">
-                    <img className="w-[25px] h-[25px]" alt="Component" />
+                    <img className="w-[25px] h-[25px]" alt="Component" src="/"/>
                     <h1 className="[font-family:'Nunito',Helvetica] font-bold text-primaryone text-2xl tracking-[0] leading-[normal]">
                       Profile
                     </h1>
@@ -141,34 +141,34 @@ export const PropertyStudentSubsection = (): JSX.Element => {
                     <Avatar className="w-14 h-14">
                       <AvatarFallback className="border-4 border-[#3479ff99]" />
                     </Avatar>
-                    <img className="w-6 h-6" alt="Iconly light outline" />
+                    <img className="w-6 h-6" alt="Iconly light outline"/>
                   </div>
                 </div>
 
-                <img className="w-full h-[153px]" alt="Header setting" />
+                <img className="w-full h-[153px]" alt="Header setting" src="/header.png" />
 
                 <div className="flex items-end gap-10 px-[72px] -mt-14">
-                  <div className="relative">
-                    <Avatar className="w-[180px] h-[180px] border-8 border-[#3479ff99] shadow-[0px_4px_4px_#00000040]">
-                      <AvatarFallback />
-                    </Avatar>
-                    <Button className="absolute bottom-10 right-[13px] w-10 h-10 bg-[#3479ff] rounded-[20px] p-0 h-auto">
-                      <img className="w-5 h-[18px]" alt="Camera" />
-                    </Button>
-                  </div>
+  <div className="relative">
+    {/* Profile Avatar */}
+    <Avatar className="w-[180px] h-[180px] bg-gray-400 border-8 border-[#3479ff99] shadow-[0px_4px_4px_#00000040] overflow-hidden">
+      <img src="/image (93).png" alt="Profile" className="object-cover w-full h-full" />
+      <AvatarFallback />
+    </Avatar>
 
-                  <div className="flex items-end justify-between flex-1 pb-10">
-                    <div className="flex flex-col gap-2">
-                      <h2 className="[font-family:'Nunito',Helvetica] font-bold text-[#13377c] text-2xl tracking-[0] leading-[normal]">
-                        Mobina Mirbagheri
-                      </h2>
-                      <p className="[font-family:'Nunito',Helvetica] font-bold text-[#13377c] text-xl tracking-[0] leading-[19.6px] whitespace-nowrap">
-                        Your account is ready, you can now apply for advice.
-                      </p>
-                    </div>
-                    <img className="w-12 h-12" alt="Frame" />
-                  </div>
-                </div>
+    {/* Camera Button */}
+    <Button
+      className="absolute bottom-1 right-1 w-[42px] h-[42px] bg-[#3479ff] rounded-full flex items-center justify-center shadow-lg hover:bg-[#2563eb] transition"
+    >
+      {/* Camera Icon */}
+      <img
+        src="/Camera.png" // <-- your camera icon path
+        alt="Camera"
+        className="w-[30px] h-[30px] object-contain"
+      />
+    </Button>
+  </div>
+</div>
+
               </header>
 
               <div className="flex gap-16 px-16 py-8">

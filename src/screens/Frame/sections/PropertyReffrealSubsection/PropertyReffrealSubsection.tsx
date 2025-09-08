@@ -36,14 +36,17 @@ const howItWorksSteps = [
     title: "Invite A Friend",
     description:
       "Send your referral link to someone who'd love to try the assessment.",
+      icon:"/friend.png"
   },
   {
     title: "Friend Enrolls",
     description: "Your friend uses your link to enroll and gets up to 20% off.",
+    icon: "/handshake.png"
   },
   {
     title: "Earn Rewards",
     description: "Once they join, you both receive awesome rewards!",
+    icon:"/moneyhand.png"
   },
 ];
 
@@ -87,7 +90,7 @@ export const PropertyReffrealSubsection = (): JSX.Element => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-14">
-              <img className="w-[25px] h-[25px]" alt="Component" />
+              <img className="w-[25px] h-[25px]" alt="Component"  />
               <h1 className="[font-family:'Nunito',Helvetica] font-bold text-[#13377c] text-2xl tracking-[0] leading-[normal]">
                 Referrals Program
               </h1>
@@ -107,7 +110,7 @@ export const PropertyReffrealSubsection = (): JSX.Element => {
             {/* Earnings Card */}
             <Card className="shadow-[0px_0px_29px_#3479ff40] border-0">
               <CardContent className="flex items-center gap-6 p-6">
-                <img className="w-[86px] h-[86px] object-cover" alt="Image" />
+                <img className="w-[86px] h-[86px] rounded-2xl object-cover" alt="Image" src="/image (124).png" />
                 <div>
                   <div className="[font-family:'Roboto',Helvetica] font-medium text-[#13377c] text-xl tracking-[0] leading-[normal] mb-2">
                     Your total earnings
@@ -158,6 +161,7 @@ export const PropertyReffrealSubsection = (): JSX.Element => {
                   <img
                     className="w-[463px] h-[309px] object-cover"
                     alt="Image"
+                    src="/image (118).png"
                   />
                 </div>
               </CardContent>
@@ -172,57 +176,35 @@ export const PropertyReffrealSubsection = (): JSX.Element => {
 
                 <div className="w-full h-[5px] bg-[#d9d9d9] rounded-[25px] mb-8" />
 
-                <div className="grid grid-cols-3 gap-8">
-                  {howItWorksSteps.map((step, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col items-center text-center"
-                    >
-                      <div className="w-[101px] h-20 mb-4 overflow-hidden rounded-[25px] flex items-center justify-center">
-                        <div className="w-[101px] h-20 overflow-hidden">
-                          <div className="relative w-[509px] h-[308px] -top-[129px] -left-12 overflow-hidden">
-                            <img
-                              className="absolute w-9 h-[17px] top-48 left-12"
-                              alt="Vector"
-                            />
-                            <img
-                              className="absolute w-[17px] h-[17px] top-[173px] left-[58px]"
-                              alt="Vector"
-                            />
-                            <img
-                              className="absolute w-9 h-[17px] top-48 left-28"
-                              alt="Vector"
-                            />
-                            <img
-                              className="absolute w-[17px] h-[17px] top-[173px] left-[122px]"
-                              alt="Vector"
-                            />
-                            <img
-                              className="absolute w-9 h-[17px] top-[148px] left-20"
-                              alt="Vector"
-                            />
-                            <img
-                              className="absolute w-[17px] h-[17px] top-[129px] left-[90px]"
-                              alt="Vector"
-                            />
-                            <img
-                              className="absolute w-5 h-[23px] top-[171px] left-[88px]"
-                              alt="Vector"
-                            />
-                          </div>
-                        </div>
-                      </div>
+<div className="grid grid-cols-3 gap-8">
+  {howItWorksSteps.map((step, index) => (
+    <div
+      key={index}
+      className="flex flex-col items-center text-center"
+    >
+      {/* Icon Wrapper */}
+      <div className="w-[101px] h-20 mb-4 flex items-center justify-center overflow-hidden rounded-[25px] bg-transparent">
+        <img
+          src={step.icon} // <-- dynamically loads each step's icon
+          alt={step.title}
+          className="max-w-full max-h-full object-contain"
+        />
+      </div>
 
-                      <h3 className="[font-family:'Roboto',Helvetica] font-medium text-[#13377c] text-lg text-center tracking-[0.50px] leading-[21px] mb-2">
-                        {step.title}
-                      </h3>
+      {/* Title */}
+      <h3 className="[font-family:'Roboto',Helvetica] font-medium text-[#13377c] text-lg text-center tracking-[0.50px] leading-[21px] mb-2">
+        {step.title}
+      </h3>
 
-                      <p className="font-www-simplilearn-com-semantic-label font-[number:var(--www-simplilearn-com-semantic-label-font-weight)] text-[#272c37] text-[length:var(--www-simplilearn-com-semantic-label-font-size)] text-center tracking-[var(--www-simplilearn-com-semantic-label-letter-spacing)] leading-[var(--www-simplilearn-com-semantic-label-line-height)] [font-style:var(--www-simplilearn-com-semantic-label-font-style)]">
-                        {step.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+      {/* Description */}
+      <p className="font-www-simplilearn-com-semantic-label font-[number:var(--www-simplilearn-com-semantic-label-font-weight)] text-[#272c37] text-[length:var(--www-simplilearn-com-semantic-label-font-size)] text-center tracking-[var(--www-simplilearn-com-semantic-label-letter-spacing)] leading-[var(--www-simplilearn-com-semantic-label-line-height)] [font-style:var(--www-simplilearn-com-semantic-label-font-style)]">
+        {step.description}
+      </p>
+    </div>
+  ))}
+</div>
+
+
               </CardContent>
             </Card>
           </div>

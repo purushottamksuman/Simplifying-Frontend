@@ -170,7 +170,7 @@ export const PropertyRewardSubsection = (): JSX.Element => {
                 </TabsList>
 
                 <TabsContent value="course-completion" className="mt-[37px]">
-                  <img className="w-[1051px] flex-[0_0_auto]" alt="Frame" />
+                  <img className="w-[1051px] flex-[0_0_auto]" alt="Frame" src="/frame1.png" />
                 </TabsContent>
 
                 <TabsContent value="achievements" className="mt-[37px]">
@@ -188,7 +188,7 @@ export const PropertyRewardSubsection = (): JSX.Element => {
                 <CardContent className="p-0 flex flex-col gap-[20.4px]">
                   <div className="h-[87.43px]">
                     <div className="flex items-center justify-center mb-[7px]">
-                      <img className="w-7 h-[21px] mr-2" alt="Svg margin" />
+                      <img className="w-7 h-[21px] mr-2" alt="Svg margin" src="/trophy.png" />
                       <div className="font-www-figma-com-semantic-heading-3 font-[number:var(--www-figma-com-semantic-heading-3-font-weight)] text-wwwfigmacommirage text-[length:var(--www-figma-com-semantic-heading-3-font-size)] text-center tracking-[var(--www-figma-com-semantic-heading-3-letter-spacing)] leading-[var(--www-figma-com-semantic-heading-3-line-height)] [font-style:var(--www-figma-com-semantic-heading-3-font-style)]">
                         Your Points
                       </div>
@@ -224,6 +224,7 @@ export const PropertyRewardSubsection = (): JSX.Element => {
                       <img
                         className="w-[20.99px] h-[13.99px] mr-2"
                         alt="Svg margin"
+                        src="/gift1.png"
                       />
                       <div className="[font-family:'Segoe_UI-Semibold',Helvetica] font-normal text-wwwfigmacommirage text-sm tracking-[0] leading-[21px]">
                         Reward Tiers
@@ -265,7 +266,7 @@ export const PropertyRewardSubsection = (): JSX.Element => {
               <Card className="h-[170.38px] p-[22.2px] rounded-[12.75px] border border-solid border-[#b8f7cf] bg-[linear-gradient(90deg,rgba(240,253,244,1)_0%,rgba(243,243,245,1)_100%)]">
                 <CardContent className="p-0 flex flex-col items-center gap-[13.1px]">
                   <div className="h-[24.49px] flex items-center justify-center">
-                    <img className="w-7 h-[21px] mr-2" alt="Svg margin" />
+                    <img className="w-7 h-[21px] mr-2" alt="Svg margin" src="/gift.png" />
                     <div className="font-www-figma-com-semantic-heading-3 font-[number:var(--www-figma-com-semantic-heading-3-font-weight)] text-wwwfigmacommirage text-[length:var(--www-figma-com-semantic-heading-3-font-size)] text-center tracking-[var(--www-figma-com-semantic-heading-3-letter-spacing)] leading-[var(--www-figma-com-semantic-heading-3-line-height)] [font-style:var(--www-figma-com-semantic-heading-3-font-style)]">
                       Redeem Your Points
                     </div>
@@ -280,7 +281,7 @@ export const PropertyRewardSubsection = (): JSX.Element => {
                   </div>
 
                   <Button className="h-[32.39px] gap-[6.99px] p-[10.5px] rounded-[8.75px] shadow-[0px_4px_6px_-4px_#0000001a,0px_10px_15px_-3px_#0000001a] bg-[linear-gradient(90deg,rgba(0,201,80,1)_0%,rgba(0,153,102,1)_100%)] hover:bg-[linear-gradient(90deg,rgba(0,201,80,1)_0%,rgba(0,153,102,1)_100%)] h-auto">
-                    <img className="w-[20.99px] h-[13.99px]" alt="Svg margin" />
+                    <img className="w-[20.99px] h-[13.99px]" alt="Svg margin" src="/gift.png" />
                     <span className="font-www-figma-com-semantic-button font-[number:var(--www-figma-com-semantic-button-font-weight)] text-wwwfigmacomwhite text-[length:var(--www-figma-com-semantic-button-font-size)] text-center tracking-[var(--www-figma-com-semantic-button-letter-spacing)] leading-[var(--www-figma-com-semantic-button-line-height)] [font-style:var(--www-figma-com-semantic-button-font-style)]">
                       Redeem Points
                     </span>
