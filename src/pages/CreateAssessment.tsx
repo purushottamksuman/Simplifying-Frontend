@@ -196,20 +196,22 @@ export const CreateAssessment: React.FC = () => {
 
   const addSection = async () => {
     try {
+      const sectionData = {
+        assessment_name: sectionForm.assessment_name,
+        description: sectionForm.description,
+        instructions: sectionForm.instructions,
+        total_time: sectionForm.total_time,
+        min_student_age: sectionForm.min_student_age,
+        max_student_age: sectionForm.max_student_age,
+        maximum_marks: sectionForm.maximum_marks,
+        parent_assessment_id: selectedParentId,
+        display_order: sectionForm.display_order,
+        is_active: sectionForm.is_active
+      };
+
       const { data, error } = await supabase
         .from('assessments')
-        .insert([{
-          assessment_name: sectionForm.assessment_name,
-          description: sectionForm.description,
-          instructions: sectionForm.instructions,
-          total_time: sectionForm.total_time,
-          min_student_age: sectionForm.min_student_age,
-          max_student_age: sectionForm.max_student_age,
-          maximum_marks: sectionForm.maximum_marks,
-          display_order: sectionForm.display_order,
-          is_active: sectionForm.is_active,
-          parent_assessment_id: selectedParentId
-        }])
+        .insert([sectionData])
         .select()
         .single();
 
