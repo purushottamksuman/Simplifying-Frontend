@@ -55,8 +55,11 @@ Deno.serve(async (req: Request) => {
     const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID')
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
 
+    console.log('Razorpay Key ID exists:', !!razorpayKeyId)
+    console.log('Razorpay Key Secret exists:', !!razorpayKeySecret)
+
     if (!razorpayKeyId || !razorpayKeySecret) {
-      throw new Error('Razorpay credentials not configured')
+      throw new Error(`Razorpay credentials not configured. Key ID: ${!!razorpayKeyId}, Key Secret: ${!!razorpayKeySecret}`)
     }
 
     // Generate unique receipt
