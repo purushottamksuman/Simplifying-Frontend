@@ -425,7 +425,7 @@ export const ExamEnvironment: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Shield className="w-6 h-6 text-blue-600" />
+             
               <div>
                 <h1 className="text-xl font-bold text-gray-800">{exam?.exam_name}</h1>
                 <p className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {questions.length}</p>
