@@ -330,7 +330,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                               <Button 
                                 onClick={() => {
                                   if (isPurchased) {
-                                    handleAttemptExam(exam);
+                                    navigate(`/exam-details/${exam.exam_id}`);
                                   } else if (isFree) {
                                     handleFreeExamAccess(exam);
                                   } else {
@@ -349,7 +349,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                                 {paymentLoading 
                                   ? "Processing..." 
                                   : isPurchased 
-                                    ? "Attempt Exam" 
+                                    ? "View Exam" 
                                     : isFree 
                                       ? "Access Free" 
                                       : `Pay ₹${totalPrice}`
