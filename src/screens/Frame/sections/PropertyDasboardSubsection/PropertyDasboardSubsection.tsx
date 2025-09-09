@@ -1,7 +1,6 @@
 import {
   AwardIcon,
   BellIcon,
-  Clock,
   FileTextIcon,
   FolderIcon,
   GiftIcon,
@@ -14,7 +13,6 @@ import {
   SearchIcon,
   SettingsIcon,
   SunIcon,
-  Target,
   TrophyIcon,
   UserIcon,
   UserPlusIcon,
