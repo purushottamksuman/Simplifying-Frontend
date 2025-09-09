@@ -120,7 +120,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
     }
   };
 
-  const fetchUserPurchases = async () => {
+  const fetchUserPurchases = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('exam_purchases')
