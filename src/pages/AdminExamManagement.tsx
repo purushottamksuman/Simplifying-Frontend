@@ -70,6 +70,20 @@ export const AdminExamManagement: React.FC = () => {
     fetchData();
   }, []);
 
+  // Fetch existing exam-assessment relationships when editing
+  const fetchExamAssessments = async (examId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('exam_assessments')
+        .select('assessment_id')
+        .eq('exam_id', examId);
+
+      if (error) throw error;
+      setSelectedAssessments(data?.map(ea => ea.assessment_id) || []);
+    } catch (error) {
+      console.error('Error fetching exam assessments:', error);
+    }
+  };
   const fetchData = async () => {
     try {
       const [examsResult, assessmentsResult] = await Promise.all([
@@ -172,6 +186,8 @@ export const AdminExamManagement: React.FC = () => {
       discounted_price: exam.discounted_price,
       tax: exam.tax
     });
+    // Fetch existing assessments for this exam
+    fetchExamAssessments(exam.exam_id);
     setShowExamDialog(true);
   };
 
@@ -200,6 +216,34 @@ export const AdminExamManagement: React.FC = () => {
 
       if (error) throw error;
 
+      // Update exam-assessment relationships
+      // First, delete existing relationships
+      const { error: deleteError } = await supabase
+        .from('exam_assessments')
+        .delete()
+        .eq('exam_id', editingExam.exam_id);
+
+      if (deleteError) {
+        console.error('Error deleting existing exam-assessment relationships:', deleteError);
+      }
+
+      // Then, insert new relationships if any assessments are selected
+      if (selectedAssessments.length > 0) {
+        const examAssessments = selectedAssessments.map((assessmentId, index) => ({
+          exam_id: editingExam.exam_id,
+          assessment_id: assessmentId,
+          display_order: index + 1
+        }));
+
+        const { error: insertError } = await supabase
+          .from('exam_assessments')
+          .insert(examAssessments);
+
+        if (insertError) {
+          console.error('Error creating new exam-assessment relationships:', insertError);
+          throw insertError;
+        }
+      }
       await fetchData();
       setExamForm({
         exam_name: '',
@@ -213,6 +257,7 @@ export const AdminExamManagement: React.FC = () => {
         discounted_price: 0,
         tax: 0
       });
+      setSelectedAssessments([]);
       setEditingExam(null);
       setShowExamDialog(false);
       
