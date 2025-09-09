@@ -106,6 +106,8 @@ export const ExamDetailsPage: React.FC = () => {
         return;
       }
 
+      console.log('🔍 Fetching exam details for user:', user.id, 'exam:', examId);
+
       // Check if user has access to this exam
       const { data: purchase, error: purchaseError } = await supabase
         .from('exam_purchases')
@@ -115,10 +117,12 @@ export const ExamDetailsPage: React.FC = () => {
         .single();
 
       if (purchaseError || !purchase) {
+        console.error('❌ Purchase check failed:', purchaseError);
         setError('You do not have access to this exam. Please purchase it first.');
         return;
       }
 
+      console.log('✅ User has access to exam:', purchase);
       setHasAccess(true);
 
       // Fetch exam details
@@ -129,13 +133,16 @@ export const ExamDetailsPage: React.FC = () => {
         .single();
 
       if (examError || !examData) {
+        console.error('❌ Exam fetch failed:', examError);
         setError('Exam not found.');
         return;
       }
 
+      console.log('✅ Exam data loaded:', examData);
       setExam(examData);
 
       // Fetch user's attempts for this exam
+      console.log('🔍 Fetching attempts for user:', user.id, 'exam:', examId);
       const { data: attemptsData, error: attemptsError } = await supabase
         .from('exam_attempts')
         .select('*')
@@ -144,8 +151,11 @@ export const ExamDetailsPage: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (attemptsError) {
-        console.error('Error fetching attempts:', attemptsError);
+        console.error('❌ Error fetching attempts:', attemptsError);
+        setError('Failed to load exam attempts.');
+        return;
       } else {
+        console.log('✅ Attempts data loaded:', attemptsData);
         setAttempts(attemptsData || []);
       }
 
@@ -159,6 +169,7 @@ export const ExamDetailsPage: React.FC = () => {
       if (examAssessmentsError) {
         console.error('Error fetching exam assessments:', examAssessmentsError);
       } else if (examAssessments && examAssessments.length > 0) {
+        console.log('✅ Exam assessments loaded:', examAssessments);
         // Get all assessment IDs for this exam
         const assessmentIds = examAssessments.map(ea => ea.assessment_id);
 
@@ -176,12 +187,15 @@ export const ExamDetailsPage: React.FC = () => {
         if (questionsError) {
           console.error('Error fetching questions:', questionsError);
         } else {
+          console.log('✅ Questions data loaded:', questionsData);
           const processedQuestions = questionsData?.map(q => ({
             ...q,
             options: q.question_options?.sort((a: any, b: any) => a.display_order - b.display_order) || []
           })) || [];
           setQuestions(processedQuestions);
         }
+      } else {
+        console.log('⚠️ No assessments found for this exam');
       }
 
     } catch (err) {
