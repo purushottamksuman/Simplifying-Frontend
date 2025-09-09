@@ -1,16 +1,3 @@
-/*
-  # Create storage bucket for assessment images
-
-  1. Storage
-    - Create `assessment-images` bucket if not exists
-    - Set bucket to public for easy access
-    - Add file size and type restrictions
-
-  2. Security
-    - RLS policies for authenticated users only
-    - File upload restrictions (images only, max 10MB)
-*/
-
 -- Create storage bucket if it doesn't exist
 DO $$
 BEGIN
@@ -32,11 +19,12 @@ END $$;
 -- Create storage policies if they don't exist
 DO $$
 BEGIN
-  -- Select policy (public read access)
+  -- Public read access
   IF NOT EXISTS (
-    SELECT 1 FROM storage.policies 
-    WHERE bucket_id = 'assessment-images' 
-    AND name = 'Public read access'
+    SELECT 1 FROM pg_policies
+    WHERE polname = 'Public read access'
+    AND tablename = 'objects'
+    AND schemaname = 'storage'
   ) THEN
     CREATE POLICY "Public read access"
       ON storage.objects
@@ -44,11 +32,12 @@ BEGIN
       USING (bucket_id = 'assessment-images');
   END IF;
 
-  -- Insert policy (authenticated users only)
+  -- Authenticated users can upload
   IF NOT EXISTS (
-    SELECT 1 FROM storage.policies 
-    WHERE bucket_id = 'assessment-images' 
-    AND name = 'Authenticated users can upload'
+    SELECT 1 FROM pg_policies
+    WHERE polname = 'Authenticated users can upload'
+    AND tablename = 'objects'
+    AND schemaname = 'storage'
   ) THEN
     CREATE POLICY "Authenticated users can upload"
       ON storage.objects
@@ -57,11 +46,12 @@ BEGIN
       WITH CHECK (bucket_id = 'assessment-images');
   END IF;
 
-  -- Update policy (authenticated users only)
+  -- Authenticated users can update
   IF NOT EXISTS (
-    SELECT 1 FROM storage.policies 
-    WHERE bucket_id = 'assessment-images' 
-    AND name = 'Authenticated users can update'
+    SELECT 1 FROM pg_policies
+    WHERE polname = 'Authenticated users can update'
+    AND tablename = 'objects'
+    AND schemaname = 'storage'
   ) THEN
     CREATE POLICY "Authenticated users can update"
       ON storage.objects
@@ -70,11 +60,12 @@ BEGIN
       USING (bucket_id = 'assessment-images');
   END IF;
 
-  -- Delete policy (authenticated users only)
+  -- Authenticated users can delete
   IF NOT EXISTS (
-    SELECT 1 FROM storage.policies 
-    WHERE bucket_id = 'assessment-images' 
-    AND name = 'Authenticated users can delete'
+    SELECT 1 FROM pg_policies
+    WHERE polname = 'Authenticated users can delete'
+    AND tablename = 'objects'
+    AND schemaname = 'storage'
   ) THEN
     CREATE POLICY "Authenticated users can delete"
       ON storage.objects
