@@ -387,7 +387,6 @@ export const CreateAssessment: React.FC = () => {
                           <SelectValue placeholder="Select parent assessment (for sub-sections)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None (Root Assessment)</SelectItem>
                           {assessments.filter(a => !a.parent_assessment_id).map((assessment) => (
                             <SelectItem key={assessment.assessment_id} value={assessment.assessment_id!}>
                               {assessment.assessment_name}
