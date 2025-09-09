@@ -49,7 +49,7 @@ export class RazorpayService {
   }
 
   // Create Razorpay order
-  private async createOrder(options: PaymentOptions) {
+  private async createOrder(options: PaymentOptions, accessToken: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -58,7 +58,7 @@ export class RazorpayService {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(options),
@@ -76,14 +76,15 @@ export class RazorpayService {
   // Verify payment
   private async verifyPayment(
     razorpayResponse: RazorpayResponse,
-    paymentId: string
+    paymentId: string,
+    accessToken: string
   ) {
     const response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-razorpay-payment`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -107,9 +108,12 @@ export class RazorpayService {
       // Load Razorpay script
       await this.loadRazorpayScript();
 
-      // Get current user
+      // Get current user and session
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('No valid session found');
 
       // Get user profile for contact info
       const { data: profile } = await supabase
@@ -119,7 +123,7 @@ export class RazorpayService {
         .single();
 
       // Create order
-      const orderResult = await this.createOrder(options);
+      const orderResult = await this.createOrder(options, session.access_token);
       const { order, payment_id } = orderResult;
 
       // Configure Razorpay options
@@ -146,7 +150,7 @@ export class RazorpayService {
         handler: async (response: RazorpayResponse) => {
           try {
             // Verify payment
-            const verificationResult = await this.verifyPayment(response, payment_id);
+            const verificationResult = await this.verifyPayment(response, payment_id, session.access_token);
             console.log('Payment verified successfully:', verificationResult);
             
             // Return success
@@ -168,7 +172,7 @@ export class RazorpayService {
           ...razorpayOptions,
           handler: async (response: RazorpayResponse) => {
             try {
-              const verificationResult = await this.verifyPayment(response, payment_id);
+              const verificationResult = await this.verifyPayment(response, payment_id, session.access_token);
               resolve({
                 success: true,
                 payment: verificationResult.payment,
