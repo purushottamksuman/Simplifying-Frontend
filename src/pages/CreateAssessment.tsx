@@ -196,23 +196,23 @@ export const CreateAssessment: React.FC = () => {
 
   const addSection = async () => {
     try {
-      // Create a clean object with only valid assessment fields
-      const sectionData: Omit<Assessment, 'assessment_id' | 'created_at' | 'updated_at'> = {
+      // Create assessment data with only the fields that exist in the database
+      const assessmentData = {
         assessment_name: sectionForm.assessment_name.trim(),
-        description: sectionForm.description.trim(),
-        instructions: sectionForm.instructions.trim(),
-        total_time: sectionForm.total_time,
-        min_student_age: sectionForm.min_student_age,
-        max_student_age: sectionForm.max_student_age,
-        maximum_marks: sectionForm.maximum_marks,
+        description: sectionForm.description?.trim() || '',
+        instructions: sectionForm.instructions?.trim() || '',
+        total_time: sectionForm.total_time || 30,
+        min_student_age: sectionForm.min_student_age || 10,
+        max_student_age: sectionForm.max_student_age || 25,
+        maximum_marks: sectionForm.maximum_marks || 50,
         parent_assessment_id: selectedParentId,
-        display_order: sectionForm.display_order,
-        is_active: sectionForm.is_active
+        display_order: sectionForm.display_order || 1,
+        is_active: true
       };
 
       const { data, error } = await supabase
         .from('assessments')
-        .insert([sectionData])
+        .insert([assessmentData])
         .select()
         .single();
 
@@ -223,7 +223,7 @@ export const CreateAssessment: React.FC = () => {
         await loadAssessmentStructure(mainAssessment.assessment_id);
       }
 
-      // Reset form with clean state
+      // Reset form
       setSectionForm({
         assessment_name: '',
         description: '',
