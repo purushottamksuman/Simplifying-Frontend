@@ -196,23 +196,23 @@ export const CreateAssessment: React.FC = () => {
 
   const addSection = async () => {
     try {
-      // Create assessment data with only the fields that exist in the database
-      const assessmentData = {
-        assessment_name: sectionForm.assessment_name.trim(),
-        description: sectionForm.description?.trim() || '',
-        instructions: sectionForm.instructions?.trim() || '',
-        total_time: sectionForm.total_time || 30,
-        min_student_age: sectionForm.min_student_age || 10,
-        max_student_age: sectionForm.max_student_age || 25,
-        maximum_marks: sectionForm.maximum_marks || 50,
-        parent_assessment_id: selectedParentId,
-        display_order: sectionForm.display_order || 1,
-        is_active: true
-      };
+     // Create section data with only valid assessment fields
+     const sectionData = {
+       assessment_name: sectionForm.assessment_name.trim(),
+       description: sectionForm.description?.trim() || null,
+       instructions: sectionForm.instructions?.trim() || null,
+       total_time: sectionForm.total_time,
+       min_student_age: sectionForm.min_student_age,
+       max_student_age: sectionForm.max_student_age,
+       maximum_marks: sectionForm.maximum_marks,
+       parent_assessment_id: selectedParentId,
+       display_order: sectionForm.display_order,
+       is_active: true
+     };
 
       const { data, error } = await supabase
         .from('assessments')
-        .insert([assessmentData])
+       .insert([sectionData])
         .select()
         .single();
 
@@ -246,13 +246,18 @@ export const CreateAssessment: React.FC = () => {
 
   const addQuestion = async () => {
     try {
+     // First, insert the question without options
       const { data: questionData, error: questionError } = await supabase
         .from('questions')
-        .insert([{
-          ...questionForm,
-          assessment_id: selectedParentId || mainAssessment.assessment_id,
-          options: undefined
-        }])
+       .insert([{
+         assessment_id: selectedParentId || mainAssessment.assessment_id,
+         question_text: questionForm.question_text,
+         question_type: questionForm.question_type,
+         marks: questionForm.marks,
+         image_url: questionForm.image_url,
+         display_order: questionForm.display_order,
+         is_active: questionForm.is_active
+       }])
         .select()
         .single();
 
@@ -261,8 +266,12 @@ export const CreateAssessment: React.FC = () => {
       // Add options for MCQ
       if (questionForm.question_type === 'MCQ' && questionForm.options && questionForm.options.length > 0) {
         const optionsToInsert = questionForm.options.map(option => ({
-          ...option,
-          question_id: questionData.question_id
+         question_id: questionData.question_id,
+         option_text: option.option_text,
+         marks: option.marks,
+         image_url: option.image_url,
+         is_correct: option.is_correct,
+         display_order: option.display_order
         }));
 
         const { error: optionsError } = await supabase
@@ -277,6 +286,7 @@ export const CreateAssessment: React.FC = () => {
         await loadAssessmentStructure(mainAssessment.assessment_id);
       }
 
+     // Reset form
       setQuestionForm({
         question_text: '',
         question_type: 'MCQ',
