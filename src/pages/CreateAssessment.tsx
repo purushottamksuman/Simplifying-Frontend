@@ -20,14 +20,26 @@ interface Assessment {
   min_student_age: number;
   max_student_age: number;
   maximum_marks: number;
-  parent_assessment_id: string | null;
+  is_active: boolean;
+}
+
+interface Category {
+  category_id?: string;
+  assessment_id: string;
+  parent_category_id: string | null;
+  category_name: string;
+  description: string;
+  instructions: string;
+  total_time: number;
+  maximum_marks: number;
   display_order: number;
   is_active: boolean;
 }
 
 interface Question {
   question_id?: string;
-  assessment_id?: string;
+  assessment_id: string;
+  category_id: string | null;
   question_text: string;
   question_type: 'MCQ' | 'Subjective';
   marks: number;
@@ -47,10 +59,10 @@ interface QuestionOption {
   display_order: number;
 }
 
-interface AssessmentNode {
-  assessment: Assessment;
+interface CategoryNode {
+  category: Category;
   questions: Question[];
-  children: AssessmentNode[];
+  children: CategoryNode[];
   expanded: boolean;
 }
 
@@ -68,34 +80,31 @@ export const CreateAssessment: React.FC = () => {
     min_student_age: 10,
     max_student_age: 25,
     maximum_marks: 100,
-    parent_assessment_id: null,
-    display_order: 1,
     is_active: true
   });
 
   // Hierarchical structure
-  const [assessmentTree, setAssessmentTree] = useState<AssessmentNode[]>([]);
+  const [categoryTree, setCategoryTree] = useState<CategoryNode[]>([]);
+  const [rootQuestions, setRootQuestions] = useState<Question[]>([]);
   
   // Dialog states
-  const [showSectionDialog, setShowSectionDialog] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
+  const [selectedParentType, setSelectedParentType] = useState<'assessment' | 'category'>('assessment');
   
   // Forms
-  const [sectionForm, setSectionForm] = useState<Assessment>({
-    assessment_name: '',
+  const [categoryForm, setCategoryForm] = useState<Partial<Category>>({
+    category_name: '',
     description: '',
     instructions: '',
     total_time: 15,
-    min_student_age: 10,
-    max_student_age: 25,
     maximum_marks: 50,
-    parent_assessment_id: null,
     display_order: 1,
     is_active: true
   });
 
-  const [questionForm, setQuestionForm] = useState<Question>({
+  const [questionForm, setQuestionForm] = useState<Partial<Question>>({
     question_text: '',
     question_type: 'MCQ',
     marks: 5,
@@ -134,59 +143,64 @@ export const CreateAssessment: React.FC = () => {
     }
   };
 
-  const loadAssessmentStructure = async (rootId: string) => {
+  const loadAssessmentStructure = async (assessmentId: string) => {
     try {
-      // Load all related assessments and questions
-      const { data: assessments, error: assessmentsError } = await supabase
-        .from('assessments')
+      // Load categories
+      const { data: categories, error: categoriesError } = await supabase
+        .from('categories')
         .select('*')
-        .or(`assessment_id.eq.${rootId},parent_assessment_id.eq.${rootId}`)
+        .eq('assessment_id', assessmentId)
         .order('display_order');
 
-      if (assessmentsError) throw assessmentsError;
+      if (categoriesError) throw categoriesError;
 
+      // Load all questions for this assessment
       const { data: questions, error: questionsError } = await supabase
         .from('questions')
         .select(`
           *,
           question_options (*)
         `)
-        .in('assessment_id', assessments.map(a => a.assessment_id))
+        .eq('assessment_id', assessmentId)
         .order('display_order');
 
       if (questionsError) throw questionsError;
 
       // Build tree structure
-      const tree = buildAssessmentTree(assessments, questions || []);
-      setAssessmentTree(tree);
+      const tree = buildCategoryTree(categories || [], questions || []);
+      setCategoryTree(tree);
+
+      // Set root questions (questions without categories)
+      const rootQs = (questions || []).filter(q => !q.category_id);
+      setRootQuestions(rootQs);
     } catch (error) {
       console.error('Error loading structure:', error);
     }
   };
 
-  const buildAssessmentTree = (assessments: Assessment[], questions: Question[]): AssessmentNode[] => {
-    const assessmentMap = new Map<string, AssessmentNode>();
+  const buildCategoryTree = (categories: Category[], questions: Question[]): CategoryNode[] => {
+    const categoryMap = new Map<string, CategoryNode>();
     
-    // Initialize all assessments
-    assessments.forEach(assessment => {
-      assessmentMap.set(assessment.assessment_id!, {
-        assessment,
-        questions: questions.filter(q => q.assessment_id === assessment.assessment_id),
+    // Initialize all categories
+    categories.forEach(category => {
+      categoryMap.set(category.category_id!, {
+        category,
+        questions: questions.filter(q => q.category_id === category.category_id),
         children: [],
         expanded: true
       });
     });
 
     // Build hierarchy
-    const roots: AssessmentNode[] = [];
-    assessments.forEach(assessment => {
-      const node = assessmentMap.get(assessment.assessment_id!)!;
-      if (assessment.parent_assessment_id) {
-        const parent = assessmentMap.get(assessment.parent_assessment_id);
+    const roots: CategoryNode[] = [];
+    categories.forEach(category => {
+      const node = categoryMap.get(category.category_id!)!;
+      if (category.parent_category_id) {
+        const parent = categoryMap.get(category.parent_category_id);
         if (parent) {
           parent.children.push(node);
         }
-      } else if (assessment.assessment_id !== mainAssessment.assessment_id) {
+      } else {
         roots.push(node);
       }
     });
@@ -194,70 +208,76 @@ export const CreateAssessment: React.FC = () => {
     return roots;
   };
 
-  const addSection = async () => {
+  const addCategory = async () => {
     try {
-     // Create section data with only valid assessment fields
-     const sectionData = {
-       assessment_name: sectionForm.assessment_name.trim(),
-       description: sectionForm.description?.trim() || null,
-       instructions: sectionForm.instructions?.trim() || null,
-       total_time: sectionForm.total_time,
-       min_student_age: sectionForm.min_student_age,
-       max_student_age: sectionForm.max_student_age,
-       maximum_marks: sectionForm.maximum_marks,
-       parent_assessment_id: selectedParentId,
-       display_order: sectionForm.display_order,
-       is_active: true
-     };
+      if (!mainAssessment.assessment_id) {
+        alert('Please save the assessment first');
+        return;
+      }
+
+      const categoryData = {
+        assessment_id: mainAssessment.assessment_id,
+        parent_category_id: selectedParentType === 'category' ? selectedParentId : null,
+        category_name: categoryForm.category_name?.trim() || '',
+        description: categoryForm.description?.trim() || null,
+        instructions: categoryForm.instructions?.trim() || null,
+        total_time: categoryForm.total_time || 15,
+        maximum_marks: categoryForm.maximum_marks || 50,
+        display_order: categoryForm.display_order || 1,
+        is_active: true
+      };
 
       const { data, error } = await supabase
-        .from('assessments')
-       .insert([sectionData])
+        .from('categories')
+        .insert([categoryData])
         .select()
         .single();
 
       if (error) throw error;
 
       // Refresh structure
-      if (mainAssessment.assessment_id) {
-        await loadAssessmentStructure(mainAssessment.assessment_id);
-      }
+      await loadAssessmentStructure(mainAssessment.assessment_id);
 
       // Reset form
-      setSectionForm({
-        assessment_name: '',
+      setCategoryForm({
+        category_name: '',
         description: '',
         instructions: '',
         total_time: 15,
-        min_student_age: 10,
-        max_student_age: 25,
         maximum_marks: 50,
-        parent_assessment_id: null,
         display_order: 1,
         is_active: true
       });
-      setShowSectionDialog(false);
+      setShowCategoryDialog(false);
       setSelectedParentId(null);
     } catch (error) {
-      console.error('Error adding section:', error);
-      alert('Error adding section: ' + (error as Error).message);
+      console.error('Error adding category:', error);
+      alert('Error adding category: ' + (error as Error).message);
     }
   };
 
   const addQuestion = async () => {
     try {
-     // First, insert the question without options
-      const { data: questionData, error: questionError } = await supabase
+      if (!mainAssessment.assessment_id) {
+        alert('Please save the assessment first');
+        return;
+      }
+
+      // Insert question
+      const questionData = {
+        assessment_id: mainAssessment.assessment_id,
+        category_id: selectedParentType === 'category' ? selectedParentId : null,
+        question_text: questionForm.question_text?.trim() || '',
+        question_type: questionForm.question_type || 'MCQ',
+        marks: questionForm.marks || 5,
+        image_url: questionForm.image_url,
+        display_order: questionForm.display_order || 1,
+        is_active: true
+      };
+
+      const { data: questionData_result, error: questionError } = await supabase
         .from('questions')
-       .insert([{
-         assessment_id: selectedParentId || mainAssessment.assessment_id,
-         question_text: questionForm.question_text,
-         question_type: questionForm.question_type,
-         marks: questionForm.marks,
-         image_url: questionForm.image_url,
-         display_order: questionForm.display_order,
-         is_active: questionForm.is_active
-       }])
+        .insert([questionData])
         .select()
         .single();
 
@@ -266,12 +286,12 @@ export const CreateAssessment: React.FC = () => {
       // Add options for MCQ
       if (questionForm.question_type === 'MCQ' && questionForm.options && questionForm.options.length > 0) {
         const optionsToInsert = questionForm.options.map(option => ({
-         question_id: questionData.question_id,
-         option_text: option.option_text,
-         marks: option.marks,
-         image_url: option.image_url,
-         is_correct: option.is_correct,
-         display_order: option.display_order
+          question_id: questionData_result.question_id,
+          option_text: option.option_text?.trim() || '',
+          marks: option.marks || 0,
+          image_url: option.image_url,
+          is_correct: option.is_correct || false,
+          display_order: option.display_order || 1
         }));
 
         const { error: optionsError } = await supabase
@@ -282,11 +302,9 @@ export const CreateAssessment: React.FC = () => {
       }
 
       // Refresh structure
-      if (mainAssessment.assessment_id) {
-        await loadAssessmentStructure(mainAssessment.assessment_id);
-      }
+      await loadAssessmentStructure(mainAssessment.assessment_id);
 
-     // Reset form
+      // Reset form
       setQuestionForm({
         question_text: '',
         question_type: 'MCQ',
@@ -308,17 +326,28 @@ export const CreateAssessment: React.FC = () => {
     try {
       setLoading(true);
       
+      const assessmentData = {
+        assessment_name: mainAssessment.assessment_name.trim(),
+        description: mainAssessment.description?.trim() || null,
+        instructions: mainAssessment.instructions?.trim() || null,
+        total_time: mainAssessment.total_time,
+        min_student_age: mainAssessment.min_student_age,
+        max_student_age: mainAssessment.max_student_age,
+        maximum_marks: mainAssessment.maximum_marks,
+        is_active: mainAssessment.is_active
+      };
+      
       if (isEditing) {
         const { error } = await supabase
           .from('assessments')
-          .update(mainAssessment)
+          .update(assessmentData)
           .eq('assessment_id', assessmentId);
 
         if (error) throw error;
       } else {
         const { data, error } = await supabase
           .from('assessments')
-          .insert([mainAssessment])
+          .insert([assessmentData])
           .select()
           .single();
 
@@ -327,7 +356,6 @@ export const CreateAssessment: React.FC = () => {
       }
 
       alert('Assessment saved successfully!');
-      navigate('/admin/exam-management');
     } catch (error) {
       console.error('Error saving assessment:', error);
       alert('Error saving assessment: ' + (error as Error).message);
@@ -382,24 +410,24 @@ export const CreateAssessment: React.FC = () => {
     }
   };
 
-  const toggleExpanded = (assessmentId: string) => {
-    const updateNode = (nodes: AssessmentNode[]): AssessmentNode[] => {
+  const toggleExpanded = (categoryId: string) => {
+    const updateNode = (nodes: CategoryNode[]): CategoryNode[] => {
       return nodes.map(node => {
-        if (node.assessment.assessment_id === assessmentId) {
+        if (node.category.category_id === categoryId) {
           return { ...node, expanded: !node.expanded };
         }
         return { ...node, children: updateNode(node.children) };
       });
     };
-    setAssessmentTree(updateNode(assessmentTree));
+    setCategoryTree(updateNode(categoryTree));
   };
 
-  const renderAssessmentNode = (node: AssessmentNode, level: number = 0): React.ReactNode => {
+  const renderCategoryNode = (node: CategoryNode, level: number = 0): React.ReactNode => {
     const indentClass = level > 0 ? `ml-${level * 6}` : '';
     
     return (
-      <div key={node.assessment.assessment_id} className={`${indentClass}`}>
-        {/* Section/Category Header */}
+      <div key={node.category.category_id} className={`${indentClass}`}>
+        {/* Category Header */}
         <Card className="mb-4 rounded-xl border-l-4 border-l-[#3479ff] bg-gradient-to-r from-blue-50 to-white">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -407,7 +435,7 @@ export const CreateAssessment: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => toggleExpanded(node.assessment.assessment_id!)}
+                  onClick={() => toggleExpanded(node.category.category_id!)}
                   className="p-1 h-auto"
                 >
                   {node.expanded ? 
@@ -417,14 +445,14 @@ export const CreateAssessment: React.FC = () => {
                 </Button>
                 
                 <div>
-                  <h3 className="font-bold text-[#13377c] text-lg">{node.assessment.assessment_name}</h3>
-                  <p className="text-gray-600 text-sm">{node.assessment.description}</p>
+                  <h3 className="font-bold text-[#13377c] text-lg">{node.category.category_name}</h3>
+                  <p className="text-gray-600 text-sm">{node.category.description}</p>
                   <div className="flex items-center gap-4 mt-2">
                     <Badge variant="outline" className="text-xs">
-                      {node.assessment.maximum_marks} marks
+                      {node.category.maximum_marks} marks
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {node.assessment.total_time} min
+                      {node.category.total_time} min
                     </Badge>
                     <Badge variant="outline" className="text-xs">
                       {node.questions.length} questions
@@ -438,19 +466,21 @@ export const CreateAssessment: React.FC = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setSelectedParentId(node.assessment.assessment_id!);
-                    setShowSectionDialog(true);
+                    setSelectedParentId(node.category.category_id!);
+                    setSelectedParentType('category');
+                    setShowCategoryDialog(true);
                   }}
                   className="rounded-lg"
                 >
                   <Plus className="w-3 h-3 mr-1" />
-                  Add Sub-section
+                  Add Sub-category
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setSelectedParentId(node.assessment.assessment_id!);
+                    setSelectedParentId(node.category.category_id!);
+                    setSelectedParentType('category');
                     setShowQuestionDialog(true);
                   }}
                   className="rounded-lg"
@@ -472,107 +502,114 @@ export const CreateAssessment: React.FC = () => {
         {/* Expanded Content */}
         {node.expanded && (
           <div className="ml-6 space-y-4">
-            {/* Questions in this section */}
-            {node.questions.map((question, qIndex) => (
-              <Card key={question.question_id || qIndex} className="rounded-lg border border-gray-200 bg-white">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <GripVertical className="w-4 h-4 text-gray-400" />
-                        <Badge variant={question.question_type === 'MCQ' ? "default" : "secondary"} className="rounded-full">
-                          {question.question_type}
-                        </Badge>
-                        <Badge variant="outline" className="rounded-full">
-                          {question.marks} marks
-                        </Badge>
-                      </div>
-                      
-                      <p className="text-gray-700 mb-3">{question.question_text}</p>
-                      
-                      {question.image_url && (
-                        <div className="mb-3">
-                          <img 
-                            src={question.image_url} 
-                            alt="Question" 
-                            className="max-w-xs h-24 object-cover rounded-lg border"
-                          />
-                        </div>
-                      )}
-                      
-                      {/* MCQ Options */}
-                      {question.question_type === 'MCQ' && question.options && (
-                        <div className="space-y-2">
-                          {question.options.map((option, optionIndex) => (
-                            <div 
-                              key={option.option_id || optionIndex} 
-                              className={`p-3 rounded-lg border ${
-                                option.is_correct ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <span className="font-medium text-[#13377c]">
-                                    {String.fromCharCode(65 + optionIndex)}.
-                                  </span>
-                                  <span>{option.option_text}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="text-xs">
-                                    {option.marks} marks
-                                  </Badge>
-                                  {option.is_correct && (
-                                    <Badge className="bg-green-500 text-xs">
-                                      Correct
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              {option.image_url && (
-                                <div className="mt-2">
-                                  <img 
-                                    src={option.image_url} 
-                                    alt="Option" 
-                                    className="max-w-xs h-16 object-cover rounded border"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" className="rounded-lg">
-                        <Edit className="w-3 h-3" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="rounded-lg text-red-600">
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {/* Questions in this category */}
+            {node.questions.map((question, qIndex) => renderQuestion(question, qIndex))}
 
-            {/* Child sections */}
-            {node.children.map(child => renderAssessmentNode(child, level + 1))}
+            {/* Child categories */}
+            {node.children.map(child => renderCategoryNode(child, level + 1))}
           </div>
         )}
       </div>
     );
   };
 
+  const renderQuestion = (question: Question, qIndex: number): React.ReactNode => {
+    return (
+      <Card key={question.question_id || qIndex} className="rounded-lg border border-gray-200 bg-white">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <GripVertical className="w-4 h-4 text-gray-400" />
+                <Badge variant={question.question_type === 'MCQ' ? "default" : "secondary"} className="rounded-full">
+                  {question.question_type}
+                </Badge>
+                <Badge variant="outline" className="rounded-full">
+                  {question.marks} marks
+                </Badge>
+              </div>
+              
+              <p className="text-gray-700 mb-3">{question.question_text}</p>
+              
+              {question.image_url && (
+                <div className="mb-3">
+                  <img 
+                    src={question.image_url} 
+                    alt="Question" 
+                    className="max-w-xs h-24 object-cover rounded-lg border"
+                  />
+                </div>
+              )}
+              
+              {/* MCQ Options */}
+              {question.question_type === 'MCQ' && question.options && (
+                <div className="space-y-2">
+                  {question.options.map((option, optionIndex) => (
+                    <div 
+                      key={option.option_id || optionIndex} 
+                      className={`p-3 rounded-lg border ${
+                        option.is_correct ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-[#13377c]">
+                            {String.fromCharCode(65 + optionIndex)}.
+                          </span>
+                          <span>{option.option_text}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {option.marks} marks
+                          </Badge>
+                          {option.is_correct && (
+                            <Badge className="bg-green-500 text-xs">
+                              Correct
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {option.image_url && (
+                        <div className="mt-2">
+                          <img 
+                            src={option.image_url} 
+                            alt="Option" 
+                            className="max-w-xs h-16 object-cover rounded border"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" className="rounded-lg">
+                <Edit className="w-3 h-3" />
+              </Button>
+              <Button size="sm" variant="outline" className="rounded-lg text-red-600">
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const getTotalMarks = (): number => {
-    const calculateNodeMarks = (node: AssessmentNode): number => {
+    const calculateNodeMarks = (node: CategoryNode): number => {
       const questionMarks = node.questions.reduce((sum, q) => sum + q.marks, 0);
       const childMarks = node.children.reduce((sum, child) => sum + calculateNodeMarks(child), 0);
       return questionMarks + childMarks;
     };
     
-    return assessmentTree.reduce((sum, node) => sum + calculateNodeMarks(node), 0);
+    const categoryMarks = categoryTree.reduce((sum, node) => sum + calculateNodeMarks(node), 0);
+    const rootQuestionMarks = rootQuestions.reduce((sum, q) => sum + q.marks, 0);
+    
+    return categoryMarks + rootQuestionMarks;
   };
 
   return (
@@ -593,7 +630,7 @@ export const CreateAssessment: React.FC = () => {
               <h1 className="text-3xl font-bold text-[#13377c]">
                 {isEditing ? 'Edit Assessment' : 'Create Assessment'}
               </h1>
-              <p className="text-gray-600">Build comprehensive assessments with hierarchical structure</p>
+              <p className="text-gray-600">Build comprehensive assessments with hierarchical categories</p>
             </div>
           </div>
           
@@ -611,8 +648,8 @@ export const CreateAssessment: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card className="rounded-xl border-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold">{assessmentTree.length}</div>
-              <div className="text-sm opacity-90">Sections</div>
+              <div className="text-2xl font-bold">{categoryTree.length}</div>
+              <div className="text-sm opacity-90">Categories</div>
             </CardContent>
           </Card>
           
@@ -729,17 +766,19 @@ export const CreateAssessment: React.FC = () => {
                 <Button
                   onClick={() => {
                     setSelectedParentId(null);
-                    setShowSectionDialog(true);
+                    setSelectedParentType('assessment');
+                    setShowCategoryDialog(true);
                   }}
                   className="w-full bg-[#3479ff] hover:bg-[#2968e6] rounded-xl"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Section
+                  Add Category
                 </Button>
                 
                 <Button
                   onClick={() => {
                     setSelectedParentId(null);
+                    setSelectedParentType('assessment');
                     setShowQuestionDialog(true);
                   }}
                   variant="outline"
@@ -772,15 +811,24 @@ export const CreateAssessment: React.FC = () => {
               </CardHeader>
               
               <CardContent className="space-y-4">
-                {assessmentTree.length === 0 ? (
+                {/* Root Questions */}
+                {rootQuestions.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-[#13377c] text-lg">Direct Questions</h3>
+                    {rootQuestions.map((question, qIndex) => renderQuestion(question, qIndex))}
+                  </div>
+                )}
+
+                {/* Categories */}
+                {categoryTree.length === 0 && rootQuestions.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg">No sections created yet</p>
-                    <p className="text-gray-400 text-sm">Add sections and questions to build your assessment</p>
+                    <p className="text-gray-500 text-lg">No categories or questions created yet</p>
+                    <p className="text-gray-400 text-sm">Add categories and questions to build your assessment</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {assessmentTree.map(node => renderAssessmentNode(node))}
+                    {categoryTree.map(node => renderCategoryNode(node))}
                   </div>
                 )}
               </CardContent>
@@ -788,67 +836,67 @@ export const CreateAssessment: React.FC = () => {
           </div>
         </div>
 
-        {/* Add Section Dialog */}
-        <Dialog open={showSectionDialog} onOpenChange={setShowSectionDialog}>
+        {/* Add Category Dialog */}
+        <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
           <DialogContent className="max-w-2xl rounded-[1.5rem]">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-[#13377c]">
-                Add New {selectedParentId ? 'Sub-section' : 'Section'}
+                Add New {selectedParentType === 'category' ? 'Sub-category' : 'Category'}
               </DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
               <div>
-                <Label htmlFor="section_name" className="text-[#13377c] font-medium">Section Name</Label>
+                <Label htmlFor="category_name" className="text-[#13377c] font-medium">Category Name</Label>
                 <Input
-                  id="section_name"
-                  value={sectionForm.assessment_name}
-                  onChange={(e) => setSectionForm({...sectionForm, assessment_name: e.target.value})}
+                  id="category_name"
+                  value={categoryForm.category_name || ''}
+                  onChange={(e) => setCategoryForm({...categoryForm, category_name: e.target.value})}
                   placeholder="e.g., Logical Reasoning, Verbal Ability"
                   className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
                 />
               </div>
               
               <div>
-                <Label htmlFor="section_description" className="text-[#13377c] font-medium">Description</Label>
+                <Label htmlFor="category_description" className="text-[#13377c] font-medium">Description</Label>
                 <Textarea
-                  id="section_description"
-                  value={sectionForm.description}
-                  onChange={(e) => setSectionForm({...sectionForm, description: e.target.value})}
-                  placeholder="Describe this section"
+                  id="category_description"
+                  value={categoryForm.description || ''}
+                  onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
+                  placeholder="Describe this category"
                   className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="section_time" className="text-[#13377c] font-medium">Time (minutes)</Label>
+                  <Label htmlFor="category_time" className="text-[#13377c] font-medium">Time (minutes)</Label>
                   <Input
-                    id="section_time"
+                    id="category_time"
                     type="number"
-                    value={sectionForm.total_time}
-                    onChange={(e) => setSectionForm({...sectionForm, total_time: parseInt(e.target.value)})}
+                    value={categoryForm.total_time || 15}
+                    onChange={(e) => setCategoryForm({...categoryForm, total_time: parseInt(e.target.value)})}
                     className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="section_marks" className="text-[#13377c] font-medium">Maximum Marks</Label>
+                  <Label htmlFor="category_marks" className="text-[#13377c] font-medium">Maximum Marks</Label>
                   <Input
-                    id="section_marks"
+                    id="category_marks"
                     type="number"
-                    value={sectionForm.maximum_marks}
-                    onChange={(e) => setSectionForm({...sectionForm, maximum_marks: parseInt(e.target.value)})}
+                    value={categoryForm.maximum_marks || 50}
+                    onChange={(e) => setCategoryForm({...categoryForm, maximum_marks: parseInt(e.target.value)})}
                     className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
                   />
                 </div>
               </div>
               
               <div className="flex justify-end space-x-3 pt-4">
-                <Button variant="outline" onClick={() => setShowSectionDialog(false)} className="rounded-xl">
+                <Button variant="outline" onClick={() => setShowCategoryDialog(false)} className="rounded-xl">
                   Cancel
                 </Button>
-                <Button onClick={addSection} className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl">
-                  Add Section
+                <Button onClick={addCategory} className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl">
+                  Add Category
                 </Button>
               </div>
             </div>
@@ -867,7 +915,7 @@ export const CreateAssessment: React.FC = () => {
                 <Label htmlFor="question_text" className="text-[#13377c] font-medium">Question Text</Label>
                 <Textarea
                   id="question_text"
-                  value={questionForm.question_text}
+                  value={questionForm.question_text || ''}
                   onChange={(e) => setQuestionForm({...questionForm, question_text: e.target.value})}
                   placeholder="Enter your question here..."
                   className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff] min-h-[100px]"
@@ -878,7 +926,7 @@ export const CreateAssessment: React.FC = () => {
                 <div>
                   <Label htmlFor="question_type" className="text-[#13377c] font-medium">Question Type</Label>
                   <Select
-                    value={questionForm.question_type}
+                    value={questionForm.question_type || 'MCQ'}
                     onValueChange={(value: 'MCQ' | 'Subjective') => setQuestionForm({
                       ...questionForm, 
                       question_type: value,
@@ -906,7 +954,7 @@ export const CreateAssessment: React.FC = () => {
                   <Input
                     id="marks"
                     type="number"
-                    value={questionForm.marks}
+                    value={questionForm.marks || 5}
                     onChange={(e) => setQuestionForm({...questionForm, marks: parseInt(e.target.value)})}
                     className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
                   />
@@ -1081,12 +1129,12 @@ export const CreateAssessment: React.FC = () => {
                               value={option.marks}
                               onChange={(e) => {
                                 const newOptions = [...(questionForm.options || [])];
-                                newOptions[index] = {...option, marks: parseInt(e.target.value)};
+                                newOptions[index] = {...option, marks: parseInt(e.target.value) || 0};
                                 setQuestionForm({...questionForm, options: newOptions});
                               }}
                               className="w-20 rounded-lg"
                               min="0"
-                              max={questionForm.marks}
+                              max={questionForm.marks || 5}
                             />
                           </div>
                         </div>
@@ -1103,7 +1151,7 @@ export const CreateAssessment: React.FC = () => {
                 <Button 
                   onClick={addQuestion}
                   className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl"
-                  disabled={!questionForm.question_text.trim()}
+                  disabled={!questionForm.question_text?.trim()}
                 >
                   Add Question
                 </Button>

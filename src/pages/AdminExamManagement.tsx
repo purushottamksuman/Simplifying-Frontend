@@ -33,8 +33,6 @@ interface Assessment {
   min_student_age: number;
   max_student_age: number;
   maximum_marks: number;
-  parent_assessment_id: string | null;
-  display_order: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -86,19 +84,32 @@ export const AdminExamManagement: React.FC = () => {
 
   const createExam = async () => {
     try {
-      const { data, error } = await supabase
+      // Create exam
+      const examData = {
+        exam_name: examForm.exam_name.trim(),
+        description: examForm.description?.trim() || null,
+        instructions: examForm.instructions?.trim() || null,
+        total_time: examForm.total_time,
+        min_student_age: examForm.min_student_age,
+        max_student_age: examForm.max_student_age,
+        maximum_marks: examForm.maximum_marks,
+        is_active: true
+      };
+
+      const { data: examResult, error: examError } = await supabase
         .from('exams')
-        .insert([examForm])
+        .insert([examData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (examError) throw examError;
 
       // Create exam-assessment relationships if assessments are selected
       if (selectedAssessments.length > 0) {
-        const examAssessments = selectedAssessments.map(assessmentId => ({
-          exam_id: data.exam_id,
-          assessment_id: assessmentId
+        const examAssessments = selectedAssessments.map((assessmentId, index) => ({
+          exam_id: examResult.exam_id,
+          assessment_id: assessmentId,
+          display_order: index + 1
         }));
 
         const { error: junctionError } = await supabase
@@ -111,7 +122,10 @@ export const AdminExamManagement: React.FC = () => {
         }
       }
 
-      setExams([data, ...exams]);
+      // Refresh data
+      await fetchData();
+
+      // Reset form
       setExamForm({
         exam_name: '',
         description: '',
@@ -123,6 +137,8 @@ export const AdminExamManagement: React.FC = () => {
       });
       setSelectedAssessments([]);
       setShowExamDialog(false);
+      
+      alert('Exam created successfully!');
     } catch (error) {
       console.error('Error creating exam:', error);
       alert('Error creating exam: ' + (error as Error).message);
@@ -154,7 +170,7 @@ export const AdminExamManagement: React.FC = () => {
             Admin Exam Management
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Create and manage comprehensive exams with assessments, questions, and detailed configurations.
+            Create and manage comprehensive exams with assessments, categories, and questions.
           </p>
         </header>
 
@@ -457,11 +473,6 @@ export const AdminExamManagement: React.FC = () => {
                             <Badge variant={assessment.is_active ? "default" : "secondary"} className="rounded-full">
                               {assessment.is_active ? "Active" : "Inactive"}
                             </Badge>
-                            {assessment.parent_assessment_id && (
-                              <Badge variant="outline" className="rounded-full text-xs">
-                                Sub-section
-                              </Badge>
-                            )}
                             <span className="text-xs text-gray-400">
                               Created {new Date(assessment.created_at).toLocaleDateString()}
                             </span>
