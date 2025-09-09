@@ -196,10 +196,11 @@ export const CreateAssessment: React.FC = () => {
 
   const addSection = async () => {
     try {
-      const sectionData = {
-        assessment_name: sectionForm.assessment_name,
-        description: sectionForm.description,
-        instructions: sectionForm.instructions,
+      // Create a clean object with only valid assessment fields
+      const sectionData: Omit<Assessment, 'assessment_id' | 'created_at' | 'updated_at'> = {
+        assessment_name: sectionForm.assessment_name.trim(),
+        description: sectionForm.description.trim(),
+        instructions: sectionForm.instructions.trim(),
         total_time: sectionForm.total_time,
         min_student_age: sectionForm.min_student_age,
         max_student_age: sectionForm.max_student_age,
@@ -222,6 +223,7 @@ export const CreateAssessment: React.FC = () => {
         await loadAssessmentStructure(mainAssessment.assessment_id);
       }
 
+      // Reset form with clean state
       setSectionForm({
         assessment_name: '',
         description: '',
