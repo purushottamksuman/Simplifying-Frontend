@@ -54,8 +54,11 @@ Deno.serve(async (req: Request) => {
 
     // Verify signature
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
+    
+    console.log('Razorpay Key Secret exists:', !!razorpayKeySecret)
+
     if (!razorpayKeySecret) {
-      throw new Error('Razorpay secret not configured')
+      throw new Error(`Razorpay Key Secret not configured: ${!!razorpayKeySecret}`)
     }
 
     const body = razorpay_order_id + '|' + razorpay_payment_id
