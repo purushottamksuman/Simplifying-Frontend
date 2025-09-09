@@ -72,6 +72,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [exams, setExams] = useState<Exam[]>([]);
   const [activeSection, setActiveSection] = useState("Dashboard");
+  const [userPurchases, setUserPurchases] = useState<string[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -91,6 +92,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         
         // Fetch exams for payment plans
         await fetchExams();
+        await fetchUserPurchases();
         
       } catch (err) {
         console.error("❌ Auth check error:", err);
@@ -115,6 +117,20 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
       setExams(data || []);
     } catch (error) {
       console.error('Error fetching exams:', error);
+    }
+  };
+
+  const fetchUserPurchases = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('exam_purchases')
+        .select('exam_id')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setUserPurchases(data?.map(p => p.exam_id) || []);
+    } catch (error) {
+      console.error('Error fetching user purchases:', error);
     }
   };
 
@@ -177,6 +193,9 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         
         setPaymentSuccess(true);
         alert(`🎉 Payment successful! You now have access to ${exam.exam_name}.`);
+        
+        // Refresh user purchases
+        await fetchUserPurchases();
       }
 
     } catch (error) {
@@ -199,10 +218,18 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
       });
       
       alert(`✅ You now have access to ${exam.exam_name}!`);
+      
+      // Refresh user purchases
+      await fetchUserPurchases();
     } catch (error) {
       console.error('Error recording free exam access:', error);
       alert('Error accessing exam. Please try again.');
     }
+  };
+
+  const handleAttemptExam = (exam: Exam) => {
+    // Navigate to exam environment
+    navigate(`/exam/${exam.exam_id}`);
   };
 
   const handleNavigation = (item: any) => {
@@ -256,6 +283,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                   {exams.map((exam) => {
                     const totalPrice = exam.discounted_price + exam.tax;
                     const isFree = totalPrice === 0;
+                    const isPurchased = userPurchases.includes(exam.exam_id);
                     
                     return (
                       <Card key={exam.exam_id} className="rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-200">
@@ -300,11 +328,32 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                               )}
                               
                               <Button 
-                                onClick={() => isFree ? handleFreeExamAccess(exam) : handleExamPayment(exam)}
+                                onClick={() => {
+                                  if (isPurchased) {
+                                    handleAttemptExam(exam);
+                                  } else if (isFree) {
+                                    handleFreeExamAccess(exam);
+                                  } else {
+                                    handleExamPayment(exam);
+                                  }
+                                }}
                                 disabled={paymentLoading}
-                                className={`w-full mt-4 ${isFree ? 'bg-green-500 hover:bg-green-600' : 'bg-[#3479ff] hover:bg-[#2968e6]'} text-white rounded-xl`}
+                                className={`w-full mt-4 ${
+                                  isPurchased 
+                                    ? 'bg-green-500 hover:bg-green-600' 
+                                    : isFree 
+                                      ? 'bg-green-500 hover:bg-green-600' 
+                                      : 'bg-[#3479ff] hover:bg-[#2968e6]'
+                                } text-white rounded-xl`}
                               >
-                                {paymentLoading ? "Processing..." : isFree ? "Access Free" : `Pay ₹${totalPrice}`}
+                                {paymentLoading 
+                                  ? "Processing..." 
+                                  : isPurchased 
+                                    ? "Attempt Exam" 
+                                    : isFree 
+                                      ? "Access Free" 
+                                      : `Pay ₹${totalPrice}`
+                                }
                               </Button>
                             </div>
                           </div>
@@ -405,6 +454,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
           {exams.map((exam) => {
             const totalPrice = exam.discounted_price + exam.tax;
             const isFree = totalPrice === 0;
+            const isPurchased = userPurchases.includes(exam.exam_id);
             
             return (
               <Card key={exam.exam_id} className="rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-200">
@@ -449,11 +499,32 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                       )}
                       
                       <Button 
-                        onClick={() => isFree ? handleFreeExamAccess(exam) : handleExamPayment(exam)}
+                        onClick={() => {
+                          if (isPurchased) {
+                            handleAttemptExam(exam);
+                          } else if (isFree) {
+                            handleFreeExamAccess(exam);
+                          } else {
+                            handleExamPayment(exam);
+                          }
+                        }}
                         disabled={paymentLoading}
-                        className={`w-full mt-4 ${isFree ? 'bg-green-500 hover:bg-green-600' : 'bg-[#3479ff] hover:bg-[#2968e6]'} text-white rounded-xl`}
+                        className={`w-full mt-4 ${
+                          isPurchased 
+                            ? 'bg-green-500 hover:bg-green-600' 
+                            : isFree 
+                              ? 'bg-green-500 hover:bg-green-600' 
+                              : 'bg-[#3479ff] hover:bg-[#2968e6]'
+                        } text-white rounded-xl`}
                       >
-                        {paymentLoading ? "Processing..." : isFree ? "Attempt Free" : `Pay ₹${totalPrice} Now`}
+                        {paymentLoading 
+                          ? "Processing..." 
+                          : isPurchased 
+                            ? "Attempt Exam" 
+                            : isFree 
+                              ? "Attempt Free" 
+                              : `Pay ₹${totalPrice} Now`
+                        }
                       </Button>
                     </div>
                   </div>
