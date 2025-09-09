@@ -332,60 +332,139 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
           {/* Right Sidebar - Premium Features */}
           <div className="w-96 flex-shrink-0">
             <div className="sticky top-8">
-              <Card className="rounded-[3rem] shadow-xl border-0 bg-white">
+              {/* Payment Plans Card */}
+              <Card className="rounded-3xl border-0 shadow-xl">
                 <CardContent className="p-8">
-                  <h3 className="font-bold text-[#13377c] text-2xl mb-8">
-                    Unlock Premium Features
+                  <h3 className="font-bold text-[#13377c] text-3xl mb-8">
+                    Complete Your Payment
                   </h3>
+                  <p className="text-gray-600 text-lg mb-8">
+                    Please select a plan that suits you best and complete your payment to unlock the assessment.
+                  </p>
 
-                  <div className="space-y-6">
-                    {/* Expert Guidance Card */}
-                    <div className="rounded-[2rem] bg-gradient-to-br from-[#7b58f2] to-[#a493ff] p-6 h-80 relative overflow-hidden">
-                      <div className="relative z-10">
-                        <h4 className="font-bold text-white text-2xl mb-4">
-                          Get Expert Guidance
-                        </h4>
-                        <p className="text-white/90 text-base mb-8 leading-relaxed max-w-sm">
-                          Unlock your test results with a 1:1 counselling call and get a personalized growth plan.
-                        </p>
-                        <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
-                          <LockIcon className="w-4 h-4" />
-                          Unlock Session
-                        </Button>
-                      </div>
-                      <div className="absolute bottom-0 right-0">
-                        <img
-                          className="w-48 h-36 object-contain"
-                          alt="Expert guidance illustration"
-                          src="/GoodKid.png"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Join Clubs Card */}
-                    <div className="rounded-[2rem] bg-gradient-to-br from-[#fec854] to-[#ffdf99] p-6 h-80 relative overflow-hidden">
-                      <div className="relative z-10">
-                        <h4 className="font-bold text-gray-900 text-2xl mb-4">
-                          Join Our Clubs
-                        </h4>
-                        <p className="text-gray-800/90 text-base mb-8 leading-relaxed max-w-sm">
-                          Discover your interests, learn new skills, and connect with like-minded students.
-                        </p>
-                        <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold">
-                          Explore Now
-                        </Button>
-                      </div>
-                      <div className="absolute bottom-0 right-0">
-                        <img
-                          className="w-48 h-40 object-contain"
-                          alt="Clubs illustration"
-                          src="/SorryMother.png"
-                        />
-                      </div>
-                    </div>
+                  <div className="space-y-4">
+                    {exams.map((exam) => {
+                      const totalPrice = exam.discounted_price + exam.tax;
+                      const isFree = totalPrice === 0;
+                      
+                      return (
+                        <Card key={exam.exam_id} className="rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-200">
+                          <CardContent className="p-6">
+                            <div className="flex flex-col">
+                              <h4 className="font-bold text-[#13377c] text-lg mb-2">{exam.exam_name}</h4>
+                              <p className="text-gray-600 text-sm mb-4 line-clamp-2">{exam.description}</p>
+                              
+                              <div className="flex items-center gap-4 mb-4">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-4 h-4 text-[#3479ff]" />
+                                  <span className="text-sm text-gray-600">{exam.total_time} min</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Target className="w-4 h-4 text-[#3479ff]" />
+                                  <span className="text-sm text-gray-600">{exam.maximum_marks} marks</span>
+                                </div>
+                              </div>
+                              
+                              {!isFree && (
+                                <div className="border-t pt-3 space-y-2 mb-4">
+                                  {exam.original_price > exam.discounted_price && (
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-gray-500">Original Price:</span>
+                                      <span className="text-gray-500 line-through">₹{exam.original_price}</span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-700">Price:</span>
+                                    <span className="text-[#3479ff] font-semibold">₹{exam.discounted_price}</span>
+                                  </div>
+                                  {exam.tax > 0 && (
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-gray-700">Tax:</span>
+                                      <span className="text-gray-700">₹{exam.tax}</span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center justify-between font-semibold border-t pt-2">
+                                    <span className="text-gray-900">Total:</span>
+                                    <span className="text-[#3479ff] text-lg">₹{totalPrice}</span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <Button 
+                                onClick={() => isFree ? handleFreeExamAccess(exam) : handleExamPayment(exam)}
+                                disabled={paymentLoading}
+                                className={`w-full ${isFree ? 'bg-green-500 hover:bg-green-600' : 'bg-[#3479ff] hover:bg-[#2968e6]'} text-white rounded-xl`}
+                              >
+                                {paymentLoading ? "Processing..." : isFree ? "Attempt Free" : `Pay ₹${totalPrice} Now`}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
+                  
+                  {paymentError && (
+                    <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-600 text-sm">{paymentError}</p>
+                    </div>
+                  )}
+                  
+                  {paymentSuccess && (
+                    <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-green-600 text-sm">✅ Payment completed successfully!</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+
+              {/* Premium Features Cards */}
+              <div className="mt-8 space-y-6">
+                {/* Expert Guidance Card */}
+                <div className="rounded-[2rem] bg-gradient-to-br from-[#7b58f2] to-[#a493ff] p-6 h-80 relative overflow-hidden">
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-white text-2xl mb-4">
+                      Get Expert Guidance
+                    </h4>
+                    <p className="text-white/90 text-base mb-8 leading-relaxed max-w-sm">
+                      Unlock your test results with a 1:1 counselling call and get a personalized growth plan.
+                    </p>
+                    <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
+                      <LockIcon className="w-4 h-4" />
+                      Unlock Session
+                    </Button>
+                  </div>
+                  <div className="absolute bottom-0 right-0">
+                    <img
+                      className="w-48 h-36 object-contain"
+                      alt="Expert guidance illustration"
+                      src="/GoodKid.png"
+                    />
+                  </div>
+                </div>
+
+                {/* Join Clubs Card */}
+                <div className="rounded-[2rem] bg-gradient-to-br from-[#fec854] to-[#ffdf99] p-6 h-80 relative overflow-hidden">
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-gray-900 text-2xl mb-4">
+                      Join Our Clubs
+                    </h4>
+                    <p className="text-gray-800/90 text-base mb-8 leading-relaxed max-w-sm">
+                      Discover your interests, learn new skills, and connect with like-minded students.
+                    </p>
+                    <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold">
+                      Explore Now
+                    </Button>
+                  </div>
+                  <div className="absolute bottom-0 right-0">
+                    <img
+                      className="w-48 h-40 object-contain"
+                      alt="Clubs illustration"
+                      src="/SorryMother.png"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -395,68 +474,168 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
   const renderTestAssessmentContent = () => {
     return (
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h2 className="font-bold text-[#13377c] text-3xl mb-4">Test & Assessment</h2>
-          <p className="text-gray-600 text-lg">Choose from our available exams and assessments</p>
+      <div className="w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="font-bold text-[#13377c] text-2xl">Test & Assessment</h1>
+            <p className="text-gray-500">Test management and assessment tracking</p>
+          </div>
+          <div className="flex items-center gap-5">
+            <div className="w-6 h-6 bg-gray-200 rounded" />
+            <div className="w-12 h-12 rounded-full border-4 border-solid border-[#3479ff99] bg-gray-200" />
+            <div className="w-6 h-6 bg-gray-200 rounded" />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Cards */}
+        <div className="grid grid-cols-3 gap-5 mb-8">
+          {/* Total Tests */}
+          <Card className="bg-white rounded-[20px] shadow-[0px_4px_20px_#3479ff20] border-0">
+            <CardContent className="p-6 flex items-start justify-between relative">
+              {/* Left Section */}
+              <div className="flex flex-col gap-2">
+                {/* Title with Icon Space */}
+                <div className="flex items-center justify-between pr-6">
+                  <h2 className="text-[#1c2752] font-bold text-lg">Total Tests</h2>
+                </div>
+
+                {/* Total Count */}
+                <p className="text-[#3479ff] font-extrabold text-2xl mb-14 leading-tight">{exams.length}</p>
+
+                {/* Achievements */}
+                <p className="text-[#5f5f5f] text-[17px] font-extrabold">
+                  <span className="font-bold text-[17px]">{exams.filter(e => e.is_active).length}</span> Active Exams
+                </p>
+              </div>
+
+              {/* Progress Image */}
+              <div className="flex flex-col items-center justify-start mt-14">
+                <img
+                  src="/marks.png"
+                  alt="Marks Progress"
+                  className="w-[130px] h-[130px] object-contain mt-2"
+                />
+              </div>
+
+              {/* Top Right Icon */}
+              <img className="absolute top-5 right-5 w-5 h-5 text-[#3479ff]" src="/BOOK.png"/>
+            </CardContent>
+          </Card>
+
+          {/* Complete */}
+          <Card className="bg-white rounded-[20px] shadow-[0px_4px_20px_#3479ff20] border-0">
+            <CardContent className="p-6 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[#1c2752] font-bold text-lg">Available</h2>
+                <img className="w-5 h-5 text-[#3479ff]" src="/tick.png" />
+              </div>
+
+              {/* Count */}
+              <p className="text-[#3479ff] font-extrabold text-2xl">{exams.filter(e => e.is_active).length}</p>
+
+              {/* Progress Bar */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[#9e9e9e] text-sm">Progress</span>
+                  <span className="text-[#9e9e9e] text-sm">100%</span>
+                </div>
+                <div className="w-full bg-[#e0e0e0] rounded-full h-3">
+                  <div
+                    className="bg-[#3479ff] h-3 rounded-full transition-all duration-500"
+                    style={{ width: "100%" }}
+                  />
+                </div>
+                <p className="text-[#9e9e9e] text-sm mt-1">Ready to attempt</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Average Score */}
+          <Card className="bg-white rounded-[25px] shadow-[0px_0px_20px_#3d57cf40] border-0">
+            <CardContent className="p-6 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[#13377c] font-bold text-lg">
+                  Free Exams
+                </h2>
+                <img className="w-6 h-4 text-[#3479ff]" src="/vector.png" />
+              </div>
+              <p className="text-[#3479ff] font-bold text-xl">{exams.filter(e => (e.discounted_price + e.tax) === 0).length}</p>
+              <div className="h-[113px] bg-gradient-to-t from-[#dbe8ff] to-white rounded-xl border border-[#e4e4e4] flex items-end justify-around px-7 pb-4">
+                {[78, 86, 95, 98, 92, 59].map((height, i) => (
+                  <div
+                    key={i}
+                    className="w-3 bg-[#3479ff] rounded-t-lg opacity-70"
+                    style={{ height: `${height}px` }}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      
+
+        {/* Tabs */}
+        <Card className="bg-white rounded-[21px] shadow-[0px_0px_20px_#3479ff40] border-0 mb-8">
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-2 bg-[#007fff59] px-5 py-2 rounded-[20px]">
+              <span className="font-bold text-[#083a50] text-lg">All</span>
+              <Badge className="bg-[#fff8f8] text-[#083a50] font-bold text-sm rounded-full h-5 w-6 flex items-center justify-center">
+                {exams.length}
+              </Badge>
+            </div>
+            <span className="font-bold text-[#888888] text-lg">Free {exams.filter(e => (e.discounted_price + e.tax) === 0).length}</span>
+            <span className="font-bold text-[#888888] text-lg">Paid {exams.filter(e => (e.discounted_price + e.tax) > 0).length}</span>
+          </CardContent>
+        </Card>
+
+        {/* Test Cards */}
+        <div className="grid grid-cols-3 gap-8">
           {exams.map((exam) => {
             const totalPrice = exam.discounted_price + exam.tax;
             const isFree = totalPrice === 0;
             
             return (
-              <Card key={exam.exam_id} className="rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-200">
-                <CardContent className="p-6">
-                  <div className="flex flex-col h-full">
-                    <h3 className="font-bold text-[#13377c] text-xl mb-3">{exam.exam_name}</h3>
-                    <p className="text-gray-600 text-sm mb-4 flex-1">{exam.description}</p>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Duration:</span>
-                        <span className="font-medium">{exam.total_time} minutes</span>
+              <Card
+                key={exam.exam_id}
+                className="bg-white rounded-[25px] shadow-[0px_0px_20px_#3479ff40] border-0"
+              >
+                <CardContent className="flex flex-col items-start justify-between p-6 h-80">
+                  <div className="flex flex-col gap-4">
+                    <h3 className="font-semibold text-[#202020] text-xl">
+                      {exam.exam_name}
+                    </h3>
+                    <Badge className="bg-[#75a4ff87] text-[#083a50] font-semibold text-xs rounded-[25px] h-[18px] px-3 py-1">
+                      {isFree ? 'FREE' : 'PREMIUM'}
+                    </Badge>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between text-sm text-[#7e7e7e]">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5" />
+                          {exam.total_time} Minutes
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Target className="w-4 h-4" />
+                          {exam.maximum_marks} Marks
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Max Marks:</span>
-                        <span className="font-medium">{exam.maximum_marks}</span>
-                      </div>
-                      
                       {!isFree && (
-                        <div className="border-t pt-3 space-y-2">
-                          {exam.original_price > exam.discounted_price && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-500">Original Price:</span>
-                              <span className="text-gray-500 line-through">₹{exam.original_price}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-700">Price:</span>
-                            <span className="text-[#3479ff] font-semibold">₹{exam.discounted_price}</span>
-                          </div>
-                          {exam.tax > 0 && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-700">Tax:</span>
-                              <span className="text-gray-700">₹{exam.tax}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between font-semibold border-t pt-2">
-                            <span className="text-gray-900">Total:</span>
-                            <span className="text-[#3479ff] text-lg">₹{totalPrice}</span>
+                        <div className="text-sm text-[#7e7e7e]">
+                          <div className="flex items-center justify-between">
+                            <span>Price:</span>
+                            <span className="text-[#3479ff] font-semibold">₹{totalPrice}</span>
                           </div>
                         </div>
                       )}
-                      
-                      <Button 
-                        onClick={() => isFree ? handleFreeExamAccess(exam) : handleExamPayment(exam)}
-                        disabled={paymentLoading}
-                        className={`w-full mt-4 ${isFree ? 'bg-green-500 hover:bg-green-600' : 'bg-[#3479ff] hover:bg-[#2968e6]'} text-white rounded-xl`}
-                      >
-                        {paymentLoading ? "Processing..." : isFree ? "Attempt Free" : `Pay ₹${totalPrice} Now`}
-                      </Button>
                     </div>
                   </div>
+                  <Button 
+                    onClick={() => isFree ? handleFreeExamAccess(exam) : handleExamPayment(exam)}
+                    disabled={paymentLoading}
+                    className="w-full h-[37px] bg-[#3479ff] text-white font-bold rounded-lg hover:bg-[#3479ff]/90"
+                  >
+                    {paymentLoading ? "Processing..." : isFree ? "Attempt Free" : `Pay ₹${totalPrice} Now`}
+                  </Button>
                 </CardContent>
               </Card>
             );
