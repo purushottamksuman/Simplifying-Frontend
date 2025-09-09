@@ -211,6 +211,10 @@ export const HomePage: React.FC = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Explore our comprehensive collection of UI components designed for educational platforms. 
             Each component showcases different aspects of student engagement, learning management, and user interaction.
+            <br /><br />
+            <a href="/admin/exam-management" className="text-blue-600 hover:text-blue-800 underline font-medium">
+              🔧 Admin Exam Management System
+            </a>
           </p>
         </header>
 
