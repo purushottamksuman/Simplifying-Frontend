@@ -18,6 +18,7 @@ import {
   UserPlusIcon,
   UsersIcon,
   XIcon,
+  BrainIcon,
 } from "lucide-react";
 import React from "react";
 import {
@@ -46,6 +47,7 @@ const navigationItems = [
   { icon: UsersIcon, label: "Clubs & Community", active: false },
   { icon: HelpCircleIcon, label: "Raise a Doubt", active: false },
   { icon: UserPlusIcon, label: "Referrals Program", active: false },
+  { icon: BrainIcon, label: "Simplifying AI", active: false },
 ];
 
 interface Exam {
@@ -572,6 +574,27 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
     );
   };
 
+  const renderSimplifyingAIContent = () => {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h2 className="font-bold text-[#13377c] text-3xl mb-4">Simplifying AI</h2>
+          <p className="text-gray-600 text-lg">AI-powered question generation and assessment tools</p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl border-0 overflow-hidden" style={{ height: 'calc(100vh - 300px)' }}>
+          <iframe
+            src="https://testgenie-ai-questio-fefq.bolt.host/"
+            className="w-full h-full border-0"
+            title="Simplifying AI - Question Generator"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
@@ -735,7 +758,8 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
             <div className="p-8">
               {activeSection === "Dashboard" && renderDashboardContent()}
               {activeSection === "Test & Assessment" && renderTestAssessmentContent()}
-              {activeSection !== "Dashboard" && activeSection !== "Test & Assessment" && renderDummyContent(activeSection)}
+              {activeSection === "Simplifying AI" && renderSimplifyingAIContent()}
+              {activeSection !== "Dashboard" && activeSection !== "Test & Assessment" && activeSection !== "Simplifying AI" && renderDummyContent(activeSection)}
             </div>
           </div>
         </div>
