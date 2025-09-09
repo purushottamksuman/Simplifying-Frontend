@@ -31,6 +31,7 @@ import { Input } from "../../../../components/ui/input";
 import { authHelpers } from "../../../../lib/supabase";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { razorpayService } from "../../../../lib/razorpay";
 
 const navigationItems = [
   { icon: HomeIcon, label: "Dashboard", active: true },
@@ -53,6 +54,9 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -102,6 +106,43 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
     }
   };
 
+  const handlePayment = async () => {
+    setPaymentLoading(true);
+    setPaymentError("");
+    setPaymentSuccess(false);
+
+    try {
+      console.log("🚀 Initiating Skillsphere assessment payment...");
+      
+      const paymentResult = await razorpayService.initiatePayment({
+        amount: 999, // ₹999
+        currency: 'INR',
+        description: 'Skillsphere Assessment Payment',
+        notes: {
+          product: 'skillsphere_assessment',
+          user_id: user?.id,
+          plan: 'premium_assessment'
+        }
+      });
+
+      if (paymentResult.success) {
+        console.log("✅ Payment completed successfully:", paymentResult);
+        setPaymentSuccess(true);
+        
+        // Show success message
+        alert("🎉 Payment successful! You now have access to premium assessments.");
+        
+        // Optionally refresh user data or redirect
+        // navigate('/component/test-and');
+      }
+
+    } catch (error) {
+      console.error("❌ Payment failed:", error);
+      setPaymentError(error.message || "Payment failed. Please try again.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
   if (loading) {
     return (
       <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
@@ -309,9 +350,39 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                               <p className="text-gray-700 text-base mb-6 leading-relaxed">
                                 Please select a plan that suits you best and complete your payment to unlock the assessment.
                               </p>
-                              <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
-                                Pay Now
+                              
+                              {paymentError && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                  <p className="text-red-600 text-sm">{paymentError}</p>
+                                </div>
+                              )}
+                              
+                              {paymentSuccess && (
+                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                  <p className="text-green-600 text-sm">✅ Payment completed successfully!</p>
+                                </div>
+                              )}
+                              
+                              <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200">
+                                  <div>
+                                    <h5 className="font-semibold text-gray-900">Skillsphere Assessment</h5>
+                                    <p className="text-gray-600 text-sm">Premium assessment access</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-[#3479ff] text-xl">₹999</div>
+                                    <div className="text-gray-500 text-sm">One-time payment</div>
+                                  </div>
+                                </div>
+                                
+                                <Button 
+                                  onClick={handlePayment}
+                                  disabled={paymentLoading || paymentSuccess}
+                                  className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold disabled:opacity-50"
+                                >
+                                  {paymentLoading ? "Processing..." : paymentSuccess ? "Payment Completed ✅" : "Pay ₹999 Now"}
                               </Button>
+                              </div>
                             </div>
                             <img
                               className="absolute w-40 h-44 top-2 right-8 opacity-90"
