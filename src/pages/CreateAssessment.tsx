@@ -9,6 +9,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../components/ui/alert-dialog';
 import { supabase } from '../lib/supabase';
 
 interface Assessment {
@@ -90,8 +91,14 @@ export const CreateAssessment: React.FC = () => {
   // Dialog states
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
+  const [showEditCategoryDialog, setShowEditCategoryDialog] = useState(false);
+  const [showEditQuestionDialog, setShowEditQuestionDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [selectedParentType, setSelectedParentType] = useState<'assessment' | 'category'>('assessment');
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{type: 'category' | 'question', id: string, name: string} | null>(null);
   
   // Forms
   const [categoryForm, setCategoryForm] = useState<Partial<Category>>({
@@ -364,6 +371,193 @@ export const CreateAssessment: React.FC = () => {
     }
   };
 
+  const editCategory = async () => {
+    try {
+      if (!editingCategory?.category_id) return;
+
+      const categoryData = {
+        category_name: categoryForm.category_name?.trim() || '',
+        description: categoryForm.description?.trim() || null,
+        instructions: categoryForm.instructions?.trim() || null,
+        total_time: categoryForm.total_time || 15,
+        maximum_marks: categoryForm.maximum_marks || 50,
+        display_order: categoryForm.display_order || 1,
+        is_active: categoryForm.is_active ?? true
+      };
+
+      const { error } = await supabase
+        .from('categories')
+        .update(categoryData)
+        .eq('category_id', editingCategory.category_id);
+
+      if (error) throw error;
+
+      // Refresh structure
+      await loadAssessmentStructure(mainAssessment.assessment_id!);
+
+      // Reset form
+      setCategoryForm({
+        category_name: '',
+        description: '',
+        instructions: '',
+        total_time: 15,
+        maximum_marks: 50,
+        display_order: 1,
+        is_active: true
+      });
+      setShowEditCategoryDialog(false);
+      setEditingCategory(null);
+    } catch (error) {
+      console.error('Error updating category:', error);
+      alert('Error updating category: ' + (error as Error).message);
+    }
+  };
+
+  const editQuestion = async () => {
+    try {
+      if (!editingQuestion?.question_id) return;
+
+      // Update question
+      const questionData = {
+        question_text: questionForm.question_text?.trim() || '',
+        question_type: questionForm.question_type || 'MCQ',
+        marks: questionForm.marks || 5,
+        image_url: questionForm.image_url,
+        display_order: questionForm.display_order || 1,
+        is_active: questionForm.is_active ?? true
+      };
+
+      const { error: questionError } = await supabase
+        .from('questions')
+        .update(questionData)
+        .eq('question_id', editingQuestion.question_id);
+
+      if (questionError) throw questionError;
+
+      // Delete existing options and recreate for MCQ
+      if (questionForm.question_type === 'MCQ') {
+        // Delete existing options
+        await supabase
+          .from('question_options')
+          .delete()
+          .eq('question_id', editingQuestion.question_id);
+
+        // Add new options
+        if (questionForm.options && questionForm.options.length > 0) {
+          const optionsToInsert = questionForm.options.map(option => ({
+            question_id: editingQuestion.question_id,
+            option_text: option.option_text?.trim() || '',
+            marks: option.marks || 0,
+            image_url: option.image_url,
+            is_correct: option.is_correct || false,
+            display_order: option.display_order || 1
+          }));
+
+          const { error: optionsError } = await supabase
+            .from('question_options')
+            .insert(optionsToInsert);
+
+          if (optionsError) throw optionsError;
+        }
+      }
+
+      // Refresh structure
+      await loadAssessmentStructure(mainAssessment.assessment_id!);
+
+      // Reset form
+      setQuestionForm({
+        question_text: '',
+        question_type: 'MCQ',
+        marks: 5,
+        image_url: null,
+        display_order: 1,
+        is_active: true,
+        options: []
+      });
+      setShowEditQuestionDialog(false);
+      setEditingQuestion(null);
+    } catch (error) {
+      console.error('Error updating question:', error);
+      alert('Error updating question: ' + (error as Error).message);
+    }
+  };
+
+  const deleteItem = async () => {
+    try {
+      if (!deleteTarget) return;
+
+      if (deleteTarget.type === 'category') {
+        const { error } = await supabase
+          .from('categories')
+          .delete()
+          .eq('category_id', deleteTarget.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('questions')
+          .delete()
+          .eq('question_id', deleteTarget.id);
+
+        if (error) throw error;
+      }
+
+      // Refresh structure
+      await loadAssessmentStructure(mainAssessment.assessment_id!);
+      setShowDeleteDialog(false);
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      alert('Error deleting item: ' + (error as Error).message);
+    }
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setCategoryForm({
+      category_name: category.category_name,
+      description: category.description || '',
+      instructions: category.instructions || '',
+      total_time: category.total_time,
+      maximum_marks: category.maximum_marks,
+      display_order: category.display_order,
+      is_active: category.is_active
+    });
+    setShowEditCategoryDialog(true);
+  };
+
+  const handleEditQuestion = (question: Question) => {
+    setEditingQuestion(question);
+    setQuestionForm({
+      question_text: question.question_text,
+      question_type: question.question_type,
+      marks: question.marks,
+      image_url: question.image_url,
+      display_order: question.display_order,
+      is_active: question.is_active,
+      options: question.options || []
+    });
+    setShowEditQuestionDialog(true);
+  };
+
+  const handleDeleteCategory = (category: Category) => {
+    setDeleteTarget({
+      type: 'category',
+      id: category.category_id!,
+      name: category.category_name
+    });
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteQuestion = (question: Question) => {
+    setDeleteTarget({
+      type: 'question',
+      id: question.question_id!,
+      name: question.question_text
+    });
+    setShowDeleteDialog(true);
+  };
+
   const handleImageUpload = async (file: File, type: 'question' | 'option'): Promise<string> => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${type}-${Date.now()}.${fileExt}`;
@@ -488,10 +682,20 @@ export const CreateAssessment: React.FC = () => {
                   <Plus className="w-3 h-3 mr-1" />
                   Add Question
                 </Button>
-                <Button size="sm" variant="outline" className="rounded-lg">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="rounded-lg"
+                  onClick={() => handleEditCategory(node.category)}
+                >
                   <Edit className="w-3 h-3" />
                 </Button>
-                <Button size="sm" variant="outline" className="rounded-lg text-red-600">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="rounded-lg text-red-600"
+                  onClick={() => handleDeleteCategory(node.category)}
+                >
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
@@ -586,10 +790,20 @@ export const CreateAssessment: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" className="rounded-lg">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="rounded-lg"
+                onClick={() => handleEditQuestion(question)}
+              >
                 <Edit className="w-3 h-3" />
               </Button>
-              <Button size="sm" variant="outline" className="rounded-lg text-red-600">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="rounded-lg text-red-600"
+                onClick={() => handleDeleteQuestion(question)}
+              >
                 <Trash2 className="w-3 h-3" />
               </Button>
             </div>
@@ -903,6 +1117,367 @@ export const CreateAssessment: React.FC = () => {
           </DialogContent>
         </Dialog>
 
+        {/* Edit Category Dialog */}
+        <Dialog open={showEditCategoryDialog} onOpenChange={setShowEditCategoryDialog}>
+          <DialogContent className="max-w-2xl rounded-[1.5rem]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-[#13377c]">
+                Edit Category
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit_category_name" className="text-[#13377c] font-medium">Category Name</Label>
+                <Input
+                  id="edit_category_name"
+                  value={categoryForm.category_name || ''}
+                  onChange={(e) => setCategoryForm({...categoryForm, category_name: e.target.value})}
+                  placeholder="e.g., Logical Reasoning, Verbal Ability"
+                  className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit_category_description" className="text-[#13377c] font-medium">Description</Label>
+                <Textarea
+                  id="edit_category_description"
+                  value={categoryForm.description || ''}
+                  onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
+                  placeholder="Describe this category"
+                  className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit_category_time" className="text-[#13377c] font-medium">Time (minutes)</Label>
+                  <Input
+                    id="edit_category_time"
+                    type="number"
+                    value={categoryForm.total_time || 15}
+                    onChange={(e) => setCategoryForm({...categoryForm, total_time: parseInt(e.target.value)})}
+                    className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit_category_marks" className="text-[#13377c] font-medium">Maximum Marks</Label>
+                  <Input
+                    id="edit_category_marks"
+                    type="number"
+                    value={categoryForm.maximum_marks || 50}
+                    onChange={(e) => setCategoryForm({...categoryForm, maximum_marks: parseInt(e.target.value)})}
+                    className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button variant="outline" onClick={() => setShowEditCategoryDialog(false)} className="rounded-xl">
+                  Cancel
+                </Button>
+                <Button onClick={editCategory} className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl">
+                  Update Category
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Question Dialog */}
+        <Dialog open={showEditQuestionDialog} onOpenChange={setShowEditQuestionDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-[1.5rem]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-[#13377c]">Edit Question</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="edit_question_text" className="text-[#13377c] font-medium">Question Text</Label>
+                <Textarea
+                  id="edit_question_text"
+                  value={questionForm.question_text || ''}
+                  onChange={(e) => setQuestionForm({...questionForm, question_text: e.target.value})}
+                  placeholder="Enter your question here..."
+                  className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff] min-h-[100px]"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit_question_type" className="text-[#13377c] font-medium">Question Type</Label>
+                  <Select
+                    value={questionForm.question_type || 'MCQ'}
+                    onValueChange={(value: 'MCQ' | 'Subjective') => setQuestionForm({
+                      ...questionForm, 
+                      question_type: value,
+                      options: value === 'MCQ' ? (questionForm.options || [{ 
+                        option_text: '', 
+                        marks: 0, 
+                        image_url: null, 
+                        is_correct: false, 
+                        display_order: 1 
+                      }]) : []
+                    })}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MCQ">Multiple Choice</SelectItem>
+                      <SelectItem value="Subjective">Subjective</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit_marks" className="text-[#13377c] font-medium">Marks</Label>
+                  <Input
+                    id="edit_marks"
+                    type="number"
+                    value={questionForm.marks || 5}
+                    onChange={(e) => setQuestionForm({...questionForm, marks: parseInt(e.target.value)})}
+                    className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                  />
+                </div>
+              </div>
+              
+              {/* Question Image Upload */}
+              <div>
+                <Label className="text-[#13377c] font-medium">Question Image (Optional)</Label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleQuestionImageUpload}
+                      className="hidden"
+                      id="edit-question-image-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('edit-question-image-upload')?.click()}
+                      className="rounded-xl"
+                    >
+                      <Image className="w-4 h-4 mr-2" />
+                      Upload Image
+                    </Button>
+                    {questionForm.image_url && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setQuestionForm({...questionForm, image_url: null})}
+                        className="rounded-xl text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {questionForm.image_url && (
+                    <div className="relative">
+                      <img 
+                        src={questionForm.image_url} 
+                        alt="Question preview" 
+                        className="max-w-full h-32 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* MCQ Options */}
+              {questionForm.question_type === 'MCQ' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[#13377c] font-medium">Options</Label>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setQuestionForm({
+                        ...questionForm,
+                        options: [...(questionForm.options || []), {
+                          option_text: '',
+                          marks: 0,
+                          image_url: null,
+                          is_correct: false,
+                          display_order: (questionForm.options?.length || 0) + 1
+                        }]
+                      })}
+                      className="rounded-lg"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add Option
+                    </Button>
+                  </div>
+                  
+                  {questionForm.options?.map((option, index) => (
+                    <Card key={index} className="rounded-xl border border-gray-200 bg-gray-50">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[#13377c] min-w-[20px]">{String.fromCharCode(65 + index)}.</span>
+                          <Input
+                            value={option.option_text}
+                            onChange={(e) => {
+                              const newOptions = [...(questionForm.options || [])];
+                              newOptions[index] = {...option, option_text: e.target.value};
+                              setQuestionForm({...questionForm, options: newOptions});
+                            }}
+                            placeholder="Enter option text"
+                            className="flex-1 rounded-lg"
+                          />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const newOptions = questionForm.options?.filter((_, i) => i !== index) || [];
+                              setQuestionForm({...questionForm, options: newOptions});
+                            }}
+                            className="rounded-lg text-red-600"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        
+                        {/* Option Image Upload */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleOptionImageUpload(e, index)}
+                            className="hidden"
+                            id={`edit-option-image-${index}`}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => document.getElementById(`edit-option-image-${index}`)?.click()}
+                            className="rounded-lg"
+                          >
+                            <Image className="w-3 h-3 mr-1" />
+                            Image
+                          </Button>
+                          {option.image_url && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const newOptions = [...(questionForm.options || [])];
+                                newOptions[index] = {...option, image_url: null};
+                                setQuestionForm({...questionForm, options: newOptions});
+                              }}
+                              className="rounded-lg text-red-600"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {/* Option Image Preview */}
+                        {option.image_url && (
+                          <div className="mt-2">
+                            <img 
+                              src={option.image_url} 
+                              alt="Option preview" 
+                              className="max-w-full h-16 object-cover rounded border"
+                            />
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={option.is_correct}
+                              onChange={(e) => {
+                                const newOptions = [...(questionForm.options || [])];
+                                newOptions[index] = {...option, is_correct: e.target.checked};
+                                setQuestionForm({...questionForm, options: newOptions});
+                              }}
+                              className="rounded"
+                            />
+                            <Label className="text-sm">Correct Answer</Label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Label className="text-sm">Marks:</Label>
+                            <Input
+                              type="number"
+                              value={option.marks}
+                              onChange={(e) => {
+                                const newOptions = [...(questionForm.options || [])];
+                                newOptions[index] = {...option, marks: parseInt(e.target.value) || 0};
+                                setQuestionForm({...questionForm, options: newOptions});
+                              }}
+                              className="w-20 rounded-lg"
+                              min="0"
+                              max={questionForm.marks || 5}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+              
+              <div className="flex justify-end space-x-3 pt-6 border-t">
+                <Button variant="outline" onClick={() => setShowEditQuestionDialog(false)} className="rounded-xl">
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={editQuestion}
+                  className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl"
+                  disabled={!questionForm.question_text?.trim()}
+                >
+                  Update Question
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent className="rounded-[1.5rem]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-2xl font-bold text-red-600">
+                Confirm Deletion
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-lg">
+                Are you sure you want to delete this {deleteTarget?.type}?
+                <br />
+                <span className="font-semibold text-gray-800">"{deleteTarget?.name}"</span>
+                <br /><br />
+                {deleteTarget?.type === 'category' && (
+                  <span className="text-red-600 font-medium">
+                    ⚠️ This will also delete all questions and sub-categories within this category.
+                  </span>
+                )}
+                {deleteTarget?.type === 'question' && (
+                  <span className="text-red-600 font-medium">
+                    ⚠️ This will also delete all options for this question.
+                  </span>
+                )}
+                <br /><br />
+                <span className="text-gray-600">This action cannot be undone.</span>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={deleteItem}
+                className="bg-red-600 hover:bg-red-700 rounded-xl"
+              >
+                Delete {deleteTarget?.type}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         {/* Add Question Dialog */}
         <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-[1.5rem]">
