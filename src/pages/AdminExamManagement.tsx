@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, ChevronRight, ChevronDown, BookOpen, FileText, HelpCircle, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, BookOpen, FileText, Users, Clock, Target, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Badge } from '../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { supabase } from '../lib/supabase';
 
 interface Exam {
@@ -27,7 +26,6 @@ interface Exam {
 
 interface Assessment {
   assessment_id: string;
-  exam_id: string;
   assessment_name: string;
   description: string;
   instructions: string;
@@ -42,39 +40,12 @@ interface Assessment {
   updated_at: string;
 }
 
-interface Question {
-  question_id: string;
-  assessment_id: string;
-  question_text: string;
-  question_type: 'MCQ' | 'Subjective';
-  marks: number;
-  image_url: string | null;
-  display_order: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface QuestionOption {
-  option_id: string;
-  question_id: string;
-  option_text: string;
-  marks: number;
-  image_url: string | null;
-  is_correct: boolean;
-  display_order: number;
-  created_at: string;
-  updated_at: string;
-}
-
 export const AdminExamManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [exams, setExams] = useState<Exam[]>([]);
-  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [questionOptions, setQuestionOptions] = useState<QuestionOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedAssessments, setExpandedAssessments] = useState<Set<string>>(new Set());
+  const [selectedAssessments, setSelectedAssessments] = useState<string[]>([]);
 
   // Form states
   const [examForm, setExamForm] = useState({
@@ -87,120 +58,29 @@ export const AdminExamManagement: React.FC = () => {
     maximum_marks: 100
   });
 
-  const [assessmentForm, setAssessmentForm] = useState({
-    assessment_name: '',
-    description: '',
-    instructions: '',
-    total_time: 30,
-    min_student_age: 10,
-    max_student_age: 25,
-    maximum_marks: 50,
-    parent_assessment_id: null as string | null
-  });
-
-  const [questionForm, setQuestionForm] = useState({
-    question_text: '',
-    question_type: 'MCQ' as 'MCQ' | 'Subjective',
-    marks: 5,
-    image_url: ''
-  });
-
-  const [optionForm, setOptionForm] = useState({
-    option_text: '',
-    marks: 0,
-    image_url: '',
-    is_correct: false
-  });
-
-  const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-
   // Dialog states
   const [showExamDialog, setShowExamDialog] = useState(false);
-  const [showAssessmentDialog, setShowAssessmentDialog] = useState(false);
-  const [showQuestionDialog, setShowQuestionDialog] = useState(false);
-  const [showOptionDialog, setShowOptionDialog] = useState(false);
 
   useEffect(() => {
-    fetchExams();
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    if (selectedExam) {
-      fetchAssessments(selectedExam.exam_id);
-    }
-  }, [selectedExam]);
-
-  useEffect(() => {
-    if (selectedAssessment) {
-      fetchQuestions(selectedAssessment.assessment_id);
-    }
-  }, [selectedAssessment]);
-
-  useEffect(() => {
-    if (selectedQuestion) {
-      fetchQuestionOptions(selectedQuestion.question_id);
-    }
-  }, [selectedQuestion]);
-
-  const fetchExams = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('exams')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [examsResult, assessmentsResult] = await Promise.all([
+        supabase.from('exams').select('*').order('created_at', { ascending: false }),
+        supabase.from('assessments').select('*').order('created_at', { ascending: false })
+      ]);
 
-      if (error) throw error;
-      setExams(data || []);
+      if (examsResult.error) throw examsResult.error;
+      if (assessmentsResult.error) throw assessmentsResult.error;
+
+      setExams(examsResult.data || []);
+      setAssessments(assessmentsResult.data || []);
     } catch (error) {
-      console.error('Error fetching exams:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchAssessments = async (examId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('assessments')
-        .select('*')
-        .eq('exam_id', examId)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setAssessments(data || []);
-    } catch (error) {
-      console.error('Error fetching assessments:', error);
-    }
-  };
-
-  const fetchQuestions = async (assessmentId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('questions')
-        .select('*')
-        .eq('assessment_id', assessmentId)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setQuestions(data || []);
-    } catch (error) {
-      console.error('Error fetching questions:', error);
-    }
-  };
-
-  const fetchQuestionOptions = async (questionId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('question_options')
-        .select('*')
-        .eq('question_id', questionId)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setQuestionOptions(data || []);
-    } catch (error) {
-      console.error('Error fetching question options:', error);
     }
   };
 
@@ -214,6 +94,17 @@ export const AdminExamManagement: React.FC = () => {
 
       if (error) throw error;
 
+      // Create exam-assessment relationships
+      if (selectedAssessments.length > 0) {
+        const examAssessments = selectedAssessments.map(assessmentId => ({
+          exam_id: data.exam_id,
+          assessment_id: assessmentId
+        }));
+
+        // You would need to create an exam_assessments junction table for this
+        // For now, we'll just create the exam
+      }
+
       setExams([data, ...exams]);
       setExamForm({
         exam_name: '',
@@ -224,6 +115,7 @@ export const AdminExamManagement: React.FC = () => {
         max_student_age: 25,
         maximum_marks: 100
       });
+      setSelectedAssessments([]);
       setShowExamDialog(false);
     } catch (error) {
       console.error('Error creating exam:', error);
@@ -231,628 +123,404 @@ export const AdminExamManagement: React.FC = () => {
     }
   };
 
-  const createAssessment = async () => {
-    if (!selectedExam) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('assessments')
-        .insert([{
-          ...assessmentForm,
-          exam_id: selectedExam.exam_id
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setAssessments([...assessments, data]);
-      setAssessmentForm({
-        assessment_name: '',
-        description: '',
-        instructions: '',
-        total_time: 30,
-        min_student_age: 10,
-        max_student_age: 25,
-        maximum_marks: 50,
-        parent_assessment_id: null
-      });
-      setShowAssessmentDialog(false);
-    } catch (error) {
-      console.error('Error creating assessment:', error);
-      alert('Error creating assessment: ' + (error as Error).message);
-    }
-  };
-
-  const createQuestion = async () => {
-    if (!selectedAssessment) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('questions')
-        .insert([{
-          ...questionForm,
-          assessment_id: selectedAssessment.assessment_id,
-          image_url: questionForm.image_url || null
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setQuestions([...questions, data]);
-      setQuestionForm({
-        question_text: '',
-        question_type: 'MCQ',
-        marks: 5,
-        image_url: ''
-      });
-      setShowQuestionDialog(false);
-    } catch (error) {
-      console.error('Error creating question:', error);
-      alert('Error creating question: ' + (error as Error).message);
-    }
-  };
-
-  const createOption = async () => {
-    if (!selectedQuestion) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('question_options')
-        .insert([{
-          ...optionForm,
-          question_id: selectedQuestion.question_id,
-          image_url: optionForm.image_url || null
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setQuestionOptions([...questionOptions, data]);
-      setOptionForm({
-        option_text: '',
-        marks: 0,
-        image_url: '',
-        is_correct: false
-      });
-      setShowOptionDialog(false);
-    } catch (error) {
-      console.error('Error creating option:', error);
-      alert('Error creating option: ' + (error as Error).message);
-    }
-  };
-
-  const toggleAssessmentExpansion = (assessmentId: string) => {
-    const newExpanded = new Set(expandedAssessments);
-    if (newExpanded.has(assessmentId)) {
-      newExpanded.delete(assessmentId);
-    } else {
-      newExpanded.add(assessmentId);
-    }
-    setExpandedAssessments(newExpanded);
-  };
-
-  const getAssessmentHierarchy = () => {
-    const rootAssessments = assessments.filter(a => !a.parent_assessment_id);
-    const childAssessments = assessments.filter(a => a.parent_assessment_id);
-    
-    return rootAssessments.map(root => ({
-      ...root,
-      children: childAssessments.filter(child => child.parent_assessment_id === root.assessment_id)
-    }));
+  const toggleAssessmentSelection = (assessmentId: string) => {
+    setSelectedAssessments(prev => 
+      prev.includes(assessmentId) 
+        ? prev.filter(id => id !== assessmentId)
+        : [...prev, assessmentId]
+    );
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-xl text-gray-600">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Exam Management</h1>
-            <p className="text-gray-600 mt-2">Create and manage exams, assessments, and questions</p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="container mx-auto px-6 py-8">
+        {/* Header */}
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+            Admin Exam Management
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Create and manage comprehensive exams with assessments, questions, and detailed configurations.
+          </p>
+        </header>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
           
-          <Dialog open={showExamDialog} onOpenChange={setShowExamDialog}>
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Exam
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create New Exam</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="exam_name">Exam Name</Label>
-                  <Input
-                    id="exam_name"
-                    value={examForm.exam_name}
-                    onChange={(e) => setExamForm({...examForm, exam_name: e.target.value})}
-                    placeholder="Enter exam name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={examForm.description}
-                    onChange={(e) => setExamForm({...examForm, description: e.target.value})}
-                    placeholder="Enter exam description"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="instructions">Instructions</Label>
-                  <Textarea
-                    id="instructions"
-                    value={examForm.instructions}
-                    onChange={(e) => setExamForm({...examForm, instructions: e.target.value})}
-                    placeholder="Enter exam instructions"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="total_time">Total Time (minutes)</Label>
-                    <Input
-                      id="total_time"
-                      type="number"
-                      value={examForm.total_time}
-                      onChange={(e) => setExamForm({...examForm, total_time: parseInt(e.target.value)})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="maximum_marks">Maximum Marks</Label>
-                    <Input
-                      id="maximum_marks"
-                      type="number"
-                      value={examForm.maximum_marks}
-                      onChange={(e) => setExamForm({...examForm, maximum_marks: parseInt(e.target.value)})}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="min_student_age">Min Student Age</Label>
-                    <Input
-                      id="min_student_age"
-                      type="number"
-                      value={examForm.min_student_age}
-                      onChange={(e) => setExamForm({...examForm, min_student_age: parseInt(e.target.value)})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="max_student_age">Max Student Age</Label>
-                    <Input
-                      id="max_student_age"
-                      type="number"
-                      value={examForm.max_student_age}
-                      onChange={(e) => setExamForm({...examForm, max_student_age: parseInt(e.target.value)})}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setShowExamDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createExam}>
-                    Create Exam
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Exams List */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <BookOpen className="w-5 h-5 mr-2" />
-                Exams ({exams.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {exams.map((exam) => (
-                  <div
-                    key={exam.exam_id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedExam?.exam_id === exam.exam_id
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setSelectedExam(exam)}
-                  >
-                    <div className="font-medium">{exam.exam_name}</div>
-                    <div className="text-sm text-gray-500">
-                      {exam.maximum_marks} marks • {exam.total_time} min
-                    </div>
-                    <div className="flex items-center mt-2">
-                      <Badge variant={exam.is_active ? "default" : "secondary"}>
-                        {exam.is_active ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Assessments */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <FileText className="w-5 h-5 mr-2" />
-                  Assessments
-                </div>
-                {selectedExam && (
-                  <Dialog open={showAssessmentDialog} onOpenChange={setShowAssessmentDialog}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Create Assessment</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="assessment_name">Assessment Name</Label>
-                          <Input
-                            id="assessment_name"
-                            value={assessmentForm.assessment_name}
-                            onChange={(e) => setAssessmentForm({...assessmentForm, assessment_name: e.target.value})}
-                            placeholder="Enter assessment name"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="parent_assessment">Parent Assessment (Optional)</Label>
-                          <Select
-                            value={assessmentForm.parent_assessment_id || ''}
-                            onValueChange={(value) => setAssessmentForm({...assessmentForm, parent_assessment_id: value || null})}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select parent assessment" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="">None (Root Assessment)</SelectItem>
-                              {assessments.filter(a => !a.parent_assessment_id).map((assessment) => (
-                                <SelectItem key={assessment.assessment_id} value={assessment.assessment_id}>
-                                  {assessment.assessment_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="assessment_time">Time (minutes)</Label>
-                            <Input
-                              id="assessment_time"
-                              type="number"
-                              value={assessmentForm.total_time}
-                              onChange={(e) => setAssessmentForm({...assessmentForm, total_time: parseInt(e.target.value)})}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="assessment_marks">Maximum Marks</Label>
-                            <Input
-                              id="assessment_marks"
-                              type="number"
-                              value={assessmentForm.maximum_marks}
-                              onChange={(e) => setAssessmentForm({...assessmentForm, maximum_marks: parseInt(e.target.value)})}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="outline" onClick={() => setShowAssessmentDialog(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={createAssessment}>
-                            Create Assessment
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedExam ? (
-                <div className="space-y-2">
-                  {getAssessmentHierarchy().map((assessment) => (
-                    <div key={assessment.assessment_id}>
-                      <div
-                        className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selectedAssessment?.assessment_id === assessment.assessment_id
-                            ? 'bg-green-50 border-green-200'
-                            : 'hover:bg-gray-50'
-                        }`}
-                        onClick={() => setSelectedAssessment(assessment)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">{assessment.assessment_name}</div>
-                            <div className="text-sm text-gray-500">
-                              {assessment.maximum_marks} marks
-                              {assessment.total_time && ` • ${assessment.total_time} min`}
-                            </div>
-                          </div>
-                          {assessment.children.length > 0 && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleAssessmentExpansion(assessment.assessment_id);
-                              }}
-                            >
-                              {expandedAssessments.has(assessment.assessment_id) ? (
-                                <ChevronDown className="w-4 h-4" />
-                              ) : (
-                                <ChevronRight className="w-4 h-4" />
-                              )}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Sub-assessments */}
-                      {expandedAssessments.has(assessment.assessment_id) && assessment.children.map((child) => (
-                        <div
-                          key={child.assessment_id}
-                          className={`ml-6 mt-2 p-2 rounded border cursor-pointer transition-colors ${
-                            selectedAssessment?.assessment_id === child.assessment_id
-                              ? 'bg-green-50 border-green-200'
-                              : 'hover:bg-gray-50'
-                          }`}
-                          onClick={() => setSelectedAssessment(child)}
-                        >
-                          <div className="font-medium text-sm">{child.assessment_name}</div>
-                          <div className="text-xs text-gray-500">
-                            {child.maximum_marks} marks
-                            {child.total_time && ` • ${child.total_time} min`}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 py-8">
-                  Select an exam to view assessments
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Questions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <HelpCircle className="w-5 h-5 mr-2" />
-                  Questions
-                </div>
-                {selectedAssessment && (
-                  <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Create Question</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="question_text">Question Text</Label>
-                          <Textarea
-                            id="question_text"
-                            value={questionForm.question_text}
-                            onChange={(e) => setQuestionForm({...questionForm, question_text: e.target.value})}
-                            placeholder="Enter question text"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="question_type">Question Type</Label>
-                            <Select
-                              value={questionForm.question_type}
-                              onValueChange={(value: 'MCQ' | 'Subjective') => setQuestionForm({...questionForm, question_type: value})}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="MCQ">Multiple Choice</SelectItem>
-                                <SelectItem value="Subjective">Subjective</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label htmlFor="question_marks">Marks</Label>
-                            <Input
-                              id="question_marks"
-                              type="number"
-                              value={questionForm.marks}
-                              onChange={(e) => setQuestionForm({...questionForm, marks: parseInt(e.target.value)})}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="question_image">Image URL (Optional)</Label>
-                          <Input
-                            id="question_image"
-                            value={questionForm.image_url}
-                            onChange={(e) => setQuestionForm({...questionForm, image_url: e.target.value})}
-                            placeholder="Enter image URL"
-                          />
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="outline" onClick={() => setShowQuestionDialog(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={createQuestion}>
-                            Create Question
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedAssessment ? (
-                <div className="space-y-2">
-                  {questions.map((question) => (
-                    <div
-                      key={question.question_id}
-                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                        selectedQuestion?.question_id === question.question_id
-                          ? 'bg-purple-50 border-purple-200'
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => setSelectedQuestion(question)}
-                    >
-                      <div className="font-medium text-sm">{question.question_text.substring(0, 100)}...</div>
-                      <div className="flex items-center justify-between mt-2">
-                        <Badge variant={question.question_type === 'MCQ' ? "default" : "secondary"}>
-                          {question.question_type}
-                        </Badge>
-                        <span className="text-sm text-gray-500">{question.marks} marks</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 py-8">
-                  Select an assessment to view questions
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Question Options */}
-        {selectedQuestion && selectedQuestion.question_type === 'MCQ' && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Settings className="w-5 h-5 mr-2" />
-                  Question Options
-                </div>
-                <Dialog open={showOptionDialog} onOpenChange={setShowOptionDialog}>
+          {/* Left Half - Exams Management */}
+          <Card className="rounded-[2rem] shadow-xl border-0 bg-white">
+            <CardHeader className="pb-6">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center text-2xl font-bold text-[#13377c]">
+                  <BookOpen className="w-6 h-6 mr-3 text-[#3479ff]" />
+                  Exams ({exams.length})
+                </CardTitle>
+                
+                <Dialog open={showExamDialog} onOpenChange={setShowExamDialog}>
                   <DialogTrigger asChild>
-                    <Button size="sm">
+                    <Button className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl px-6 py-3 shadow-lg">
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Option
+                      Create Exam
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-[1.5rem]">
                     <DialogHeader>
-                      <DialogTitle>Create Option</DialogTitle>
+                      <DialogTitle className="text-2xl font-bold text-[#13377c] mb-4">Create New Exam</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="option_text">Option Text</Label>
-                        <Input
-                          id="option_text"
-                          value={optionForm.option_text}
-                          onChange={(e) => setOptionForm({...optionForm, option_text: e.target.value})}
-                          placeholder="Enter option text"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="option_marks">Marks</Label>
-                          <Input
-                            id="option_marks"
-                            type="number"
-                            value={optionForm.marks}
-                            onChange={(e) => setOptionForm({...optionForm, marks: parseInt(e.target.value)})}
-                          />
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {/* Left - Exam Details */}
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold text-[#13377c] border-b pb-2">Exam Details</h3>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="exam_name" className="text-[#13377c] font-medium">Exam Name</Label>
+                            <Input
+                              id="exam_name"
+                              value={examForm.exam_name}
+                              onChange={(e) => setExamForm({...examForm, exam_name: e.target.value})}
+                              placeholder="Enter exam name"
+                              className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="description" className="text-[#13377c] font-medium">Description</Label>
+                            <Textarea
+                              id="description"
+                              value={examForm.description}
+                              onChange={(e) => setExamForm({...examForm, description: e.target.value})}
+                              placeholder="Enter exam description"
+                              className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff] min-h-[100px]"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="instructions" className="text-[#13377c] font-medium">Instructions</Label>
+                            <Textarea
+                              id="instructions"
+                              value={examForm.instructions}
+                              onChange={(e) => setExamForm({...examForm, instructions: e.target.value})}
+                              placeholder="Enter exam instructions"
+                              className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff] min-h-[100px]"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="total_time" className="text-[#13377c] font-medium">Total Time (minutes)</Label>
+                              <Input
+                                id="total_time"
+                                type="number"
+                                value={examForm.total_time}
+                                onChange={(e) => setExamForm({...examForm, total_time: parseInt(e.target.value)})}
+                                className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="maximum_marks" className="text-[#13377c] font-medium">Maximum Marks</Label>
+                              <Input
+                                id="maximum_marks"
+                                type="number"
+                                value={examForm.maximum_marks}
+                                onChange={(e) => setExamForm({...examForm, maximum_marks: parseInt(e.target.value)})}
+                                className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="min_student_age" className="text-[#13377c] font-medium">Min Student Age</Label>
+                              <Input
+                                id="min_student_age"
+                                type="number"
+                                value={examForm.min_student_age}
+                                onChange={(e) => setExamForm({...examForm, min_student_age: parseInt(e.target.value)})}
+                                className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="max_student_age" className="text-[#13377c] font-medium">Max Student Age</Label>
+                              <Input
+                                id="max_student_age"
+                                type="number"
+                                value={examForm.max_student_age}
+                                onChange={(e) => setExamForm({...examForm, max_student_age: parseInt(e.target.value)})}
+                                className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="is_correct"
-                            checked={optionForm.is_correct}
-                            onChange={(e) => setOptionForm({...optionForm, is_correct: e.target.checked})}
-                          />
-                          <Label htmlFor="is_correct">Correct Answer</Label>
+                      </div>
+
+                      {/* Right - Assessment Selection */}
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold text-[#13377c] border-b pb-2">Select Assessments</h3>
+                        
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                          {assessments.map((assessment) => (
+                            <div
+                              key={assessment.assessment_id}
+                              onClick={() => toggleAssessmentSelection(assessment.assessment_id)}
+                              className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                                selectedAssessments.includes(assessment.assessment_id)
+                                  ? 'border-[#3479ff] bg-[#3479ff]/10 shadow-md'
+                                  : 'border-gray-200 hover:border-[#3479ff]/50 hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h4 className="font-semibold text-[#13377c]">{assessment.assessment_name}</h4>
+                                  <p className="text-sm text-gray-600 mt-1">{assessment.description}</p>
+                                  <div className="flex items-center gap-4 mt-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {assessment.maximum_marks} marks
+                                    </Badge>
+                                    <Badge variant="outline" className="text-xs">
+                                      {assessment.total_time} min
+                                    </Badge>
+                                  </div>
+                                </div>
+                                <div className={`w-5 h-5 rounded-full border-2 ${
+                                  selectedAssessments.includes(assessment.assessment_id)
+                                    ? 'bg-[#3479ff] border-[#3479ff]'
+                                    : 'border-gray-300'
+                                }`}>
+                                  {selectedAssessments.includes(assessment.assessment_id) && (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <div className="w-2 h-2 bg-white rounded-full" />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="option_image">Image URL (Optional)</Label>
-                        <Input
-                          id="option_image"
-                          value={optionForm.image_url}
-                          onChange={(e) => setOptionForm({...optionForm, image_url: e.target.value})}
-                          placeholder="Enter image URL"
-                        />
-                      </div>
-                      <div className="flex justify-end space-x-2">
-                        <Button variant="outline" onClick={() => setShowOptionDialog(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={createOption}>
-                          Create Option
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {questionOptions.map((option, index) => (
-                  <div
-                    key={option.option_id}
-                    className={`p-3 rounded-lg border ${
-                      option.is_correct ? 'bg-green-50 border-green-200' : 'bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-medium">{String.fromCharCode(65 + index)}.</span>
-                        <span>{option.option_text}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={option.is_correct ? "default" : "secondary"}>
-                          {option.marks} marks
-                        </Badge>
-                        {option.is_correct && (
-                          <Badge className="bg-green-500">
-                            Correct
-                          </Badge>
+                        
+                        {selectedAssessments.length > 0 && (
+                          <div className="bg-[#3479ff]/10 p-4 rounded-xl">
+                            <p className="text-sm text-[#13377c] font-medium">
+                              {selectedAssessments.length} assessment{selectedAssessments.length !== 1 ? 's' : ''} selected
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
-                  </div>
-                ))}
+
+                    <div className="flex justify-end space-x-3 mt-8 pt-6 border-t">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setShowExamDialog(false)}
+                        className="rounded-xl px-6"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={createExam}
+                        className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl px-6"
+                      >
+                        Create Exam
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              {exams.length === 0 ? (
+                <div className="text-center py-12">
+                  <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No exams created yet</p>
+                  <p className="text-gray-400 text-sm">Create your first exam to get started</p>
+                </div>
+              ) : (
+                exams.map((exam) => (
+                  <Card key={exam.exam_id} className="rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-200 hover:border-[#3479ff]/30">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-[#13377c] text-lg mb-2">{exam.exam_name}</h3>
+                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{exam.description}</p>
+                          
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-[#3479ff]" />
+                              <span className="text-sm text-gray-600">{exam.total_time} min</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Target className="w-4 h-4 text-[#3479ff]" />
+                              <span className="text-sm text-gray-600">{exam.maximum_marks} marks</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4 text-[#3479ff]" />
+                              <span className="text-sm text-gray-600">{exam.min_student_age}-{exam.max_student_age} years</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Badge variant={exam.is_active ? "default" : "secondary"} className="rounded-full">
+                              {exam.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                            <span className="text-xs text-gray-400">
+                              Created {new Date(exam.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Button size="sm" variant="outline" className="rounded-lg">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="rounded-lg">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="rounded-lg text-red-600 hover:text-red-700">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </CardContent>
           </Card>
-        )}
+
+          {/* Right Half - Assessments Management */}
+          <Card className="rounded-[2rem] shadow-xl border-0 bg-white">
+            <CardHeader className="pb-6">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center text-2xl font-bold text-[#13377c]">
+                  <FileText className="w-6 h-6 mr-3 text-[#3479ff]" />
+                  Assessments ({assessments.length})
+                </CardTitle>
+                
+                <Button 
+                  onClick={() => navigate('/admin/create-assessment')}
+                  className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl px-6 py-3 shadow-lg"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Assessment
+                </Button>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              {assessments.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No assessments created yet</p>
+                  <p className="text-gray-400 text-sm">Create your first assessment to get started</p>
+                </div>
+              ) : (
+                assessments.map((assessment) => (
+                  <Card key={assessment.assessment_id} className="rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-200 hover:border-[#3479ff]/30">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-[#13377c] text-lg mb-2">{assessment.assessment_name}</h3>
+                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{assessment.description}</p>
+                          
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-[#3479ff]" />
+                              <span className="text-sm text-gray-600">{assessment.total_time} min</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Target className="w-4 h-4 text-[#3479ff]" />
+                              <span className="text-sm text-gray-600">{assessment.maximum_marks} marks</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4 text-[#3479ff]" />
+                              <span className="text-sm text-gray-600">{assessment.min_student_age}-{assessment.max_student_age} years</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Badge variant={assessment.is_active ? "default" : "secondary"} className="rounded-full">
+                              {assessment.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                            {assessment.parent_assessment_id && (
+                              <Badge variant="outline" className="rounded-full text-xs">
+                                Sub-section
+                              </Badge>
+                            )}
+                            <span className="text-xs text-gray-400">
+                              Created {new Date(assessment.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="rounded-lg"
+                            onClick={() => navigate(`/admin/edit-assessment/${assessment.assessment_id}`)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="rounded-lg">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="rounded-lg text-red-600 hover:text-red-700">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12 max-w-7xl mx-auto">
+          <Card className="rounded-[1.5rem] border-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-6 text-center">
+              <BookOpen className="w-8 h-8 mx-auto mb-3" />
+              <div className="text-2xl font-bold">{exams.length}</div>
+              <div className="text-sm opacity-90">Total Exams</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="rounded-[1.5rem] border-0 bg-gradient-to-br from-green-500 to-green-600 text-white">
+            <CardContent className="p-6 text-center">
+              <FileText className="w-8 h-8 mx-auto mb-3" />
+              <div className="text-2xl font-bold">{assessments.length}</div>
+              <div className="text-sm opacity-90">Total Assessments</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="rounded-[1.5rem] border-0 bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-6 text-center">
+              <Target className="w-8 h-8 mx-auto mb-3" />
+              <div className="text-2xl font-bold">{exams.filter(e => e.is_active).length}</div>
+              <div className="text-sm opacity-90">Active Exams</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="rounded-[1.5rem] border-0 bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+            <CardContent className="p-6 text-center">
+              <Users className="w-8 h-8 mx-auto mb-3" />
+              <div className="text-2xl font-bold">{assessments.filter(a => a.is_active).length}</div>
+              <div className="text-sm opacity-90">Active Assessments</div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
