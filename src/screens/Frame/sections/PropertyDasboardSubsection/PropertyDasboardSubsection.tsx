@@ -92,7 +92,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         
         // Fetch exams for payment plans
         await fetchExams();
-        await fetchUserPurchases(user.id);
+        await fetchUserPurchases(user?.id);
         
       } catch (err) {
         console.error("❌ Auth check error:", err);
@@ -207,7 +207,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         alert(`🎉 Payment successful! You now have access to ${exam.exam_name}.`);
         
         // Refresh user purchases
-        await fetchUserPurchases(user.id);
+        await fetchUserPurchases(user?.id);
       }
 
     } catch (error) {
@@ -244,7 +244,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
       alert(`✅ You now have access to ${exam.exam_name}!`);
       
       // Refresh user purchases
-      await fetchUserPurchases(user.id);
+      await fetchUserPurchases(user?.id);
     } catch (error) {
       console.error('Error recording free exam access:', error);
       alert('Error accessing exam. Please try again.');
