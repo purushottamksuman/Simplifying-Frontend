@@ -518,6 +518,7 @@ export const AdminExamManagement: React.FC = () => {
                             discounted_price: 0,
                             tax: 0
                           });
+                          setSelectedAssessments([]);
                         }}
                         className="rounded-xl px-6"
                       >
