@@ -94,15 +94,21 @@ export const AdminExamManagement: React.FC = () => {
 
       if (error) throw error;
 
-      // Create exam-assessment relationships
+      // Create exam-assessment relationships if assessments are selected
       if (selectedAssessments.length > 0) {
         const examAssessments = selectedAssessments.map(assessmentId => ({
           exam_id: data.exam_id,
           assessment_id: assessmentId
         }));
 
-        // You would need to create an exam_assessments junction table for this
-        // For now, we'll just create the exam
+        const { error: junctionError } = await supabase
+          .from('exam_assessments')
+          .insert(examAssessments);
+
+        if (junctionError) {
+          console.error('Error creating exam-assessment relationships:', junctionError);
+          // Don't throw here, just log the error since the exam was created successfully
+        }
       }
 
       setExams([data, ...exams]);
