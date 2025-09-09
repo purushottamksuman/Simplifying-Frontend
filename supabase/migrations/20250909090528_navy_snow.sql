@@ -5,52 +5,65 @@
     - `categories`
       - `category_id` (uuid, primary key)
       - `assessment_id` (uuid, foreign key to assessments)
-      - `parent_category_id` (uuid, foreign key to categories - for hierarchy)
+      - `parent_category_id` (uuid, foreign key to categories, optional)
       - `category_name` (text, required)
       - `description` (text, optional)
       - `instructions` (text, optional)
-      - `total_time` (integer, default 15 minutes)
-      - `maximum_marks` (integer, default 50)
+      - `total_time` (integer, minutes, optional)
+      - `maximum_marks` (integer, required)
       - `display_order` (integer, default 1)
       - `is_active` (boolean, default true)
-      - `created_at` (timestamp)
-      - `updated_at` (timestamp)
+      - `created_at` (timestamptz, auto)
+      - `updated_at` (timestamptz, auto)
 
   2. Security
     - Enable RLS on `categories` table
     - Add policies for authenticated users to manage categories
 
   3. Constraints
-    - Foreign key to assessments table
-    - Self-referencing foreign key for hierarchy
-    - Check constraint for positive marks and time
+    - Positive marks validation
+    - Positive time validation (if provided)
+    - Non-empty category name
+    - Self-referencing hierarchy support
 */
 
 -- Create categories table
 CREATE TABLE IF NOT EXISTS categories (
   category_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  assessment_id uuid NOT NULL REFERENCES assessments(assessment_id) ON DELETE CASCADE,
-  parent_category_id uuid REFERENCES categories(category_id) ON DELETE CASCADE,
-  category_name text NOT NULL,
+  assessment_id uuid NOT NULL,
+  parent_category_id uuid,
+  category_name text NOT NULL CHECK (length(trim(category_name)) > 0),
   description text,
   instructions text,
-  total_time integer DEFAULT 15 CHECK (total_time > 0),
-  maximum_marks integer DEFAULT 50 CHECK (maximum_marks > 0),
-  display_order integer DEFAULT 1 CHECK (display_order > 0),
+  total_time integer CHECK (total_time IS NULL OR total_time > 0),
+  maximum_marks integer NOT NULL CHECK (maximum_marks > 0),
+  display_order integer DEFAULT 1,
   is_active boolean DEFAULT true,
   created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
+  updated_at timestamptz DEFAULT now(),
+  
+  -- Foreign key constraints
+  CONSTRAINT fk_categories_assessment 
+    FOREIGN KEY (assessment_id) 
+    REFERENCES assessments(assessment_id) 
+    ON DELETE CASCADE,
+    
+  CONSTRAINT fk_categories_parent 
+    FOREIGN KEY (parent_category_id) 
+    REFERENCES categories(category_id) 
+    ON DELETE CASCADE
 );
 
--- Create indexes for better performance
+-- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_categories_assessment_id ON categories(assessment_id);
 CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_category_id);
 CREATE INDEX IF NOT EXISTS idx_categories_display_order ON categories(assessment_id, display_order);
+CREATE INDEX IF NOT EXISTS idx_categories_active ON categories(is_active);
 
 -- Enable RLS
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create RLS policies
 CREATE POLICY "Authenticated users can read categories"
   ON categories
   FOR SELECT
@@ -75,16 +88,8 @@ CREATE POLICY "Authenticated users can delete categories"
   TO authenticated
   USING (true);
 
--- Create updated_at trigger
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.triggers 
-    WHERE trigger_name = 'update_categories_updated_at'
-  ) THEN
-    CREATE TRIGGER update_categories_updated_at
-      BEFORE UPDATE ON categories
-      FOR EACH ROW
-      EXECUTE FUNCTION update_updated_at_column();
-  END IF;
-END $$;
+-- Create trigger for updated_at
+CREATE TRIGGER update_categories_updated_at
+  BEFORE UPDATE ON categories
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
