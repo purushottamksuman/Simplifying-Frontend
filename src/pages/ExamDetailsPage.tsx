@@ -149,25 +149,39 @@ export const ExamDetailsPage: React.FC = () => {
         setAttempts(attemptsData || []);
       }
 
-      // Fetch questions for review
-      const { data: questionsData, error: questionsError } = await supabase
-        .from('questions')
-        .select(`
-          *,
-          question_options (*)
-        `)
-        .eq('assessment_id', examData.exam_id)
-        .eq('is_active', true)
+      // Fetch questions for review through exam_assessments junction table
+      const { data: examAssessments, error: examAssessmentsError } = await supabase
+        .from('exam_assessments')
+        .select('assessment_id')
+        .eq('exam_id', examId)
         .order('display_order');
 
-      if (questionsError) {
-        console.error('Error fetching questions:', questionsError);
-      } else {
-        const processedQuestions = questionsData?.map(q => ({
-          ...q,
-          options: q.question_options?.sort((a: any, b: any) => a.display_order - b.display_order) || []
-        })) || [];
-        setQuestions(processedQuestions);
+      if (examAssessmentsError) {
+        console.error('Error fetching exam assessments:', examAssessmentsError);
+      } else if (examAssessments && examAssessments.length > 0) {
+        // Get all assessment IDs for this exam
+        const assessmentIds = examAssessments.map(ea => ea.assessment_id);
+
+        // Fetch questions from all assessments
+        const { data: questionsData, error: questionsError } = await supabase
+          .from('questions')
+          .select(`
+            *,
+            question_options (*)
+          `)
+          .in('assessment_id', assessmentIds)
+          .eq('is_active', true)
+          .order('assessment_id, display_order');
+
+        if (questionsError) {
+          console.error('Error fetching questions:', questionsError);
+        } else {
+          const processedQuestions = questionsData?.map(q => ({
+            ...q,
+            options: q.question_options?.sort((a: any, b: any) => a.display_order - b.display_order) || []
+          })) || [];
+          setQuestions(processedQuestions);
+        }
       }
 
     } catch (err) {

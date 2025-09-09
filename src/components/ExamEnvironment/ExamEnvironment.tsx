@@ -168,16 +168,44 @@ export const ExamEnvironment: React.FC = () => {
       setExam(examData);
       setTimeRemaining(examData.total_time * 60); // Convert minutes to seconds
 
-      // Fetch questions with options
+      // Fetch questions with options through exam_assessments junction table
+      const { data: examAssessments, error: examAssessmentsError } = await supabase
+        .from('exam_assessments')
+        .select(`
+          assessment_id,
+          assessments!inner (
+            assessment_id,
+            assessment_name
+          )
+        `)
+        .eq('exam_id', examId)
+        .order('display_order');
+
+      if (examAssessmentsError) {
+        console.error('Error fetching exam assessments:', examAssessmentsError);
+        setError('Failed to load exam assessments.');
+        return;
+      }
+
+      if (!examAssessments || examAssessments.length === 0) {
+        console.log('No assessments found for this exam');
+        setQuestions([]);
+        return;
+      }
+
+      // Get all assessment IDs for this exam
+      const assessmentIds = examAssessments.map(ea => ea.assessment_id);
+
+      // Fetch questions from all assessments
       const { data: questionsData, error: questionsError } = await supabase
         .from('questions')
         .select(`
           *,
           question_options (*)
         `)
-        .eq('assessment_id', examData.exam_id)
+        .in('assessment_id', assessmentIds)
         .eq('is_active', true)
-        .order('display_order');
+        .order('assessment_id, display_order');
 
       if (questionsError) {
         console.error('Error fetching questions:', questionsError);
