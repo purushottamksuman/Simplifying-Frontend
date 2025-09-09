@@ -73,6 +73,7 @@ export const ExamEnvironment: React.FC = () => {
   const [examSubmitted, setExamSubmitted] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [examStartTime, setExamStartTime] = useState<Date | null>(null);
   
   // UI state
   const [loading, setLoading] = useState(true);
@@ -231,6 +232,7 @@ export const ExamEnvironment: React.FC = () => {
 
   const startExam = () => {
     setExamStarted(true);
+    setExamStartTime(new Date());
     console.log('🚀 Exam started:', exam?.exam_name);
   };
 
@@ -265,8 +267,15 @@ export const ExamEnvironment: React.FC = () => {
 
   const submitExam = async () => {
     try {
+      console.log('🔄 Submitting exam to database...');
       setExamSubmitted(true);
       
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError('User not authenticated');
+        return;
+      }
+
       // Calculate score
       let totalScore = 0;
       const answersArray = Array.from(userAnswers.values());
@@ -284,10 +293,60 @@ export const ExamEnvironment: React.FC = () => {
         // For subjective questions, manual evaluation would be needed
       }
 
-      // Save exam attempt to database (you can create this table)
-      const { data: { user } } = await supabase.auth.getUser();
+      const endTime = new Date();
+      const timeTaken = examStartTime ? Math.floor((endTime.getTime() - examStartTime.getTime()) / 1000) : 0;
+      const percentage = exam?.maximum_marks ? (totalScore / exam.maximum_marks) * 100 : 0;
+
+      console.log('📊 Exam results:', {
+        totalScore,
+        maxMarks: exam?.maximum_marks,
+        percentage: percentage.toFixed(1),
+        timeTaken,
+        answersCount: answersArray.length
+      });
+
+      // Save exam attempt to database
+      const { data: examAttempt, error: attemptError } = await supabase
+        .from('exam_attempts')
+        .insert({
+          user_id: user.id,
+          exam_id: examId,
+          start_time: examStartTime?.toISOString(),
+          end_time: endTime.toISOString(),
+          total_score: totalScore,
+          max_possible_score: exam?.maximum_marks || 0,
+          percentage: percentage,
+          status: 'completed',
+          answers: answersArray,
+          time_taken: timeTaken
+        })
+        .select()
+        .single();
+
+      if (attemptError) {
+        console.error('❌ Error saving exam attempt:', attemptError);
+        setError('Failed to save exam attempt. Please try again.');
+        setExamSubmitted(false);
+        return;
+      }
+
+      console.log('✅ Exam attempt saved successfully:', examAttempt);
+
+      // Log activity
+      await supabase
+        .from('user_activity_logs')
+        .insert({
+          user_id: user.id,
+          activity_type: 'exam_completed',
+          activity_details: {
+            exam_id: examId,
+            attempt_id: examAttempt.attempt_id,
+            score: totalScore,
+            percentage: percentage.toFixed(1),
+            time_taken: timeTaken
+          }
+        });
       
-      // For now, just show results
       alert(`🎉 Exam submitted successfully!\n\nYour Score: ${totalScore}/${exam?.maximum_marks}\nPercentage: ${((totalScore / (exam?.maximum_marks || 1)) * 100).toFixed(1)}%`);
       
       // Navigate back to dashboard
@@ -296,6 +355,7 @@ export const ExamEnvironment: React.FC = () => {
     } catch (error) {
       console.error('Error submitting exam:', error);
       setError('Failed to submit exam. Please try again.');
+      setExamSubmitted(false);
     }
   };
 
