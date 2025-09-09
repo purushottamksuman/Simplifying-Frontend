@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { supabase } from '../lib/supabase';
 
 interface Assessment {
-  assessment_id?: string;
   assessment_name: string;
   description: string;
   instructions: string;
@@ -78,6 +77,10 @@ export const CreateAssessment: React.FC = () => {
     is_active: true,
     options: []
   });
+
+  // Image upload states
+  const [uploadingQuestionImage, setUploadingQuestionImage] = useState(false);
+  const [uploadingOptionImage, setUploadingOptionImage] = useState<{questionIndex: number, optionIndex: number} | null>(null);
 
   useEffect(() => {
     fetchExistingAssessments();
@@ -156,6 +159,72 @@ export const CreateAssessment: React.FC = () => {
       newQuestions[questionIndex].options = newQuestions[questionIndex].options!.filter((_, i) => i !== optionIndex);
     }
     setQuestions(newQuestions);
+  };
+
+  // Image upload handlers
+  const handleQuestionImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingQuestionImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `question-${Date.now()}.${fileExt}`;
+      const filePath = `question-images/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('assessment-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('assessment-images')
+        .getPublicUrl(filePath);
+
+      setQuestionForm({ ...questionForm, image_url: publicUrl });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    } finally {
+      setUploadingQuestionImage(false);
+    }
+  };
+
+  const handleOptionImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, questionIndex: number, optionIndex: number) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingOptionImage({ questionIndex, optionIndex });
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `option-${Date.now()}.${fileExt}`;
+      const filePath = `option-images/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('assessment-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('assessment-images')
+        .getPublicUrl(filePath);
+
+      const newQuestions = [...questions];
+      if (newQuestions[questionIndex].options) {
+        newQuestions[questionIndex].options![optionIndex] = {
+          ...newQuestions[questionIndex].options![optionIndex],
+          image_url: publicUrl
+        };
+      }
+      setQuestions(newQuestions);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    } finally {
+      setUploadingOptionImage(null);
+    }
   };
 
   const saveAssessment = async () => {
@@ -474,13 +543,48 @@ export const CreateAssessment: React.FC = () => {
                   
                   <div>
                     <Label htmlFor="image_url" className="text-[#13377c] font-medium">Image URL (Optional)</Label>
-                    <Input
-                      id="image_url"
-                      value={questionForm.image_url || ''}
-                      onChange={(e) => setQuestionForm({...questionForm, image_url: e.target.value || null})}
-                      placeholder="Enter image URL"
-                      className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
-                    />
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleQuestionImageUpload}
+                          className="hidden"
+                          id="question-image-upload"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('question-image-upload')?.click()}
+                          disabled={uploadingQuestionImage}
+                          className="rounded-xl"
+                        >
+                          <Image className="w-4 h-4 mr-2" />
+                          {uploadingQuestionImage ? 'Uploading...' : 'Upload Image'}
+                        </Button>
+                        {questionForm.image_url && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setQuestionForm({...questionForm, image_url: null})}
+                            className="rounded-xl text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {questionForm.image_url && (
+                        <div className="relative">
+                          <img 
+                            src={questionForm.image_url} 
+                            alt="Question preview" 
+                            className="max-w-full h-32 object-cover rounded-lg border"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* MCQ Options */}
@@ -534,6 +638,65 @@ export const CreateAssessment: React.FC = () => {
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
+                          
+                          {/* Option Image Upload */}
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  // For now, we'll use a simple file reader for preview
+                                  const reader = new FileReader();
+                                  reader.onload = (event) => {
+                                    const newOptions = [...(questionForm.options || [])];
+                                    newOptions[index] = {...option, image_url: event.target?.result as string};
+                                    setQuestionForm({...questionForm, options: newOptions});
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                              className="hidden"
+                              id={`option-image-${index}`}
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => document.getElementById(`option-image-${index}`)?.click()}
+                              className="rounded-lg"
+                            >
+                              <Image className="w-3 h-3 mr-1" />
+                              Image
+                            </Button>
+                            {option.image_url && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const newOptions = [...(questionForm.options || [])];
+                                  newOptions[index] = {...option, image_url: null};
+                                  setQuestionForm({...questionForm, options: newOptions});
+                                }}
+                                className="rounded-lg text-red-600"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
+                          
+                          {/* Option Image Preview */}
+                          {option.image_url && (
+                            <div className="mt-2">
+                              <img 
+                                src={option.image_url} 
+                                alt="Option preview" 
+                                className="max-w-full h-16 object-cover rounded border"
+                              />
+                            </div>
+                          )}
                           
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
@@ -683,6 +846,17 @@ export const CreateAssessment: React.FC = () => {
                                       )}
                                     </div>
                                   </div>
+                                  
+                                  {/* Option Image Preview */}
+                                  {option.image_url && (
+                                    <div className="mt-2">
+                                      <img 
+                                        src={option.image_url} 
+                                        alt="Option" 
+                                        className="max-w-xs h-16 object-cover rounded border"
+                                      />
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
