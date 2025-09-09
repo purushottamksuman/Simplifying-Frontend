@@ -182,20 +182,32 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
       if (paymentResult.success) {
         console.log("✅ Payment completed successfully:", paymentResult);
         
-        // Record exam purchase
-        await supabase.from('exam_purchases').insert({
-          user_id: user.id,
-          exam_id: exam.exam_id,
-          payment_id: paymentResult.payment.payment_id,
-          purchase_type: 'paid',
-          amount_paid: totalAmount
-        });
+        // Record exam purchase - handle duplicate constraint
+        const { error: purchaseError } = await supabase
+          .from('exam_purchases')
+          .upsert({
+            user_id: user.id,
+            exam_id: exam.exam_id,
+            payment_id: paymentResult.payment.payment_id,
+            purchase_type: 'paid',
+            amount_paid: totalAmount
+          }, {
+            onConflict: 'user_id,exam_id'
+          });
+        
+        if (purchaseError) {
+          console.error('Error recording purchase:', purchaseError);
+          // Don't throw error if it's just a duplicate - payment was successful
+          if (!purchaseError.message.includes('duplicate key')) {
+            throw new Error('Failed to record purchase');
+          }
+        }
         
         setPaymentSuccess(true);
         alert(`🎉 Payment successful! You now have access to ${exam.exam_name}.`);
         
         // Refresh user purchases
-        await fetchUserPurchases();
+        await fetchUserPurchases(user.id);
       }
 
     } catch (error) {
@@ -208,19 +220,31 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
   const handleFreeExamAccess = async (exam: Exam) => {
     try {
-      // Record free exam access
-      await supabase.from('exam_purchases').insert({
-        user_id: user.id,
-        exam_id: exam.exam_id,
-        payment_id: null,
-        purchase_type: 'free',
-        amount_paid: 0
-      });
+      // Record free exam access - handle duplicate constraint
+      const { error: purchaseError } = await supabase
+        .from('exam_purchases')
+        .upsert({
+          user_id: user.id,
+          exam_id: exam.exam_id,
+          payment_id: null,
+          purchase_type: 'free',
+          amount_paid: 0
+        }, {
+          onConflict: 'user_id,exam_id'
+        });
+      
+      if (purchaseError) {
+        console.error('Error recording free access:', purchaseError);
+        // Don't throw error if it's just a duplicate
+        if (!purchaseError.message.includes('duplicate key')) {
+          throw new Error('Failed to record free access');
+        }
+      }
       
       alert(`✅ You now have access to ${exam.exam_name}!`);
       
       // Refresh user purchases
-      await fetchUserPurchases();
+      await fetchUserPurchases(user.id);
     } catch (error) {
       console.error('Error recording free exam access:', error);
       alert('Error accessing exam. Please try again.');
