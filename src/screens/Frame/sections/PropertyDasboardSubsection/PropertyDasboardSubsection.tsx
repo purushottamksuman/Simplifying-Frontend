@@ -19,7 +19,6 @@ import {
   UsersIcon,
   XIcon,
   BrainIcon,
-  Sparkles
 } from "lucide-react";
 import React from "react";
 import {
@@ -38,7 +37,6 @@ import { supabase } from "../../../../lib/supabase";
 
 const navigationItems = [
   { icon: HomeIcon, label: "Dashboard", active: true },
-  { icon: Sparkles, label: "Simplifying AI", active: false },
   { icon: UserIcon, label: "Profile Settings", active: false },
   { icon: FolderIcon, label: "My Course", active: false },
   { icon: PresentationIcon, label: "Live Classes", active: false },
@@ -49,6 +47,7 @@ const navigationItems = [
   { icon: UsersIcon, label: "Clubs & Community", active: false },
   { icon: HelpCircleIcon, label: "Raise a Doubt", active: false },
   { icon: UserPlusIcon, label: "Referrals Program", active: false },
+  { icon: BrainIcon, label: "Simplifying AI", active: false },
 ];
 
 interface Exam {
