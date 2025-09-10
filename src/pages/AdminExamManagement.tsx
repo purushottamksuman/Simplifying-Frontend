@@ -19,6 +19,9 @@ interface Exam {
   min_student_age: number;
   max_student_age: number;
   maximum_marks: number;
+  original_price: number;
+  discounted_price: number;
+  tax: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -33,8 +36,6 @@ interface Assessment {
   min_student_age: number;
   max_student_age: number;
   maximum_marks: number;
-  parent_assessment_id: string | null;
-  display_order: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -55,16 +56,34 @@ export const AdminExamManagement: React.FC = () => {
     total_time: 60,
     min_student_age: 10,
     max_student_age: 25,
-    maximum_marks: 100
+    maximum_marks: 100,
+    original_price: 0,
+    discounted_price: 0,
+    tax: 0
   });
 
   // Dialog states
   const [showExamDialog, setShowExamDialog] = useState(false);
+  const [editingExam, setEditingExam] = useState<Exam | null>(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  // Fetch existing exam-assessment relationships when editing
+  const fetchExamAssessments = async (examId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('exam_assessments')
+        .select('assessment_id')
+        .eq('exam_id', examId);
+
+      if (error) throw error;
+      setSelectedAssessments(data?.map(ea => ea.assessment_id) || []);
+    } catch (error) {
+      console.error('Error fetching exam assessments:', error);
+    }
+  };
   const fetchData = async () => {
     try {
       const [examsResult, assessmentsResult] = await Promise.all([
@@ -86,19 +105,35 @@ export const AdminExamManagement: React.FC = () => {
 
   const createExam = async () => {
     try {
-      const { data, error } = await supabase
+      // Create exam
+      const examData = {
+        exam_name: examForm.exam_name.trim(),
+        description: examForm.description?.trim() || null,
+        instructions: examForm.instructions?.trim() || null,
+        total_time: examForm.total_time,
+        min_student_age: examForm.min_student_age,
+        max_student_age: examForm.max_student_age,
+        maximum_marks: examForm.maximum_marks,
+        original_price: examForm.original_price,
+        discounted_price: examForm.discounted_price,
+        tax: examForm.tax,
+        is_active: true
+      };
+
+      const { data: examResult, error: examError } = await supabase
         .from('exams')
-        .insert([examForm])
+        .insert([examData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (examError) throw examError;
 
       // Create exam-assessment relationships if assessments are selected
       if (selectedAssessments.length > 0) {
-        const examAssessments = selectedAssessments.map(assessmentId => ({
-          exam_id: data.exam_id,
-          assessment_id: assessmentId
+        const examAssessments = selectedAssessments.map((assessmentId, index) => ({
+          exam_id: examResult.exam_id,
+          assessment_id: assessmentId,
+          display_order: index + 1
         }));
 
         const { error: junctionError } = await supabase
@@ -111,7 +146,10 @@ export const AdminExamManagement: React.FC = () => {
         }
       }
 
-      setExams([data, ...exams]);
+      // Refresh data
+      await fetchData();
+
+      // Reset form
       setExamForm({
         exam_name: '',
         description: '',
@@ -119,13 +157,114 @@ export const AdminExamManagement: React.FC = () => {
         total_time: 60,
         min_student_age: 10,
         max_student_age: 25,
-        maximum_marks: 100
+        maximum_marks: 100,
+        original_price: 0,
+        discounted_price: 0,
+        tax: 0
       });
       setSelectedAssessments([]);
       setShowExamDialog(false);
+      
+      alert('Exam created successfully!');
     } catch (error) {
       console.error('Error creating exam:', error);
       alert('Error creating exam: ' + (error as Error).message);
+    }
+  };
+
+  const editExam = (exam: Exam) => {
+    setEditingExam(exam);
+    setExamForm({
+      exam_name: exam.exam_name,
+      description: exam.description || '',
+      instructions: exam.instructions || '',
+      total_time: exam.total_time,
+      min_student_age: exam.min_student_age,
+      max_student_age: exam.max_student_age,
+      maximum_marks: exam.maximum_marks,
+      original_price: exam.original_price,
+      discounted_price: exam.discounted_price,
+      tax: exam.tax
+    });
+    // Fetch existing assessments for this exam
+    fetchExamAssessments(exam.exam_id);
+    setShowExamDialog(true);
+  };
+
+  const updateExam = async () => {
+    if (!editingExam) return;
+
+    try {
+      const examData = {
+        exam_name: examForm.exam_name.trim(),
+        description: examForm.description?.trim() || null,
+        instructions: examForm.instructions?.trim() || null,
+        total_time: examForm.total_time,
+        min_student_age: examForm.min_student_age,
+        max_student_age: examForm.max_student_age,
+        maximum_marks: examForm.maximum_marks,
+        original_price: examForm.original_price,
+        discounted_price: examForm.discounted_price,
+        tax: examForm.tax,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('exams')
+        .update(examData)
+        .eq('exam_id', editingExam.exam_id);
+
+      if (error) throw error;
+
+      // Update exam-assessment relationships
+      // First, delete existing relationships
+      const { error: deleteError } = await supabase
+        .from('exam_assessments')
+        .delete()
+        .eq('exam_id', editingExam.exam_id);
+
+      if (deleteError) {
+        console.error('Error deleting existing exam-assessment relationships:', deleteError);
+      }
+
+      // Then, insert new relationships if any assessments are selected
+      if (selectedAssessments.length > 0) {
+        const examAssessments = selectedAssessments.map((assessmentId, index) => ({
+          exam_id: editingExam.exam_id,
+          assessment_id: assessmentId,
+          display_order: index + 1
+        }));
+
+        const { error: insertError } = await supabase
+          .from('exam_assessments')
+          .insert(examAssessments);
+
+        if (insertError) {
+          console.error('Error creating new exam-assessment relationships:', insertError);
+          throw insertError;
+        }
+      }
+      await fetchData();
+      setExamForm({
+        exam_name: '',
+        description: '',
+        instructions: '',
+        total_time: 60,
+        min_student_age: 10,
+        max_student_age: 25,
+        maximum_marks: 100,
+        original_price: 0,
+        discounted_price: 0,
+        tax: 0
+      });
+      setSelectedAssessments([]);
+      setEditingExam(null);
+      setShowExamDialog(false);
+      
+      alert('Exam updated successfully!');
+    } catch (error) {
+      console.error('Error updating exam:', error);
+      alert('Error updating exam: ' + (error as Error).message);
     }
   };
 
@@ -154,7 +293,7 @@ export const AdminExamManagement: React.FC = () => {
             Admin Exam Management
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Create and manage comprehensive exams with assessments, questions, and detailed configurations.
+            Create and manage comprehensive exams with assessments, categories, and questions.
           </p>
         </header>
 
@@ -174,12 +313,14 @@ export const AdminExamManagement: React.FC = () => {
                   <DialogTrigger asChild>
                     <Button className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl px-6 py-3 shadow-lg">
                       <Plus className="w-4 h-4 mr-2" />
-                      Create Exam
+                      {editingExam ? 'Edit Exam' : 'Create Exam'}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-[1.5rem]">
                     <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold text-[#13377c] mb-4">Create New Exam</DialogTitle>
+                      <DialogTitle className="text-2xl font-bold text-[#13377c] mb-4">
+                        {editingExam ? 'Edit Exam' : 'Create New Exam'}
+                      </DialogTitle>
                     </DialogHeader>
                     
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -239,6 +380,42 @@ export const AdminExamManagement: React.FC = () => {
                                 type="number"
                                 value={examForm.maximum_marks}
                                 onChange={(e) => setExamForm({...examForm, maximum_marks: parseInt(e.target.value)})}
+                                className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <Label htmlFor="original_price" className="text-[#13377c] font-medium">Original Price (₹)</Label>
+                              <Input
+                                id="original_price"
+                                type="number"
+                                step="0.01"
+                                value={examForm.original_price}
+                                onChange={(e) => setExamForm({...examForm, original_price: parseFloat(e.target.value) || 0})}
+                                className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="discounted_price" className="text-[#13377c] font-medium">Discounted Price (₹)</Label>
+                              <Input
+                                id="discounted_price"
+                                type="number"
+                                step="0.01"
+                                value={examForm.discounted_price}
+                                onChange={(e) => setExamForm({...examForm, discounted_price: parseFloat(e.target.value) || 0})}
+                                className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="tax" className="text-[#13377c] font-medium">Tax (₹)</Label>
+                              <Input
+                                id="tax"
+                                type="number"
+                                step="0.01"
+                                value={examForm.tax}
+                                onChange={(e) => setExamForm({...examForm, tax: parseFloat(e.target.value) || 0})}
                                 className="rounded-xl border-gray-300 focus:border-[#3479ff] focus:ring-[#3479ff]"
                               />
                             </div>
@@ -326,16 +503,32 @@ export const AdminExamManagement: React.FC = () => {
                     <div className="flex justify-end space-x-3 mt-8 pt-6 border-t">
                       <Button 
                         variant="outline" 
-                        onClick={() => setShowExamDialog(false)}
+                        onClick={() => {
+                          setShowExamDialog(false);
+                          setEditingExam(null);
+                          setExamForm({
+                            exam_name: '',
+                            description: '',
+                            instructions: '',
+                            total_time: 60,
+                            min_student_age: 10,
+                            max_student_age: 25,
+                            maximum_marks: 100,
+                            original_price: 0,
+                            discounted_price: 0,
+                            tax: 0
+                          });
+                          setSelectedAssessments([]);
+                        }}
                         className="rounded-xl px-6"
                       >
                         Cancel
                       </Button>
                       <Button 
-                        onClick={createExam}
+                        onClick={editingExam ? updateExam : createExam}
                         className="bg-[#3479ff] hover:bg-[#2968e6] rounded-xl px-6"
                       >
-                        Create Exam
+                        {editingExam ? 'Update Exam' : 'Create Exam'}
                       </Button>
                     </div>
                   </DialogContent>
@@ -378,6 +571,11 @@ export const AdminExamManagement: React.FC = () => {
                             <Badge variant={exam.is_active ? "default" : "secondary"} className="rounded-full">
                               {exam.is_active ? "Active" : "Inactive"}
                             </Badge>
+                            {exam.discounted_price > 0 && (
+                              <Badge variant="outline" className="rounded-full text-green-600 border-green-600">
+                                ₹{exam.discounted_price}
+                              </Badge>
+                            )}
                             <span className="text-xs text-gray-400">
                               Created {new Date(exam.created_at).toLocaleDateString()}
                             </span>
@@ -388,7 +586,7 @@ export const AdminExamManagement: React.FC = () => {
                           <Button size="sm" variant="outline" className="rounded-lg">
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="outline" className="rounded-lg">
+                          <Button size="sm" variant="outline" className="rounded-lg" onClick={() => editExam(exam)}>
                             <Edit className="w-4 h-4" />
                           </Button>
                           <Button size="sm" variant="outline" className="rounded-lg text-red-600 hover:text-red-700">
@@ -457,11 +655,6 @@ export const AdminExamManagement: React.FC = () => {
                             <Badge variant={assessment.is_active ? "default" : "secondary"} className="rounded-full">
                               {assessment.is_active ? "Active" : "Inactive"}
                             </Badge>
-                            {assessment.parent_assessment_id && (
-                              <Badge variant="outline" className="rounded-full text-xs">
-                                Sub-section
-                              </Badge>
-                            )}
                             <span className="text-xs text-gray-400">
                               Created {new Date(assessment.created_at).toLocaleDateString()}
                             </span>

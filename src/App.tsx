@@ -10,7 +10,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import { PropertyDasboardSubsection } from "./screens/Frame/sections/PropertyDasboardSubsection/PropertyDasboardSubsection";
 import { PropertyMycourseSubsection } from "./screens/Frame/sections/PropertyMycourseSubsection/PropertyMycourseSubsection";
 import { PropertyLiveSubsection } from "./screens/Frame/sections/PropertyLiveSubsection/PropertyLiveSubsection";
-import { PropertyTestAndSubsection } from "./screens/Frame/sections/PropertyTestAndSubsection/PropertyTestAndSubsection";
+import  PropertyTestAndSubsection  from "./screens/Frame/sections/PropertyTestAndSubsection/PropertyTestAndSubsection";
 import { PropertyClubAndSubsection } from "./screens/Frame/sections/PropertyClubAndSubsection/PropertyClubAndSubsection";
 import { DivWrapperSubsection } from "./screens/Frame/sections/DivWrapperSubsection/DivWrapperSubsection";
 import { PropertyWrapperSubsection } from "./screens/Frame/sections/PropertyWrapperSubsection/PropertyWrapperSubsection"
@@ -19,6 +19,8 @@ import { PropertyRewardSubsection } from "./screens/Frame/sections/PropertyRewar
 import { PropertyRaiseAndSubsection } from "./screens/Frame/sections/PropertyRaiseAndSubsection/PropertyRaiseAndSubsection";
 import { PropertyReffrealSubsection } from "./screens/Frame/sections/PropertyReffrealSubsection/PropertyReffrealSubsection";
 import { PropertyLoginSubsection } from "./screens/Frame/sections/PropertyLoginSubsection/PropertyLoginSubsection";
+import { ExamDetailsPage } from './pages/ExamDetailsPage';
+import { ExamEnvironment } from './components/ExamEnvironment/ExamEnvironment';
 
 function App() {
   return (
@@ -40,12 +42,15 @@ function App() {
           <Route path="rewards" element={<PropertyRewardSubsection />} />
           <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
           <Route path="referrals" element={<PropertyReffrealSubsection />} />
+
         </Route>
 
         {/* Admin Routes */}
         <Route path="/admin/exam-management" element={<AdminExamManagement />} />
         <Route path="/admin/create-assessment" element={<CreateAssessment />} />
         <Route path="/admin/edit-assessment/:assessmentId" element={<CreateAssessment />} />
+        <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
+        <Route path="/exam/:examId" element={<ExamEnvironment />} />
       </Routes>
     </Router>
   );

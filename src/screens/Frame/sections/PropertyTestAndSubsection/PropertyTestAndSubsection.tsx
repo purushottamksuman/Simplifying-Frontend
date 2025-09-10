@@ -1,179 +1,293 @@
-"use client";
-
-import {
-  AwardIcon,
-  BookOpenIcon,
-  CalendarIcon,
-  ClockIcon,
-  FileTextIcon,
-  FolderIcon,
-  HelpCircleIcon,
-  HomeIcon,
-  LogOutIcon,
-  PresentationIcon,
-  ShareIcon,
-  TrophyIcon,
-  UserIcon,
-  UsersIcon,
-} from "lucide-react";
-import React from "react";
-import { Badge } from "../../../../components/ui/badge";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
-import { Progress } from "../../../../components/ui/progress";
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import { supabase } from "../../../../lib/supabase";
+import { razorpayService } from "../../../../lib/razorpay";
+import { authHelpers } from "../../../../lib/supabase";
+import { useNavigate } from "react-router-dom";
 
-export function PropertyTestAndSubsection() {
-  
+interface Exam {
+  exam_id: string;
+  exam_name: string;
+  description: string;
+  original_price: number;
+  discounted_price: number;
+  tax: number;
+  total_time: number;
+  maximum_marks: number;
+  is_active: boolean;
+}
+
+const PropertyTestAndSubsection = (): JSX.Element => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [userPurchases, setUserPurchases] = useState<string[]>([]);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  // Fetch user & exams
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const { user, error } = await authHelpers.getCurrentUser();
+        if (error || !user) {
+          console.log("❌ No authenticated user, redirecting to login");
+          navigate("/component/login");
+          return;
+        }
+
+        setUser(user);
+        await fetchExams();
+        await fetchUserPurchases(user.id);
+      } catch (err) {
+        console.error("❌ Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, [navigate]);
+
+  const fetchExams = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("exams")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setExams(data || []);
+    } catch (error) {
+      console.error("Error fetching exams:", error);
+    }
+  };
+
+  const fetchUserPurchases = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("exam_purchases")
+        .select("exam_id")
+        .eq("user_id", userId);
+
+      if (error) throw error;
+      setUserPurchases(data?.map((p) => p.exam_id) || []);
+    } catch (error) {
+      console.error("Error fetching purchases:", error);
+    }
+  };
+
+  const handleExamPayment = async (exam: Exam) => {
+    setPaymentLoading(true);
+    setPaymentError("");
+    setPaymentSuccess(false);
+
+    try {
+      const totalAmount = exam.discounted_price + exam.tax;
+
+      const paymentResult = await razorpayService.initiatePayment({
+        amount: totalAmount,
+        currency: "INR",
+        description: `${exam.exam_name} - Exam Payment`,
+        notes: {
+          product: "exam_purchase",
+          exam_id: exam.exam_id,
+          exam_name: exam.exam_name,
+          user_id: user?.id,
+          original_price: exam.original_price,
+          discounted_price: exam.discounted_price,
+          tax: exam.tax,
+        },
+      });
+
+      if (paymentResult.success) {
+        const { error: purchaseError } = await supabase
+          .from("exam_purchases")
+          .upsert(
+            {
+              user_id: user.id,
+              exam_id: exam.exam_id,
+              payment_id: paymentResult.payment.payment_id,
+              purchase_type: "paid",
+              amount_paid: totalAmount,
+            },
+            { onConflict: "user_id,exam_id" }
+          );
+
+        if (purchaseError && !purchaseError.message.includes("duplicate key")) {
+          throw new Error("Failed to record purchase");
+        }
+
+        setPaymentSuccess(true);
+        alert(`🎉 Payment successful! You now have access to ${exam.exam_name}.`);
+        await fetchUserPurchases(user.id);
+      }
+    } catch (error: any) {
+      console.error("❌ Payment failed:", error);
+      setPaymentError(error.message || "Payment failed. Please try again.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const handleFreeExamAccess = async (exam: Exam) => {
+    try {
+      const { error: purchaseError } = await supabase
+        .from("exam_purchases")
+        .upsert(
+          {
+            user_id: user.id,
+            exam_id: exam.exam_id,
+            payment_id: null,
+            purchase_type: "free",
+            amount_paid: 0,
+          },
+          { onConflict: "user_id,exam_id" }
+        );
+
+      if (purchaseError && !purchaseError.message.includes("duplicate key")) {
+        throw new Error("Failed to record free access");
+      }
+
+      alert(`✅ You now have access to ${exam.exam_name}!`);
+      await fetchUserPurchases(user.id);
+    } catch (error) {
+      console.error("Error recording free access:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full min-h-screen flex">
-
-      {/* Main Content */}
-      <div className="flex-1 bg-white rounded-tl-[30px] shadow-[0px_0px_29px_#00000025] px-8 py-6">
-        {/* Header */}
-   
-
-        {/* Cards */}
-        <div className="grid grid-cols-3 gap-5 mb-8">
-          {/* Total Tests */}
-          <Card className="bg-white rounded-[20px] shadow-[0px_4px_20px_#3479ff20] border-0">
-  <CardContent className="p-6 flex items-start justify-between relative">
-    {/* Left Section */}
-    <div className="flex flex-col gap-2">
-      {/* Title with Icon Space */}
-      <div className="flex items-center justify-between pr-6">
-        <h2 className="text-[#1c2752] font-bold text-lg">Total Tests</h2>
+    <div className="max-w-7xl mx-auto p-8">
+      <div className="mb-8">
+        <h2 className="font-bold text-[#13377c] text-3xl mb-4">Test & Assessment</h2>
+        <p className="text-gray-600 text-lg">
+          Choose from our available exams and assessments
+        </p>
       </div>
 
-      {/* Total Count */}
-      <p className="text-[#3479ff] font-extrabold text-2xl mb-14 leading-tight">8</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {exams.map((exam) => {
+          const totalPrice = exam.discounted_price + exam.tax;
+          const isFree = totalPrice === 0;
+          const isPurchased = userPurchases.includes(exam.exam_id);
 
-      {/* Achievements */}
-      <p className="text-[#5f5f5f] text-[17px] font-extrabold">
-        <span className="font-bold text-[17px]">26</span> Achievements unlocked
-      </p>
-    </div>
-
-    {/* Progress Image */}
-    <div className="flex flex-col items-center justify-start mt-14">
-      <img
-        src="/marks.png"
-        alt="Marks Progress"
-        className="w-[130px] h-[130px] object-contain mt-2"
-      />
-    </div>
-
-    {/* Top Right Icon */}
-    <img className="absolute top-5 right-5 w-5 h-5 text-[#3479ff]" src="/BOOK.png"/>
-  </CardContent>
-</Card>
-
-{/* Complete */}
-<Card className="bg-white rounded-[20px] shadow-[0px_4px_20px_#3479ff20] border-0">
-  <CardContent className="p-6 flex flex-col gap-3">
-    <div className="flex items-center justify-between">
-      <h2 className="text-[#1c2752] font-bold text-lg">Complete</h2>
-      <img className="w-5 h-5 text-[#3479ff]" src="/tick.png" />
-    </div>
-
-    {/* Count */}
-    <p className="text-[#3479ff] font-extrabold text-2xl">4</p>
-
-    {/* Progress Bar */}
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[#9e9e9e] text-sm">Progress</span>
-        <span className="text-[#9e9e9e] text-sm">50%</span>
-      </div>
-      <div className="w-full bg-[#e0e0e0] rounded-full h-3">
-        <div
-          className="bg-[#3479ff] h-3 rounded-full transition-all duration-500"
-          style={{ width: "50%" }}
-        />
-      </div>
-      <p className="text-[#9e9e9e] text-sm mt-1">4 tests remaining</p>
-    </div>
-  </CardContent>
-</Card>
-          {/* Average Score */}
-          <Card className="bg-white rounded-[25px] shadow-[0px_0px_20px_#3d57cf40] border-0">
-            <CardContent className="p-6 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-[#13377c] font-bold text-lg">
-                  Average Score
-                </h2>
-                <img className="w-6 h-4 text-[#3479ff]" src="/vector.png" />
-              </div>
-              <p className="text-[#3479ff] font-bold text-xl">86%</p>
-              <div className="h-[113px] bg-gradient-to-t from-[#dbe8ff] to-white rounded-xl border border-[#e4e4e4] flex items-end justify-around px-7 pb-4">
-                {[78, 86, 95, 98, 92, 59].map((height, i) => (
-                  <div
-                    key={i}
-                    className="w-3 bg-[#3479ff] rounded-t-lg opacity-70"
-                    style={{ height: `${height}px` }}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      
-
-        {/* Tabs */}
-        <Card className="bg-white rounded-[21px] shadow-[0px_0px_20px_#3479ff40] border-0 mb-8">
-          <CardContent className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-2 bg-[#007fff59] px-5 py-2 rounded-[20px]">
-              <span className="font-bold text-[#083a50] text-lg">All</span>
-              <Badge className="bg-[#fff8f8] text-[#083a50] font-bold text-sm rounded-full h-5 w-6 flex items-center justify-center">
-                8
-              </Badge>
-            </div>
-            <span className="font-bold text-[#888888] text-lg">Completed 4</span>
-            <span className="font-bold text-[#888888] text-lg mr-14">Upcoming 4</span>
-          </CardContent>
-        </Card>
-
-        {/* Test Cards */}
-        <div className="grid grid-cols-3 gap-8">
-          {[...Array(6)].map((_, index) => (
+          return (
             <Card
-              key={index}
-              className="bg-white rounded-[25px] shadow-[0px_0px_20px_#3479ff40] border-0"
+              key={exam.exam_id}
+              className="rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-200"
             >
-              <CardContent className="flex flex-col items-start justify-between p-6 h-80">
-                <div className="flex flex-col gap-4">
-                  <h3 className="font-semibold text-[#202020] text-xl">
-                    Advanced JavaScript Concepts
+              <CardContent className="p-6">
+                <div className="flex flex-col h-full">
+                  <h3 className="font-bold text-[#13377c] text-xl mb-3">
+                    {exam.exam_name}
                   </h3>
-                  <Badge className="bg-[#75a4ff87] text-[#083a50] font-semibold text-xs rounded-[25px] h-[18px] px-3 py-1">
-                    Programming
-                  </Badge>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between text-sm text-[#7e7e7e]">
-                      <div className="flex items-center gap-2">
-                        <ClockIcon className="w-5 h-5" />
-                        90 Minutes
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <BookOpenIcon className="w-4 h-4" />
-                        30 Questions
-                      </div>
+                  <p className="text-gray-600 text-sm mb-4 flex-1">
+                    {exam.description}
+                  </p>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Duration:</span>
+                      <span className="font-medium">{exam.total_time} minutes</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-[#7e7e7e]">
-                      <CalendarIcon className="w-4 h-4" />
-                      Due: Aug 15, 07:30 PM
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Max Marks:</span>
+                      <span className="font-medium">{exam.maximum_marks}</span>
                     </div>
+
+                    {/* Pricing Section */}
+                    {!isFree && (
+                      <div className="border-t pt-3 space-y-2">
+                        {exam.original_price > exam.discounted_price && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-500">Original Price:</span>
+                            <span className="text-gray-500 line-through">
+                              ₹{exam.original_price}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-700">Price:</span>
+                          <span className="text-[#3479ff] font-semibold">
+                            ₹{exam.discounted_price}
+                          </span>
+                        </div>
+
+                        {exam.tax > 0 && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-700">Tax:</span>
+                            <span className="text-gray-700">₹{exam.tax}</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between font-semibold border-t pt-2">
+                          <span className="text-gray-900">Total:</span>
+                          <span className="text-[#3479ff] text-lg">₹{totalPrice}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Button */}
+                    <Button
+                      onClick={() => {
+                        if (isPurchased) {
+                          navigate(`/exam-details/${exam.exam_id}`);
+                        } else if (isFree) {
+                          handleFreeExamAccess(exam);
+                        } else {
+                          handleExamPayment(exam);
+                        }
+                      }}
+                      disabled={paymentLoading}
+                      className={`w-full mt-4 ${
+                        isPurchased
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-[#3479ff] hover:bg-[#2968e6]"
+                      } text-white rounded-xl`}
+                    >
+                      {paymentLoading
+                        ? "Processing..."
+                        : isPurchased
+                        ? "View Exam"
+                        : isFree
+                        ? "Attempt Free"
+                        : `Pay ₹${totalPrice}`}
+                    </Button>
                   </div>
                 </div>
-                <Button className="w-full h-[37px] bg-[#3479ff] text-white font-bold rounded-lg hover:bg-[#3479ff]/90">
-                  Start Test
-                </Button>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          );
+        })}
       </div>
+
+      {paymentError && (
+        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{paymentError}</p>
+        </div>
+      )}
+
+      {paymentSuccess && (
+        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-green-600 text-sm">
+            ✅ Payment completed successfully!
+          </p>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default PropertyTestAndSubsection;
