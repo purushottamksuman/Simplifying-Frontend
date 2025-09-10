@@ -78,40 +78,9 @@ const leaderboardData = [
 
 export const PropertySubsection = (): JSX.Element => {
   return (
-    <div className="w-full h-full bg-[#3479ff] relative">
-      <div className="w-full max-w-[1605px] h-full mx-auto bg-white shadow-[0px_0px_29px_#00000075] relative">
-        <div className="relative w-full h-full pt-[46px]">
-          {/* ---------------- HEADER ---------------- */}
-          {/* <header className="flex w-full items-center justify-between px-8 py-0 mb-[71px]">
-            <div className="flex items-center gap-[57px]">
-              <img
-                className="w-[30px] h-[30px]"
-                src="/icons/leaderboard.png"
-                alt="Leaderboard Icon"
-              />
-              <h1 className="font-bold text-[#13377c] text-2xl leading-normal">
-                Leaderboard
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-[23px]">
-              <img
-                className="w-6 h-6"
-                src="/icons/notification.png"
-                alt="Notification"
-              />
-              <div className="w-14 h-14">
-                <img
-                  className="h-14 w-14 rounded-full border-4 border-solid border-[#3479ff99]"
-                  src="/profile.png"
-                  alt="Profile"
-                />
-              </div>
-            </div>
-          </header> */}
-
+        <div className="relative w-full h-full p-[25px]">
+          
           {/* ---------------- MAIN CONTENT ---------------- */}
-          <main className="flex flex-col w-full max-w-[1419px] items-center gap-[29px] mx-auto px-4">
             {/* ----------- TITLE + FILTER ----------- */}
             <Card className="w-full rounded-[25px] border-0 shadow-none">
               <CardContent className="flex flex-col items-center justify-center gap-2.5 p-[25px]">
@@ -266,15 +235,8 @@ export const PropertySubsection = (): JSX.Element => {
                 </TabsContent>
               </Tabs>
             </div>
-          </main>
-        </div>
-      </div>
-
-      {/* ---------------- SIDEBAR ---------------- */}
-      
-
+        </div>      
      
-    </div>
   );
 };
 

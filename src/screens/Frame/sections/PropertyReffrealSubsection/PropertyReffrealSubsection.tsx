@@ -52,59 +52,9 @@ const howItWorksSteps = [
 
 export const PropertyReffrealSubsection = (): JSX.Element => {
   return (
-    <div className="flex min-h-screen bg-[#3479ff]">
-      {/* Sidebar Navigation */}
-      <div className="w-80 bg-[#3479ff] p-8">
-        <div className="mb-8">
-          <img className="w-[262px] h-[68px]" alt="Group" />
-        </div>
 
-        <nav className="flex flex-col gap-11">
-          <div className="flex flex-col gap-11">
-            {navigationItems.map((item, index) => (
-              <div key={index} className="flex items-center gap-4">
-                <item.icon className="w-[26px] h-[26px] text-white" />
-                <span
-                  className={`font-extrabold text-lg [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] whitespace-nowrap ${
-                    item.active ? "text-[#083a50]" : "text-white"
-                  }`}
-                >
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4 mt-[90px]">
-            <LogOutIcon className="w-7 h-7 text-white" />
-            <span className="[font-family:'Poppins',Helvetica] font-semibold text-white text-xl tracking-[0.40px] leading-[normal]">
-              Log Out
-            </span>
-          </div>
-        </nav>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 bg-white shadow-[0px_0px_29px_#00000075] m-5 ml-0 rounded-l-none">
         <div className="p-12">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-14">
-              <img className="w-[25px] h-[25px]" alt="Component"  />
-              <h1 className="[font-family:'Nunito',Helvetica] font-bold text-[#13377c] text-2xl tracking-[0] leading-[normal]">
-                Referrals Program
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="w-6 h-6">
-                <div className="w-[17px] h-5 bg-[100%_100%] mt-0.5 ml-1" />
-              </div>
-              <div className="w-14 h-14 rounded-[28px] border-4 border-solid border-[#3479ff99] bg-cover bg-[50%_50%]" />
-              <img className="w-6 h-6" alt="Iconly light outline" />
-            </div>
-          </div>
-
+       
           {/* Content Cards */}
           <div className="flex flex-col gap-8 max-w-5xl">
             {/* Earnings Card */}
@@ -209,7 +159,5 @@ export const PropertyReffrealSubsection = (): JSX.Element => {
             </Card>
           </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };

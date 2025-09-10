@@ -27,68 +27,12 @@ export function PropertyTestAndSubsection() {
   
 
   return (
-    <div className="w-full min-h-screen bg-[#3479ff] flex">
-      {/* Sidebar */}
-      <aside className="w-[300px] min-h-screen bg-[#3479ff] flex flex-col justify-between py-10 px-6 shadow-[4px_0_15px_rgba(0,0,0,0.1)]">
-        <div className="flex flex-col gap-8">
-          {[
-            { icon: HomeIcon, label: "Dashboard" },
-            { icon: UserIcon, label: "Profile Settings" },
-            { icon: FolderIcon, label: "My Course" },
-            { icon: PresentationIcon, label: "Live Classes" },
-            {
-              icon: FileTextIcon,
-              label: "Test & Assessment",
-              active: true,
-            },
-            { icon: AwardIcon, label: "Certificates" },
-            { icon: TrophyIcon, label: "Leaderboard" },
-            { icon: AwardIcon, label: "Badges & Rewards" },
-            { icon: UsersIcon, label: "Clubs & Community" },
-            { icon: HelpCircleIcon, label: "Raise a Doubt" },
-            { icon: ShareIcon, label: "Referrals Program" },
-          ].map((item, index) => (
-            <div
-              key={index}
-              className={`flex items-center gap-4 cursor-pointer transition-all ${
-                item.active
-                  ? "bg-white rounded-xl px-4 py-2 shadow-md"
-                  : "px-4 py-2"
-              }`}
-            >
-              <item.icon
-                className={`w-6 h-6 ${
-                  item.active ? "text-[#13377c]" : "text-white"
-                }`}
-              />
-              <span
-                className={`font-bold text-lg ${
-                  item.active ? "text-[#13377c]" : "text-white"
-                }`}
-              >
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-3 cursor-pointer">
-          <LogOutIcon className="w-6 h-6 text-white" />
-          <span className="font-semibold text-white text-lg">Log Out</span>
-        </div>
-      </aside>
+    <div className="w-full min-h-screen flex">
 
       {/* Main Content */}
       <div className="flex-1 bg-white rounded-tl-[30px] shadow-[0px_0px_29px_#00000025] px-8 py-6">
         {/* Header */}
-        <header className="flex items-center justify-between mb-8">
-          <h1 className="font-bold text-[#13377c] text-2xl">My Course</h1>
-          <div className="flex items-center gap-5">
-            <div className="w-6 h-6 bg-gray-200 rounded" />
-            <div className="w-12 h-12 rounded-full border-4 border-solid border-[#3479ff99] bg-gray-200" />
-            <div className="w-6 h-6 bg-gray-200 rounded" />
-          </div>
-        </header>
+   
 
         {/* Cards */}
         <div className="grid grid-cols-3 gap-5 mb-8">
@@ -186,7 +130,7 @@ export function PropertyTestAndSubsection() {
               </Badge>
             </div>
             <span className="font-bold text-[#888888] text-lg">Completed 4</span>
-            <span className="font-bold text-[#888888] text-lg">Upcoming 4</span>
+            <span className="font-bold text-[#888888] text-lg mr-14">Upcoming 4</span>
           </CardContent>
         </Card>
 
