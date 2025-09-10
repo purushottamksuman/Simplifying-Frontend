@@ -21,16 +21,18 @@ import { PropertyReffrealSubsection } from "./screens/Frame/sections/PropertyRef
 import { PropertyLoginSubsection } from "./screens/Frame/sections/PropertyLoginSubsection/PropertyLoginSubsection";
 import { ExamDetailsPage } from './pages/ExamDetailsPage';
 import { ExamEnvironment } from './components/ExamEnvironment/ExamEnvironment';
+import { PropertyCommanSubsection } from "./screens/Frame/sections/PropertyCommanSubsection/PropertyCommanSubsection";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+          <Route path="signup" element={<PropertyCommanSubsection />} />
+        <Route path="/login" element={<PropertyLoginSubsection />} />
 
         {/* Dashboard Layout */}
         <Route path="/component" element={<DashboardLayout />}>
-        <Route path="/component/login" element={<PropertyLoginSubsection />} />
           <Route path="dashboard" element={<PropertyDasboardSubsection />} />
           <Route path="courses" element={<PropertyMycourseSubsection />} />
           <Route path="live" element={<PropertyLiveSubsection />} />

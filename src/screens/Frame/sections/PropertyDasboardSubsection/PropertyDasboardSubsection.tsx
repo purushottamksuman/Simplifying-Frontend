@@ -81,7 +81,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         
         if (error || !user) {
           console.log("❌ No authenticated user, redirecting to login");
-          navigate('/component/login');
+          navigate('/login');
           return;
         }
         
@@ -96,7 +96,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         
       } catch (err) {
         console.error("❌ Auth check error:", err);
-        navigate('/component/login');
+        navigate('/login');
       } finally {
         setLoading(false);
       }
@@ -148,7 +148,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
       localStorage.removeItem('pendingUser');
       
       console.log("✅ User logged out successfully");
-      navigate('/component/login');
+      navigate('/login');
       
     } catch (err) {
       console.error("❌ Logout error:", err);

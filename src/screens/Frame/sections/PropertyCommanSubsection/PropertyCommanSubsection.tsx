@@ -119,223 +119,169 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     }));
   };
 
-  return (
-    <div className="w-full bg-white relative">
-      <div className="relative w-full mx-auto">
-        {/* Background Container */}
-        <div className="w-full bg-[#edf0fa] rounded-[101px]" />
+   return (
 
-        {/* Mask Image */}
-        <img
-          className="absolute w-full max-w-[1040px] top-0 right-0 lg:right-[-40px] rounded-tr-[100px] rounded-br-[100px]"
-          alt="Mask group"
-          src="/Mask group.png"
-        />
+      
+       <div className="w-full max-w-8xl bg-white shadow-xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row relative">
+    
+    {/* Background Blur Circles */}
+    <div className="absolute w-[598px] h-[535px] top-[338px] left-[352px] bg-[#007fff59] rounded-[299px/267.5px] blur-[125px] z-0" />
+    <div className="absolute w-[568px] h-[535px] top-[157px] left-[83px] bg-[#0011ff59] rounded-[284px/267.5px] blur-[125px] z-0" />
 
-        {/* Blur circles */}
-        <div className="absolute w-[598px] h-[535px] top-[338px] left-[352px] bg-[#007fff59] rounded-[299px/267.5px] blur-[125px]" />
-        <div className="absolute w-[568px] h-[535px] top-[157px] left-[83px] bg-[#0011ff59] rounded-[284px/267.5px] blur-[125px]" />
+  {/* Rest of your card + right illustration */}
 
-        {/* Decorative images */}
-        <img
-          className="absolute w-[370px] h-[209px] top-[434px] left-[800px]"
-          alt="bot"
-          src="/bot.png"
-        />
-        <img
-          className="absolute w-[370px] h-[289px] top-[510px] left-[940px]"
-          alt="code"
-          src="/code.png"
-        />
-        <img
-          className="absolute w-[420px] h-[328px] top-[439px] left-[1090px]"
-          alt="messenger"
-          src="/messenger.png"
-        />
-        <img
-          className="absolute w-[417px] h-[315px] top-[250px] left-[940px]"
-          alt="money"
-          src="/money.png"
-        />
-
-        {/* Card Section */}
-        <div className="absolute w-[623px] h-[858px] top-[57px] left-36 shadow-[0px_4px_4px_#00000040]">
-          <Card className="w-[625px] h-[900px] bg-white rounded-[20px] shadow-[3px_-5px_40px_#cdcdd31a]">
-            <CardContent className="p-0 relative w-full h-full">
-              <img
-                className="absolute top-3.5 left-[129px] w-[366px] h-[91px] object-cover"
-                alt="Simplifying SKILLS"
-                src="/simplifying_skills_logo.png"
-              />
-
-              <div className="absolute top-[93px] left-[211px] [font-family:'Poppins',Helvetica] font-normal text-[#0062ff] text-5xl tracking-[0.12px] leading-[normal]">
-                <span className="font-semibold tracking-[0.06px]">Register</span>
-                <span className="font-semibold text-[40px] tracking-[0.04px]">&nbsp;</span>
+        
+        {/* Left Section - Register Card */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12 relative z-10">
+          <Card className="w-full max-w-md shadow-md rounded-3xl">
+            <CardContent className="p-8">
+              {/* Logo */}
+              <div className="flex justify-center">
+                <img
+                  src="/simplifying_skills_logo.png"
+                  alt="Simplifying SKILLS"
+                  className="w-72 object-contain"
+                />
               </div>
 
-              <div className="absolute top-[177px] left-[83px] [font-family:'Poppins',Helvetica] font-medium text-black text-[15px] text-center tracking-[0.10px] leading-[25px]">
-                Let&#39;s get you set up so you can verify your personal
-                account
-                <br />
-                and begin your journey with us!
-              </div>
+              {/* Title */}
+              <h1 className="mt-4 text-3xl font-bold text-center text-[#0062ff]">Register</h1>
+              <p className="mt-2 text-center text-gray-700 text-sm">
+                Let's get you set up so you can verify your personal account <br /> and begin your journey with us!
+              </p>
 
-              {/* User Type Selection */}
-              <div className="absolute w-[445px] h-[65px] top-[241px] left-[89px]">
-                <div className="relative h-[65px]">
-                  <Select onValueChange={(value) => handleInputChange('userType', value)}>
-                    <SelectTrigger className="w-[445px] h-[54px] absolute top-[11px] left-0 bg-white rounded-3xl border border-solid border-[#e2e2ea]">
-                      <div className="absolute w-32 h-[25px] top-[-11px] left-7 overflow-hidden">
-                        <div className="relative w-[119px] h-[27px] -top-px -left-px">
-                          <div className="absolute w-[62px] h-[27px] top-0 left-0 bg-white rounded-[11px]" />
-                          <div className="absolute w-[109px] top-[5px] left-2.5 [font-family:'Roboto',Helvetica] font-normal text-[#7f7f7f] text-xs tracking-[0] leading-[normal]">
-                            You Are
-                          </div>
-                        </div>
-                      </div>
-                      <SelectValue
-                        placeholder="Select Student / Parent / Teacher"
-                        className="absolute top-[18px] left-6 [font-family:'Roboto',Helvetica] font-normal text-[#7f7f7f] text-sm tracking-[0.10px] leading-[normal]"
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="parent">Parent</SelectItem>
-                      <SelectItem value="teacher">Teacher</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Inputs */}
+              <div className="mt-8 space-y-5">
+                {/* User Type */}
+                <Select onValueChange={(value) => handleInputChange("userType", value)}>
+                  <SelectTrigger className="h-[53px] rounded-3xl border border-gray-300 pl-4">
+                    <SelectValue placeholder="You Are (Student / Parent / Teacher)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="parent">Parent</SelectItem>
+                    <SelectItem value="teacher">Teacher</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Email */}
+                <div className="relative">
+                  <Input
+                    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-24 font-roboto text-sm"
+                    placeholder="Mail Address"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    type="email"
+                  />
+                  <div className="absolute top-[15px] right-4 text-gray-500 text-sm">@gmail.com</div>
                 </div>
-              </div>
 
-              {/* Email Field */}
-              <div className="absolute w-[445px] h-[53px] top-[327px] left-[89px]">
-                <Input
-                  className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
-                  placeholder="Mail Address"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  type="email"
-                />
-                <div className="absolute top-[17px] right-[24px] [font-family:'Roboto',Helvetica] font-normal text-[#7f7f7f] text-sm tracking-[0.10px] leading-[normal]">
-                  @gmail.com
+                {/* Phone */}
+                <div className="flex gap-2">
+                  <Input
+                    className="w-20 h-[53px] rounded-3xl border border-gray-300 text-center"
+                    value={formData.countryCode}
+                    onChange={(e) => handleInputChange("countryCode", e.target.value)}
+                  />
+                  <Input
+                    className="flex-1 h-[53px] rounded-3xl border border-gray-300 pl-4"
+                    placeholder="Phone Number"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    type="tel"
+                  />
                 </div>
-              </div>
 
-              {/* Phone Field */}
-              <div className="absolute w-[443px] h-[54px] top-[401px] left-[90px] flex gap-1">
-                <Input
-                  className="w-14 h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-[13px] text-center"
-                  value={formData.countryCode}
-                  onChange={(e) => handleInputChange('countryCode', e.target.value)}
-                />
-                <Input
-                  className="flex-1 h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-[15px]"
-                  placeholder="Phone Number"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  type="tel"
-                />
-              </div>
-
-              {/* Password Field */}
-              <div className="absolute w-[445px] h-[53px] top-[475px] left-[89px]">
+                {/* Password */}
                 <Input
                   type="password"
-                  className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
+                  className="h-[53px] rounded-3xl border border-gray-300 pl-4"
                   placeholder="Password"
                   value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
                 />
-              </div>
 
-              {/* Confirm Password Field */}
-              <div className="absolute w-[445px] h-[53px] top-[549px] left-[89px]">
+                {/* Confirm Password */}
                 <Input
                   type="password"
-                  className="h-[53px] bg-white rounded-3xl border border-solid border-[#e2e2ea] px-3.5"
+                  className="h-[53px] rounded-3xl border border-gray-300 pl-4"
                   placeholder="Confirm Password"
                   value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                 />
-              </div>
 
-              {/* Error Message */}
-              {error && (
-                <div className="absolute w-[445px] top-[615px] left-[89px] text-red-500 text-sm text-center">
-                  {error}
-                </div>
-              )}
+                {/* Error */}
+                {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
-              {/* Sign Up Button */}
-              <div className="absolute w-[340px] h-[53px] top-[640px] left-[142px]">
-                <Button 
+                {/* Register Button */}
+                <Button
                   onClick={handleSignUp}
                   disabled={loading}
-                  className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc] h-auto"
+                  className="w-full h-[50px] bg-[#007fff] hover:bg-[#0066cc] rounded-3xl text-white font-semibold text-lg"
                 >
-                  <span className="[font-family:'Poppins',Helvetica] font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-[normal]">
-                    {loading ? "Signing Up..." : "Sign Up"}
-                  </span>
+                  {loading ? "Signing Up..." : "Sign Up"}
                 </Button>
               </div>
 
-              {/* Social Login Section */}
-              <div className="absolute w-[403px] h-[163px] top-[710px] left-[110px]">
-                <div className="absolute w-[400px] h-[15px] top-0 left-[3px]">
-                  <div className="relative h-3.5">
-                    <div className="flex w-5 items-center justify-center gap-2.5 px-[3px] py-0 absolute top-0 left-[190px] bg-white">
-                      <div className="relative w-fit mt-[-1.00px] [font-family:'Poppins',Helvetica] font-medium text-black text-[9px] tracking-[0] leading-[normal]">
-                        Or
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-10 w-[448px]">
-                  {/* Google */}
-                  <Button
-                    variant="outline"
-                    className="h-[50px] rounded-xl border border-[#d9d9d9] hover:bg-gray-50 flex items-center justify-center px-5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img className="w-6 h-6" src="/google.png" alt="Google" />
-                      <span className="font-poppins font-medium text-black text-sm">
-                        Sign up with Google
-                      </span>
-                    </div>
-                  </Button>
-
-                  {/* Apple */}
-                  <Button
-                    variant="outline"
-                    className="h-[50px] rounded-xl border border-[#d9d9d9] hover:bg-gray-50 flex items-center justify-center px-5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img className="w-6 h-6" src="/apple.png" alt="Apple" />
-                      <span className="font-poppins font-medium text-black text-sm">
-                        Sign up with Apple
-                      </span>
-                    </div>
-                  </Button>
-
-                  {/* LinkedIn → spans both columns */}
-                  <Button
-                    variant="outline"
-                    className="col-span-2 h-[50px] rounded-xl border border-[#d9d9d9] hover:bg-gray-50 flex items-center justify-center px-5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img className="w-6 h-6" src="/linkedin.png" alt="LinkedIn" />
-                      <span className="font-poppins font-medium text-black text-sm">
-                        Sign up with LinkedIn
-                      </span>
-                    </div>
-                  </Button>
-                </div>
+              {/* Divider */}
+              <div className="flex items-center gap-4 mt-8">
+                <div className="flex-grow h-px bg-gray-300" />
+                <span className="text-sm text-gray-400">or</span>
+                <div className="flex-grow h-px bg-gray-300" />
               </div>
+
+              {/* Social Logins */}
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                >
+                  <img className="w-5 h-5" src="/google.png" alt="Google" />
+                  <span className="text-sm">Google</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                >
+                  <img className="w-5 h-5" src="/apple.png" alt="Apple" />
+                  <span className="text-sm">Apple</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="col-span-2 h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                >
+                  <img className="w-5 h-5" src="/linkedin.png" alt="LinkedIn" />
+                  <span className="text-sm">LinkedIn</span>
+                </Button>
+              </div>
+
+              {/* Login Link */}
+              <p className="mt-6 text-center text-sm text-gray-600">
+                Already have an account?{" "}
+                <span
+                  onClick={() => navigate("/login")}
+                  className="text-[#0062ff] cursor-pointer hover:underline"
+                >
+                  Login
+                </span>
+              </p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Right Section - Illustration */}
+        <div className="w-full lg:w-1/2 relative">
+          <img
+            src="/Mask group.png"
+            alt="Illustration"
+            className="w-full h-full object-cover rounded-br-[30px] rounded-tr-[30px]"
+          />
+
+          <img src="/bot.png" alt="bot" className="absolute top-[35%] right-[70%]" />
+          <img src="/code.png" alt="code" className="absolute top-[45%] right-[48%]" />
+          <img src="/messenger.png" alt="messenger" className="absolute top-[35%] right-[25%]" />
+          <img src="/money.png" alt="money" className="absolute top-[15%] right-[51%]" />
+        </div>
       </div>
-    </div>
-  );
+   )
 };
