@@ -54,7 +54,7 @@ const DashboardLayout = () => {
       try {
         const { user, error } = await authHelpers.getCurrentUser();
         if (error || !user) {
-          navigate("/component/login");
+          navigate("/login");
           return;
         }
         setUser(user);
@@ -62,7 +62,7 @@ const DashboardLayout = () => {
         setUserName(name);
       } catch (err) {
         console.error("❌ Auth check error:", err);
-        navigate("/component/login");
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -79,7 +79,7 @@ const DashboardLayout = () => {
       }
       localStorage.removeItem("currentUser");
       localStorage.removeItem("pendingUser");
-      navigate("/component/login");
+      navigate("/login");
     } catch (err) {
       console.error("❌ Logout error:", err);
     }

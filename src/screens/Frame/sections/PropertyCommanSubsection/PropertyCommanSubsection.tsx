@@ -102,7 +102,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
       }));
 
       // Navigate to OTP verification page
-      navigate('/component/otp');
+      navigate('/otp');
       
     } catch (err) {
       console.error('❌ Registration error:', err);
@@ -119,22 +119,20 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     }));
   };
 
-   return (
-
-      
-       <div className="w-full max-w-8xl bg-white shadow-xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row relative">
-    
+return (
+  
+  <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
     {/* Background Blur Circles */}
-    <div className="absolute w-[598px] h-[535px] top-[338px] left-[352px] bg-[#007fff59] rounded-[299px/267.5px] blur-[125px] z-0" />
-    <div className="absolute w-[568px] h-[535px] top-[157px] left-[83px] bg-[#0011ff59] rounded-[284px/267.5px] blur-[125px] z-0" />
 
-  {/* Rest of your card + right illustration */}
-
-        
-        {/* Left Section - Register Card */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12 relative z-10">
-          <Card className="w-full max-w-md shadow-md rounded-3xl">
-            <CardContent className="p-8">
+    <div className="absolute w-[900px] h-[900px] top-[-200px] left-[-200px] bg-[#007fff59] rounded-full blur-[200px] z-0" />
+    <div className="absolute w-[900px] h-[900px] bottom-[-200px] right-[-200px] bg-[#0011ff59] rounded-full blur-[200px] z-0" />
+    {/* Main Wrapper */}
+    <div className="relative w-full max-w-8xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row shadow-xl  z-10 ">
+      
+      {/* Left Section - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12 relative z-10">
+        <Card className="w-full max-w-lg shadow-md rounded-3xl bg-white">
+          <CardContent className="p-8">
               {/* Logo */}
               <div className="flex justify-center">
                 <img
@@ -146,16 +144,18 @@ export const PropertyCommanSubsection = (): JSX.Element => {
 
               {/* Title */}
               <h1 className="mt-4 text-3xl font-bold text-center text-[#0062ff]">Register</h1>
-              <p className="mt-2 text-center text-gray-700 text-sm">
-                Let's get you set up so you can verify your personal account <br /> and begin your journey with us!
+              <p className="mt-2 text-center text-gray-700 text-sm font-semibold">
+                Let's get you set up so you can verify your personal account and begin your journey with us!
               </p>
+
+                  
 
               {/* Inputs */}
               <div className="mt-8 space-y-5">
                 {/* User Type */}
                 <Select onValueChange={(value) => handleInputChange("userType", value)}>
                   <SelectTrigger className="h-[53px] rounded-3xl border border-gray-300 pl-4">
-                    <SelectValue placeholder="You Are (Student / Parent / Teacher)" />
+                    <SelectValue placeholder="Select (Student / Parent / Teacher)" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="student">Student</SelectItem>
@@ -237,21 +237,21 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                   className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
                 >
                   <img className="w-5 h-5" src="/google.png" alt="Google" />
-                  <span className="text-sm">Google</span>
+                  <span className="text-sm">Sign up with Google</span>
                 </Button>
                 <Button
                   variant="outline"
                   className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
                 >
                   <img className="w-5 h-5" src="/apple.png" alt="Apple" />
-                  <span className="text-sm">Apple</span>
+                  <span className="text-sm">Sign up with Apple</span>
                 </Button>
                 <Button
                   variant="outline"
                   className="col-span-2 h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
                 >
                   <img className="w-5 h-5" src="/linkedin.png" alt="LinkedIn" />
-                  <span className="text-sm">LinkedIn</span>
+                  <span className="text-sm">Sign up with LinkedIn</span>
                 </Button>
               </div>
 
@@ -265,23 +265,23 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                   Login
                 </span>
               </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Section - Illustration */}
-        <div className="w-full lg:w-1/2 relative">
-          <img
-            src="/Mask group.png"
-            alt="Illustration"
-            className="w-full h-full object-cover rounded-br-[30px] rounded-tr-[30px]"
-          />
-
-          <img src="/bot.png" alt="bot" className="absolute top-[35%] right-[70%]" />
-          <img src="/code.png" alt="code" className="absolute top-[45%] right-[48%]" />
-          <img src="/messenger.png" alt="messenger" className="absolute top-[35%] right-[25%]" />
-          <img src="/money.png" alt="money" className="absolute top-[15%] right-[51%]" />
-        </div>
+       </CardContent>
+        </Card>
       </div>
-   )
-};
+
+      {/* Right Section - Illustration */}
+ <div className="w-full lg:w-1/2 relative">
+        <img
+          src="/Mask group.png"
+          alt="Illustration"
+          className="w-full h-full object-cover rounded-br-[30px] rounded-tr-[30px]"
+        />
+        <img src="/bot.png" alt="bot" className="absolute top-[35%] right-[70%]" />
+        <img src="/code.png" alt="code" className="absolute top-[45%] right-[48%]" />
+        <img src="/messenger.png" alt="messenger" className="absolute top-[35%] right-[25%]" />
+        <img src="/money.png" alt="money" className="absolute top-[15%] right-[51%]" />
+      </div>
+    </div>
+  </div>
+);
+}

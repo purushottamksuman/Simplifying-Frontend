@@ -68,18 +68,18 @@ export const PropertyLoginSubsection = (): JSX.Element => {
   };
 
   return (
-    <div className="relative w-full flex justify-center items-center">
-      {/* Background Blur Circles */}
-      <div className="absolute w-[298px] h-[535px] top-[338px] left-[352px] bg-[#007fff59] rounded-[299px/267.5px] blur-[125px] -z-10" />
-      <div className="absolute w-[568px] h-[535px] top-[157px] left-[83px] bg-[#0011ff59] rounded-[284px/267.5px] blur-[125px] -z-10" />
+  <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
+    {/* Background Blur Circles */}
 
-      {/* Main White Card */}
-      <div className="w-full max-w-8xl bg-white shadow-xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row relative z-10">
-        
-        {/* Left Section - Login Card */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12 relative z-10">
-          <Card className="w-full max-w-lg shadow-md rounded-3xl">
-            <CardContent className="p-8">
+    <div className="absolute w-[900px] h-[900px] top-[-200px] left-[-200px] bg-[#007fff59] rounded-full blur-[200px] z-0" />
+    <div className="absolute w-[900px] h-[900px] bottom-[-200px] right-[-200px] bg-[#0011ff59] rounded-full blur-[200px] z-0" />
+    {/* Main Wrapper */}
+    <div className="relative w-full max-w-8xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row shadow-xl  z-10 ">
+      
+      {/* Left Section - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12 relative z-10">
+        <Card className="w-full max-w-lg shadow-md rounded-3xl bg-white">
+          <CardContent className="p-8">
               {/* Logo */}
               <div className="flex justify-center">
                 <img

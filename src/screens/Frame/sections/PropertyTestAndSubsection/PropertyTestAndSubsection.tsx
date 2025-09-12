@@ -35,7 +35,7 @@ const PropertyTestAndSubsection = (): JSX.Element => {
         const { user, error } = await authHelpers.getCurrentUser();
         if (error || !user) {
           console.log("❌ No authenticated user, redirecting to login");
-          navigate("/component/login");
+          navigate("/login");
           return;
         }
 
