@@ -164,134 +164,14 @@ const mentorData = [
   },
 ];
 
-const navigationItems = [
-  { icon: "🏠", label: "Dashboard", active: false },
-  { icon: "👤", label: "Profile Settings", active: false },
-  { icon: "📁", label: "My Course", active: true },
-  { icon: "📊", label: "Live Classes", active: false },
-  { icon: "📝", label: "Test & Assessment", active: false },
-  { icon: "🏆", label: "Certificates", active: false },
-  { icon: "🏅", label: "Leaderboard", active: false },
-  { icon: "🎁", label: "Badges & Rewards", active: false },
-  { icon: "👥", label: "Clubs & Community", active: false },
-  { icon: "❓", label: "Raise a Doubt", active: false },
-  { icon: "🔗", label: "Referrals Program", active: false },
-];
-
 export const PropertyMycourseSubsection = (): JSX.Element => {
   return (
     <div className="w-full h-screen bg-[#3479ff] flex">
-      <aside className="w-[315px] h-full bg-[#3479ff] flex flex-col shadow-[0px_4px_25px_rgba(0,0,0,0.2)] relative">
+    
 
-        <div className="p-6">
-          <img
-            className="w-[262px] h-[68px]"
-            alt="Frame"
-            src="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=262&h=68&fit=crop"
-          />
-        </div>
-
-      <nav className="flex flex-col gap-[90px] p-[70px_30px_0_30px]">
-  {/* Navigation Items */}
-  <div className="flex flex-col gap-[20px]">
-    {navigationItems.map((item, index) => (
-      <div
-        key={index}
-        className={`group flex items-center gap-[15px] cursor-pointer transition-all duration-300 relative`}
-      >
-        {/* Active Item Background */}
-{item.active && (
-  <div
-    className="absolute inset-0 bg-white transition-all duration-300"
-    style={{
-      left: "-20px",
-      right: "-50px",
-      borderTopLeftRadius: "40px",
-      borderBottomLeftRadius: "40px",
-      clipPath: "polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)", // slant effect
-    }}
-  ></div>
-)}
-
-
-        {/* Icon + Label */}
-        <div className="flex items-center gap-[15px] px-6 py-4 relative z-10 w-full">
-  {typeof item.icon === "string" ? (
-    <span
-      className={`w-[24px] h-[24px] text-lg transition-colors duration-300 ${
-        item.active
-          ? "text-[#3479ff]"
-          : "text-white group-hover:text-[#dbe9ff]"
-      }`}
-    >
-      {item.icon}
-    </span>
-  ) : (
-    <item.icon
-      className={`w-[24px] h-[24px] transition-colors duration-300 ${
-        item.active
-          ? "text-[#3479ff]"
-          : "text-white group-hover:text-[#dbe9ff]"
-      }`}
-    />
-  )}
-
-
-
-          <span
-            className={`font-semibold text-base [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] transition-colors duration-300 ${
-              item.active
-                ? "text-[#3479ff]"
-                : "text-white group-hover:text-[#dbe9ff]"
-            }`}
-          >
-            {item.label}
-          </span>
-        </div>
-      </div>
-    ))}
-  </div>
-
-  {/* Logout Button */}
-  <div className="flex items-center gap-[15px] cursor-pointer px-6 py-3 rounded-[15px] hover:bg-[#ffffff1a] transition-all duration-300">
-    <LogOutIcon className="w-6 h-6 text-white" />
-    <span className="[font-family:'Poppins',Helvetica] font-medium text-white text-lg tracking-[0.40px] leading-[normal]">
-      Log Out
-    </span>
-  </div>
-</nav>
-
-      </aside>
-
-      <main className="flex-1 bg-white shadow-[0px_0px_29px_#00000075] relative">
+      <main className="flex-1 bg-white relative">
         <div className="p-8">
-          <header className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-[57px]">
-              <img
-                className="w-[25px] h-[25px]"
-                alt="Component"
-                src="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=25&h=25&fit=crop"
-              />
-              <h1 className="[font-family:'Nunito',Helvetica] font-bold text-[#13377c] text-2xl tracking-[0] leading-[normal]">
-                My Course
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-[23px]">
-              <div className="w-6 h-6">
-                <div className="w-[17px] h-5 bg-gray-300 rounded"></div>
-              </div>
-              <Avatar className="w-14 h-14 border-4 border-[#3479ff99]">
-                <AvatarImage src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=56&h=56&fit=crop" />
-                <AvatarFallback>PK</AvatarFallback>
-              </Avatar>
-              <img
-                className="w-6 h-6"
-                alt="Iconly light outline"
-                src="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=24&h=24&fit=crop"
-              />
-            </div>
-          </header>
+          
 
           <div className="mb-8">
             <Card className="bg-[#3479ff] border-none rounded-[20px] overflow-hidden">
@@ -476,7 +356,7 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
         </div>
       </main>
 
-      <aside className="w-[298px] bg-white rounded-[25px_0px_0px_25px] shadow-[0px_0px_22px_#3d57cf40] p-6">
+      <aside className="w-[298px] bg-white p-6">
         <div className="flex flex-col items-center gap-4 mb-9">
           <img
             className="w-20 h-20 rounded-full"
@@ -538,57 +418,67 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
           />
         </div>
 
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex w-full items-center justify-between">
-            <h4 className="[font-family:'Inter',Helvetica] font-medium text-[#202020] text-base tracking-[0] leading-[normal]">
-              Your Mentor
-            </h4>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-6 h-6 rounded-full border-[#9e9e9e] p-0"
-            >
-              <PlusIcon className="w-3 h-3" />
-            </Button>
+        <div className="flex flex-col items-center gap-5 w-full rounded-[14px] border border-gray-200 shadow-md p-4 bg-white">
+  {/* Heading */}
+  <div className="flex w-full items-center justify-between">
+    <h4 className="[font-family:'Inter',Helvetica] font-semibold text-[#202020] text-lg">
+      Your Mentor
+    </h4>
+    <Button
+      variant="outline"
+      size="sm"
+      className="w-7 h-7 rounded-full border-[#d1d1d1] p-0 shadow-sm"
+    >
+      <PlusIcon className="w-3.5 h-3.5" />
+    </Button>
+  </div>
+
+  {/* Mentor List */}
+  <div className="w-full flex flex-col gap-4">
+    {mentorData.map((mentor, index) => (
+      <div key={mentor.id}>
+        <div className="flex items-center gap-3">
+          {/* Avatar */}
+          <Avatar className="w-8 h-8">
+            <AvatarImage src={mentor.avatar} />
+            <AvatarFallback>PK</AvatarFallback>
+          </Avatar>
+
+          {/* Name & Role */}
+          <div className="flex-1">
+            <p className="[font-family:'Inter',Helvetica] font-semibold text-[#202020] text-sm">
+              {mentor.name}
+            </p>
+            <p className="[font-family:'Inter',Helvetica] font-normal text-[#5f5f5f] text-xs">
+              {mentor.role}
+            </p>
           </div>
 
-          <Card className="w-full rounded-[20px]">
-            <CardContent className="p-4">
-              {mentorData.map((mentor, index) => (
-                <div key={mentor.id}>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-6 h-6">
-                      <AvatarImage src={mentor.avatar} />
-                      <AvatarFallback>PK</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="[font-family:'Inter',Helvetica] font-medium text-[#202020] text-[10px] tracking-[0] leading-[normal]">
-                        {mentor.name}
-                      </p>
-                      <p className="[font-family:'Inter',Helvetica] font-normal text-[#5f5f5f] text-[8px] tracking-[0] leading-[normal]">
-                        {mentor.role}
-                      </p>
-                    </div>
-                    <Button className="bg-[#3479ff] hover:bg-[#3479ff]/90 h-auto px-2 py-1 rounded-lg">
-                      <span className="[font-family:'Inter',Helvetica] font-medium text-white text-[8px] text-center tracking-[0] leading-[normal]">
-                        Follow
-                      </span>
-                    </Button>
-                  </div>
-                  {index < mentorData.length - 1 && (
-                    <Separator className="my-4" />
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Button className="w-full bg-[#3479ff] hover:bg-[#3479ff]/90 rounded-[40px] h-auto px-3 py-2">
-            <span className="[font-family:'Inter',Helvetica] font-extrabold text-white text-xs tracking-[0] leading-[normal]">
-              See All
+          {/* Follow Button */}
+          <Button className="bg-[#3479ff] hover:bg-[#2e6de0] transition-colors h-auto px-3 py-1 rounded-full shadow-sm">
+            <span className="[font-family:'Inter',Helvetica] font-medium text-white text-xs">
+              Follow
             </span>
           </Button>
         </div>
+
+        {/* Separator */}
+        {index < mentorData.length - 1 && (
+          <Separator className="my-3 bg-gray-200" />
+        )}
+      </div>
+    ))}
+  </div>
+
+  {/* See All Button */}
+  <Button className="w-full bg-[#3479ff] hover:bg-[#2e6de0] rounded-full h-auto px-4 py-2 shadow-md">
+    <span className="[font-family:'Inter',Helvetica] font-bold text-white text-sm">
+      See All
+    </span>
+  </Button>
+</div>
+
+
       </aside>
     </div>
   );

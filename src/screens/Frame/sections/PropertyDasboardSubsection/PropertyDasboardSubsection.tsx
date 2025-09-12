@@ -26,6 +26,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "../../../../components/ui/avatar";
+import { OnboardingFlow } from "../../../../components/onboarding/OnboardingFlow";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
@@ -67,38 +68,38 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
   const [user, setUser] = useState<any>(null);
   const [userName, setUserName] = useState("User");
   const [loading, setLoading] = useState(true);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState("");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [exams, setExams] = useState<Exam[]>([]);
   const [activeSection, setActiveSection] = useState("Dashboard");
   const [userPurchases, setUserPurchases] = useState<string[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-  useEffect(() => {
+ useEffect(() => {
     const checkAuth = async () => {
       try {
         const { user, error } = await authHelpers.getCurrentUser();
-        
+
         if (error || !user) {
           console.log("❌ No authenticated user, redirecting to login");
-          navigate('/component/login');
+          navigate("/login");
           return;
         }
-        
+
         setUser(user);
-        const name = user.email?.split('@')[0] || user.user_metadata?.full_name || "User";
+        const name =
+          user.email?.split("@")[0] ||
+          user.user_metadata?.full_name ||
+          "User";
         setUserName(name);
         console.log("✅ Dashboard loaded for user:", name);
-        
-        // Fetch exams for payment plans
+
         await fetchExams();
         await fetchUserPurchases(user?.id);
-        
       } catch (err) {
         console.error("❌ Auth check error:", err);
-        navigate('/component/login');
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -106,6 +107,49 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
     checkAuth();
   }, [navigate]);
+
+  // 🔹 Check onboarding state after user is loaded
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (!user) {
+        console.log("⏳ No user yet, skipping onboarding check");
+        return;
+      }
+
+      console.log("🔍 Checking profile for user:", user.id);
+
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("edu_level, career_domain, onboarded")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("❌ Profile fetch error:", error);
+        console.log("➡️ No profile found, showing onboarding");
+        setShowOnboarding(true);
+        return;
+      }
+
+      console.log("📄 Profile data:", data);
+
+      const needsOnboard =
+        !data?.onboarded ||
+        !data?.edu_level ||
+        !data?.career_domain;
+
+      if (needsOnboard) {
+        console.log("🚪 User profile incomplete, showing onboarding");
+      } else {
+        console.log("✅ User already onboarded");
+      }
+
+      setShowOnboarding(Boolean(needsOnboard));
+    };
+
+    checkProfile();
+  }, [user]);
+
 
   const fetchExams = async () => {
     try {
@@ -150,7 +194,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
       localStorage.removeItem('pendingUser');
       
       console.log("✅ User logged out successfully");
-      navigate('/component/login');
+      navigate('/login');
       
     } catch (err) {
       console.error("❌ Logout error:", err);
@@ -258,15 +302,6 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
     navigate(`/exam/${exam.exam_id}`);
   };
 
-  const handleNavigation = (item: any) => {
-    setActiveSection(item.label);
-    
-    // Update active states
-    navigationItems.forEach(navItem => {
-      navItem.active = navItem.label === item.label;
-    });
-  };
-
   const renderDashboardContent = () => {
     return (
       <div className="max-w-7xl mx-auto">
@@ -274,26 +309,31 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
           {/* Left Content */}
           <div className="flex-1 max-w-4xl">
             {/* Welcome Card */}
-            <Card className="mb-8 rounded-3xl shadow-xl border-0 overflow-hidden">
-              <CardContent className="p-0">
-                <div className="h-72 bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-hidden">
-                  <img
-                    className="absolute w-64 h-80 top-0 right-0 opacity-80"
-                    alt="Gradient decoration"
-                    src="/GradientPurple.png"
-                  />
-                  
-                  <div className="p-8 relative z-10">
-                    <h2 className="font-bold text-white text-4xl mb-6">
-                      Hello {userName}! 👋
-                    </h2>
-                    <p className="text-white/90 text-lg max-w-lg leading-relaxed">
-                      Don't miss out! Your child's future starts with one smart step - complete the payment today.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Card className="mb-8 rounded-3xl shadow-xl border-0 overflow-visible relative">
+  <CardContent className="p-0">
+    <div className="h-72 bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-visible rounded-3xl">
+
+      {/* Gradient Purple / Character Image */}
+      <img
+        className="absolute bottom-0 -right-4 z-10 drop-shadow-2xl pointer-events-none select-none"
+        alt="Character Illustration"
+        src="/GradientPurple.png"
+      />
+
+      {/* Text Content */}
+      <div className="p-8 relative z-30 max-w-xl">
+        <h2 className="font-bold text-white text-4xl mb-6">
+          Hello {userName}! 👋
+        </h2>
+        <p className="text-white/90 text-lg leading-relaxed">
+          Don't miss out! Your child's future starts with one smart step — complete the payment today.
+        </p>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
+
 
             {/* Payment Plans Card */}
             <Card className="rounded-3xl border-0 shadow-xl">
@@ -588,9 +628,10 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
     );
   };
 
+
   if (loading) {
     return (
-      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
+      <div className="flex w-full h-screen items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -604,150 +645,30 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
     );
   }
 
+  // 🔹 Show onboarding if needed
+  if (showOnboarding) {
+    return (
+      <OnboardingFlow
+        user={user}
+        onFinish={() => {
+          console.log("🎉 Onboarding finished, hiding flow");
+          setShowOnboarding(false);
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="flex w-full h-screen bg-[#3479ff] overflow-hidden">
+    <div className="flex w-full h-screen">
       {/* Fixed Sidebar */}
-      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-64'} h-screen bg-[#3479ff] flex flex-col transition-all duration-300 ease-in-out flex-shrink-0 relative z-10`}>
-        {/* Fixed Logo Section */}
-        <div className="p-4 border-b border-[#ffffff15] flex-shrink-0 flex items-center justify-between h-20">
-          {!sidebarCollapsed && (
-            <img
-              className="w-48 h-12 object-contain"
-              alt="Simplifying Skills Logo"
-              src="/Simplifying.png"
-            />
-          )}
-          <Button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            variant="ghost"
-            size="icon"
-            className="w-8 h-8 text-white hover:bg-[#ffffff15] rounded-lg transition-colors duration-200 flex items-center justify-center"
-          >
-            {sidebarCollapsed ? <MenuIcon className="w-5 h-5 text-white" /> : <XIcon className="w-5 h-5 text-white" />}
-          </Button>
-        </div>
-
-        {/* Scrollable Navigation */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto sidebar-scrollbar">
-          <div className="flex flex-col gap-1">
-            {navigationItems.map((item, index) => (
-              <div key={index} className="relative group">
-                {item.active && (
-                  <div className="absolute inset-0 bg-white rounded-2xl" />
-                )}
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start gap-3 px-4 py-3 h-auto relative z-10 transition-all duration-200 rounded-2xl ${
-                    item.active 
-                      ? "text-[#3479ff] hover:text-[#3479ff] hover:bg-transparent" 
-                      : "text-white hover:bg-[#ffffff15] hover:text-white"
-                  } ${sidebarCollapsed ? 'justify-center px-0' : 'justify-start'}`}
-                  onClick={() => handleNavigation(item)}
-                >
-                  <item.icon className={`w-5 h-5 flex-shrink-0 ${sidebarCollapsed ? 'mx-auto' : ''}`} />
-                  {!sidebarCollapsed && (
-                    <span className="font-medium text-sm truncate">
-                      {item.label}
-                    </span>
-                  )}
-                </Button>
-                
-                {/* Tooltip for collapsed state */}
-                {sidebarCollapsed && (
-                  <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-gray-900 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                    {item.label}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </nav>
-
-        {/* Fixed Logout Button */}
-        <div className="p-3 border-t border-[#ffffff15] flex-shrink-0">
-          <div className="relative \group">
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              className={`w-full gap-3 px-4 py-3 h-auto rounded-2xl text-white hover:bg-[#ffffff15] hover:text-white transition-all duration-200 ${
-                sidebarCollapsed ? 'justify-center px-0' : 'justify-start'
-              }`}
-            >
-              <LogOutIcon className={`w-5 h-5 flex-shrink-0 ${sidebarCollapsed ? 'mx-auto' : ''}`} />
-              {!sidebarCollapsed && (
-                <span className="font-medium text-sm">Log Out</span>
-              )}
-            </Button>
-            
-            {/* Tooltip for collapsed state */}
-            {sidebarCollapsed && (
-              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-gray-900 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                Log Out
-              </div>
-            )}
-          </div>
-        </div>
-      </aside>
-
-      {/* Vertical separator line */}
-      {!sidebarCollapsed && (
-        <div className="w-px bg-white opacity-20 absolute left-[255px] top-20 bottom-20 z-20" />
-      )}
-
+    
+ 
       {/* Main Content Container - Fixed Height */}
-      <main className="flex-1 h-screen bg-[#3479ff] rounded-l-[3rem] ml-1 overflow-hidden">
         <div className="h-full bg-white rounded-l-[3rem] flex flex-col">
-          {/* Header with Search and Controls */}
-          <header className="flex-shrink-0 px-8 py-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              {/* Left: Breadcrumbs */}
-              <div className="flex items-center gap-2">
-                <span className="text-[#3479ff] text-2xl font-bold">Dashboard</span>
-              </div>
-
-              {/* Center: Beautiful Search Bar */}
-              <div className="flex-1 max-w-md mx-8">
-                <div className="relative">
-                  <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    placeholder="Search anything..."
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    className="pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-2xl shadow-sm focus:bg-white focus:shadow-md transition-all duration-200 placeholder:text-gray-500"
-                  />
-                </div>
-              </div>
-
-              {/* Right: User Controls */}
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-600 transition-all duration-200"
-                >
-                  <BellIcon className="w-5 h-5" />
-                </Button>
-                
-                <Avatar className="w-10 h-10 border-2 border-gray-200 shadow-sm">
-                  <AvatarImage src="/Profile.png" />
-                  <AvatarFallback className="bg-[#3479ff] text-white text-sm font-semibold">
-                    {userName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-600 transition-all duration-200"
-                >
-                  <SettingsIcon className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-          </header>
+         
 
           {/* Scrollable Dashboard Content */}
-          <div className="flex-1 overflow-y-auto main-scrollbar">
+          <div className="flex-1">
             <div className="p-8">
               {activeSection === "Dashboard" && renderDashboardContent()}
               {activeSection === "Test & Assessment" && renderTestAssessmentContent()}
@@ -756,50 +677,8 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
             </div>
           </div>
         </div>
-      </main>
 
-      {/* Custom Scrollbar Styles */}
-      <style jsx>{`
-        /* Remove horizontal scrollbar */
-        .sidebar-scrollbar {
-          overflow-x: hidden;
-        }
-        
-        .sidebar-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        .sidebar-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        
-        .sidebar-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
-          transition: background 0.2s ease;
-        }
-        
-        .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-        .main-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        .main-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        
-        .main-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(52, 121, 255, 0.2);
-          border-radius: 10px;
-          transition: background 0.2s ease;
-        }
-        
-        .main-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(52, 121, 255, 0.3);
-        }
-      `}</style>
+      
     </div>
   );
 };

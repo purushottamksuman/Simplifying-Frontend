@@ -88,52 +88,11 @@ const certificateData = [
   },
 ];
 
-// Sidebar navigation items
-const navItems = [
-  { label: "Dashboard", icon: "📊" },
-  { label: "Profile Settings", icon: "⚙️" },
-  { label: "My Course", icon: "📘" },
-  { label: "Live Classes", icon: "🎥" },
-  { label: "Test & Assessment", icon: "📝" },
-  { label: "Certificates", icon: "📜" },
-  { label: "Leaderboard", icon: "🏆" },
-  { label: "Badges & Rewards", icon: "🎖️" },
-  { label: "Clubs & Community", icon: "👥" },
-  { label: "Raise a Doubt", icon: "❓" },
-  { label: "Referrals Program", icon: "🎁" },
-  { label: "Log Out", icon: "🚪" },
-];
-
 // Component
 export const PropertyWrapperSubsection = (): JSX.Element => {
   return (
-    <div className="w-full min-h-screen flex bg-[#f9faff]">
-      {/* Sidebar */}
-      <div className="w-[280px] bg-[#3479ff] min-h-screen flex flex-col py-8">
-        {/* Logo */}
-        <div className="px-6 mb-6">
-          <img src="/logo.png" alt="Logo" className="h-10" />
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex flex-col gap-2">
-          {navItems.map((item) => (
-            <div
-              key={item.label}
-              className={`flex items-center gap-3 px-6 py-3 cursor-pointer transition-all duration-300 relative ${
-                item.label === "Certificates"
-                  ? "bg-white text-[#3479ff] rounded-l-[30px] shadow-lg"
-                  : "text-white hover:bg-[#3e86ff]"
-              }`}
-            >
-              <span className="text-lg">{item.icon}</span>
-              <span className="font-medium text-sm">{item.label}</span>
-            </div>
-          ))}
-        </nav>
-      </div>
-
-      {/* Content Area */}
+    
+        
       <div className="flex-1 flex flex-col px-10 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -298,7 +257,6 @@ export const PropertyWrapperSubsection = (): JSX.Element => {
             </Card>
           ))}
         </div>
-      </div>
     </div>
   );
 };

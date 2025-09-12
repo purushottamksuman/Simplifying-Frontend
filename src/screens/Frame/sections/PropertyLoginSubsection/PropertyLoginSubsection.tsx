@@ -1,17 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { authHelpers } from "../../../../lib/supabase";
-import { useState } from "react";
 
 export const PropertyLoginSubsection = (): JSX.Element => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: ""
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,47 +22,41 @@ export const PropertyLoginSubsection = (): JSX.Element => {
 
     try {
       const { data, error } = await authHelpers.signIn(formData.email, formData.password);
-      
+
       if (error) {
-        // Check if email is not confirmed
         if (error.message === "Email not confirmed" || error.message.includes("email_not_confirmed")) {
-          console.log("📧 Email not confirmed, sending confirmation email...");
-          
-          // Resend confirmation email with your custom template containing {{.Token}}
           const { error: resendError } = await authHelpers.resendConfirmation(formData.email);
-          
+
           if (resendError) {
             setError("Failed to send confirmation email. Please try again.");
             return;
           }
-          
-          // Store user data for OTP verification
-          localStorage.setItem('pendingUser', JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-            isLogin: true
-          }));
-          
-          console.log("✅ Confirmation email sent with OTP token, redirecting to verification...");
-          navigate('/component/otp');
+
+          localStorage.setItem(
+            "pendingUser",
+            JSON.stringify({ email: formData.email, password: formData.password, isLogin: true })
+          );
+
+          navigate("/component/otp");
           return;
         }
-        
+
         setError(error.message);
         return;
       }
 
       if (data.user) {
-        // Store user session info
-        localStorage.setItem('currentUser', JSON.stringify({
-          id: data.user.id,
-          email: data.user.email,
-          user_metadata: data.user.user_metadata
-        }));
-        
-        navigate('/component/dashboard');
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            id: data.user.id,
+            email: data.user.email,
+            user_metadata: data.user.user_metadata,
+          })
+        );
+        navigate("/component/dashboard");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -74,175 +64,146 @@ export const PropertyLoginSubsection = (): JSX.Element => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
-    <div className="w-full bg-white relative">
-      <div className="relative w-full max-w-[1884px] top-[54px] left-9 mx-auto">
-        {/* Background Container */}
-        <div className="w-full max-w-[1831px] bg-[#edf0fa] rounded-[101px]" />
+  <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
+    {/* Background Blur Circles */}
 
-        {/* Mask Image */}
-        <img
-          className="absolute w-full max-w-[1040px] top-0 right-0 lg:right-[-40px] rounded-tr-[100px] rounded-br-[100px]"
-          alt="Mask group"
-          src="/Mask group.png"
-        />
-
-        {/* Blur circles */}
-        <div className="absolute w-[598px] h-[535px] top-[338px] left-[352px] bg-[#007fff59] rounded-[299px/267.5px] blur-[125px]" />
-        <div className="absolute w-[568px] h-[535px] top-[157px] left-[83px] bg-[#0011ff59] rounded-[284px/267.5px] blur-[125px]" />
-
-        {/* Decorative images */}
-        <img
-          className="absolute w-[370px] h-[209px] top-[434px] left-[800px]"
-          alt="bot"
-          src="/bot.png"
-        />
-        <img
-          className="absolute w-[370px] h-[289px] top-[510px] left-[940px]"
-          alt="code"
-          src="/code.png"
-        />
-        <img
-          className="absolute w-[420px] h-[328px] top-[439px] left-[1090px]"
-          alt="messenger"
-          src="/messenger.png"
-        />
-        <img
-          className="absolute w-[417px] h-[315px] top-[250px] left-[940px]"
-          alt="money"
-          src="/money.png"
-        />
-
-        {/* Card Section */}
-        <div className="absolute w-[623px] h-[858px] top-[57px] left-36 shadow-[0px_4px_4px_#00000040]">
-          <Card className="w-[625px] h-[860px] bg-white rounded-[20px] shadow-[3px_-5px_40px_#cdcdd31a]">
-            <CardContent className="p-0 relative w-full h-full">
-              <div className="flex flex-col items-center pt-[15px]">
-                {/* Logo + Heading */}
-                <div className="w-[366px] h-[139px] flex flex-col items-center">
-                  <img
-                    className="w-[366px] h-[91px] object-cover"
-                    src="/simplifying_skills_logo.png"
-                    alt="Simplifying SKILLS"
-                  />
-                  <h1 className="mt-2 font-semibold text-[#0062ff] text-[40px] tracking-[0.10px] leading-normal font-poppins">
-                    Login
-                  </h1>
-                </div>
-
-                {/* Subtitle */}
-                <div className="mt-[24px] text-center font-medium text-black text-[15px] tracking-[0.10px] leading-[25px] font-poppins">
-                  Log in to your personal account
-                  <br />
-                  and begin your journey with us!
-                </div>
-
-                {/* Inputs */}
-                <div className="flex flex-col gap-6 mt-[55px] w-[448px]">
-                  {/* Email */}
-                  <div className="relative">
-                    <Input
-                      className="h-[53px] bg-white rounded-3xl border border-[#e2e2ea] pl-3.5 pr-24 font-roboto font-normal text-sm tracking-[0.10px]"
-                      placeholder="Mail Address"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      type="email"
-                    />
-                    <div className="absolute top-[17px] right-3.5 font-roboto font-normal text-[#7f7f7f] text-sm tracking-[0.10px] leading-normal">
-                      @gmail.com
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div className="space-y-1">
-                    <div className="relative">
-                      <Input
-                        type="password"
-                        className="h-[54px] bg-white rounded-3xl border border-[#e2e2ea] pl-3.5 pr-12 font-roboto font-normal text-sm tracking-[0.10px]"
-                        placeholder="Password"
-                        value={formData.password}
-                        onChange={(e) => handleInputChange('password', e.target.value)}
-                      />
-                      <img
-                        className="absolute w-[19px] h-[18px] top-[17px] right-[26px]"
-                        alt="password icon"
-                      />
-                    </div>
-                    <div className="text-right">
-                      <button className="font-poppins font-medium text-place-holder text-xs">
-                        Forgot Password ?
-                      </button>
-                    </div>
-                  </div>
-
-                  {error && (
-                    <div className="text-red-500 text-sm text-center">
-                      {error}
-                    </div>
-                  )}
-
-                  {/* Login Button */}
-                  <div className="flex justify-center mt-8">
-                    <Button 
-                      onClick={handleLogin}
-                      disabled={loading}
-                      className="w-[340px] h-[53px] bg-[#007fff] hover:bg-[#0066cc] rounded-3xl font-poppins font-semibold text-[#fafafb] text-2xl"
-                    >
-                      {loading ? "Logging In..." : "Log In"}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Social logins */}
-                <div className="grid grid-cols-2 gap-4 mt-10 w-[448px]">
-                  {/* Google */}
-                  <Button
-                    variant="outline"
-                    className="h-[50px] rounded-xl border border-[#d9d9d9] hover:bg-gray-50 flex items-center justify-center px-5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img className="w-6 h-6" src="/google.png" alt="Google" />
-                      <span className="font-poppins font-medium text-black text-sm">
-                        Sign in with Google
-                      </span>
-                    </div>
-                  </Button>
-
-                  {/* Apple */}
-                  <Button
-                    variant="outline"
-                    className="h-[50px] rounded-xl border border-[#d9d9d9] hover:bg-gray-50 flex items-center justify-center px-5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img className="w-6 h-6" src="/apple.png" alt="Apple" />
-                      <span className="font-poppins font-medium text-black text-sm">
-                        Sign in with Apple
-                      </span>
-                    </div>
-                  </Button>
-
-                  {/* LinkedIn → spans both columns */}
-                  <Button
-                    variant="outline"
-                    className="col-span-2 h-[50px] rounded-xl border border-[#d9d9d9] hover:bg-gray-50 flex items-center justify-center px-5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img className="w-6 h-6" src="/linkedin.png" alt="LinkedIn" />
-                      <span className="font-poppins font-medium text-black text-sm">
-                        Sign in with LinkedIn
-                      </span>
-                    </div>
-                  </Button>
-                </div>
+    <div className="absolute w-[900px] h-[900px] top-[-200px] left-[-200px] bg-[#007fff59] rounded-full blur-[200px] z-0" />
+    <div className="absolute w-[900px] h-[900px] bottom-[-200px] right-[-200px] bg-[#0011ff59] rounded-full blur-[200px] z-0" />
+    {/* Main Wrapper */}
+    <div className="relative w-full max-w-8xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row shadow-xl  z-10 ">
+      
+      {/* Left Section - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12 relative z-10">
+        <Card className="w-full max-w-lg shadow-md rounded-3xl bg-white">
+          <CardContent className="p-8">
+              {/* Logo */}
+              <div className="flex justify-center">
+                <img
+                  src="/simplifying_skills_logo.png"
+                  alt="Simplifying SKILLS"
+                  className="w-72 object-contain"
+                />
               </div>
+
+              {/* Title */}
+              <h1 className="mt-4 text-3xl font-bold text-center text-[#0062ff]">Login</h1>
+              <p className="mt-2 text-center text-gray-700 text-sm">
+                Log in to your personal account <br /> and begin your journey with us!
+              </p>
+
+              {/* Inputs */}
+              <div className="mt-8 space-y-5">
+                {/* Email */}
+                <div className="relative">
+                  <Input
+                    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-24 font-roboto text-sm"
+                    placeholder="Mail Address"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    type="email"
+                  />
+                  <div className="absolute top-[15px] right-4 text-gray-500 text-sm">@gmail.com</div>
+                </div>
+
+                {/* Password */}
+                <div className="relative">
+                  <Input
+                    type="password"
+                    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-10 font-roboto text-sm"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange("password", e.target.value)}
+                  />
+                  <img
+                    className="absolute w-[19px] h-[18px] top-[18px] right-[20px]"
+                    alt="password icon"
+                    src="/eyes.png"
+                  />
+                </div>
+
+                {/* Forgot Password */}
+                <div className="text-right">
+                  <button className="text-xs text-gray-500 hover:text-[#0062ff]">
+                    Forgot Password?
+                  </button>
+                </div>
+
+                {/* Error */}
+                {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+
+                {/* Login Button */}
+                <Button
+                  onClick={handleLogin}
+                  disabled={loading}
+                  className="w-full h-[50px] bg-[#007fff] hover:bg-[#0066cc] rounded-3xl text-white font-semibold text-lg"
+                >
+                  {loading ? "Logging In..." : "Log In"}
+                </Button>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-4 mt-8">
+                <div className="flex-grow h-px bg-gray-300" />
+                <span className="text-sm text-gray-400">or</span>
+                <div className="flex-grow h-px bg-gray-300" />
+              </div>
+
+              {/* Social Logins */}
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                >
+                  <img className="w-5 h-5" src="/google.png" alt="Google" />
+                  <span className="text-sm">Google</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                >
+                  <img className="w-5 h-5" src="/apple.png" alt="Apple" />
+                  <span className="text-sm">Apple</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="col-span-2 h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                >
+                  <img className="w-5 h-5" src="/linkedin.png" alt="LinkedIn" />
+                  <span className="text-sm">LinkedIn</span>
+                </Button>
+              </div>
+
+              {/* Sign Up */}
+              <p className="mt-6 text-center text-sm text-gray-600">
+                Create a new account?{" "}
+                <span
+                  onClick={() => navigate("/signup")}
+                  className="text-[#0062ff] cursor-pointer hover:underline"
+                >
+                  Sign Up
+                </span>
+              </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Right Section - Illustration */}
+        <div className="w-full lg:w-1/2 relative">
+          <img
+            src="/Mask group.png"
+            alt="Illustration"
+            className="w-full h-full object-cover rounded-br-[30px] rounded-tr-[30px]"
+          />
+
+          {/* Floating 3D Elements */}
+          <img src="/bot.png" alt="bot" className="absolute top-[40%] right-[67%]" />
+          <img src="/code.png" alt="code" className="absolute top-[45%] right-[43%]" />
+          <img src="/messenger.png" alt="messenger" className="absolute top-[40%] right-[15%]" />
+          <img src="/money.png" alt="money" className="absolute top-[20%] right-[46%]" />
         </div>
       </div>
     </div>

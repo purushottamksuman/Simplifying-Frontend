@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
@@ -8,11 +8,11 @@ import {
   InputOTPSlot,
 } from "../../../../components/ui/input-otp";
 import { authHelpers } from "../../../../lib/supabase";
-import { useState, useEffect } from "react";
 
 export const PropertyOtpSubsection = (): JSX.Element => {
   const otpSlots = Array.from({ length: 6 }, (_, index) => ({ id: index }));
   const navigate = useNavigate();
+
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -23,22 +23,17 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
 
+  // Load user data + start timer
   useEffect(() => {
-    // Get pending user data
-    const pendingUser = localStorage.getItem('pendingUser');
+    const pendingUser = localStorage.getItem("pendingUser");
     if (pendingUser) {
       const userData = JSON.parse(pendingUser);
       setUserEmail(userData.email);
       setIsLoginFlow(userData.isLogin || false);
-      
-      console.log("📧 OTP verification page loaded for:", userData.email);
-      console.log("🔄 Flow type:", userData.isLogin ? "Login verification" : "Registration verification");
     } else {
-      // If no pending user, redirect to login
-      navigate('/component/login');
+      navigate("/login");
     }
 
-    // Start timer
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
@@ -64,61 +59,43 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     setSuccessMessage("");
 
     try {
-      const pendingUser = localStorage.getItem('pendingUser');
+      const pendingUser = localStorage.getItem("pendingUser");
       const userData = pendingUser ? JSON.parse(pendingUser) : null;
 
       if (!userData) {
         setError("Session expired. Please start over.");
-        navigate('/component/comman');
+        navigate("/login");
         return;
       }
 
-      console.log("🔐 Verifying OTP token:", otp);
-      
-      // Use Supabase's verifyOtp with the token from your custom email template
-      const { data, error } = await authHelpers.verifyOTP(userEmail, otp, 'signup');
-      
+      const { data, error } = await authHelpers.verifyOTP(
+        userEmail,
+        otp,
+        "signup"
+      );
+
       if (error) {
-        console.error("❌ OTP verification failed:", error);
-        setError("Invalid OTP. Please check your email and try again.");
+        setError("Invalid OTP. Please try again.");
         return;
       }
 
-      console.log("✅ OTP verified successfully!", data);
+      // Save session
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          user_metadata: data.user.user_metadata,
+        })
+      );
+      localStorage.removeItem("pendingUser");
 
       if (isLoginFlow) {
-        // For login flow - user is now confirmed, redirect to dashboard
-        console.log("🔄 Login flow - redirecting to dashboard");
-        
-        // Store user session info
-        localStorage.setItem('currentUser', JSON.stringify({
-          id: data.user.id,
-          email: data.user.email,
-          user_metadata: data.user.user_metadata
-        }));
-        
-        // Clear pending user data
-        localStorage.removeItem('pendingUser');
-        navigate('/component/dashboard');
-        
+        navigate("/login");
       } else {
-        // For registration flow - redirect to success page
-        console.log("🔄 Registration flow - redirecting to success page");
-        
-        // Store user session info
-        localStorage.setItem('currentUser', JSON.stringify({
-          id: data.user.id,
-          email: data.user.email,
-          user_metadata: data.user.user_metadata
-        }));
-        
-        // Clear pending user data
-        localStorage.removeItem('pendingUser');
-        navigate('/component/overlap-wrapper');
+        navigate("/component/dashboard");
       }
-      
     } catch (err) {
-      console.error('❌ OTP verification error:', err);
       setError("Failed to verify OTP. Please try again.");
     } finally {
       setLoading(false);
@@ -127,51 +104,30 @@ export const PropertyOtpSubsection = (): JSX.Element => {
 
   const handleResend = async () => {
     if (!canResend) return;
-    
+
     setResendLoading(true);
     setError("");
     setSuccessMessage("");
-    
+
     try {
-      const pendingUser = localStorage.getItem('pendingUser');
+      const pendingUser = localStorage.getItem("pendingUser");
       if (!pendingUser) {
         setError("Session expired. Please start over.");
         return;
       }
-
       const userData = JSON.parse(pendingUser);
-      
-      console.log("🔄 Resending confirmation email to:", userData.email);
-      
-      // Resend confirmation email using Supabase's system with your custom template
+
       const { error } = await authHelpers.resendConfirmation(userData.email);
-      
       if (error) {
-        setError("Failed to resend confirmation email. Please try again.");
+        setError("Failed to resend email. Try again.");
         return;
       }
-      
-      setSuccessMessage("Confirmation email resent successfully! Check your email for the new OTP.");
-      
-      // Reset timer
+
+      setSuccessMessage("OTP resent successfully!");
       setTimer(120);
       setCanResend(false);
-      
-      // Restart timer
-      const interval = setInterval(() => {
-        setTimer((prev) => {
-          if (prev <= 1) {
-            setCanResend(true);
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      
     } catch (err) {
-      console.error('❌ Resend confirmation error:', err);
-      setError("Failed to resend confirmation email");
+      setError("Error resending OTP");
     } finally {
       setResendLoading(false);
     }
@@ -180,146 +136,125 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
-  const maskedEmail = userEmail ? 
-    userEmail.replace(/(.{2})(.*)(@.*)/, '$1****$3') : 
-    'user@example.com';
+  const maskedEmail = userEmail
+    ? userEmail.replace(/(.{2})(.*)(@.*)/, "$1****$3")
+    : "user@example.com";
 
   return (
-    <div className="w-full min-h-screen bg-white relative">
-      <div className="relative w-full min-h-screen mx-auto">
-        {/* Background Container */}
-        <div className="absolute inset-0 bg-[#edf0fa] rounded-[101px]" />
+    <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
+      {/* Background Blur Circles */}
+      <div className="absolute w-[900px] h-[900px] top-[-200px] left-[-200px] bg-[#007fff59] rounded-full blur-[200px]" />
+      <div className="absolute w-[900px] h-[900px] bottom-[-200px] right-[-200px] bg-[#0011ff59] rounded-full blur-[200px]" />
 
-        {/* Mask Image */}
-        <img
-          className="absolute w-[1250px] h-[970px] top-0 right-0 lg:right-[-40px] rounded-tr-[100px] rounded-br-[100px]"
-          alt="Mask group"
-          src="/Mask group.png"
-        />
+      {/* Main Wrapper */}
+      <div className="relative w-full max-w-8xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row z-10">
+        {/* Left Section - OTP Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12">
+          <Card className="w-full max-w-md h-[604px] shadow-md rounded-3xl bg-white">
+            <CardContent className="p-8 text-center">
+              {/* Logo */}
+              <img
+                src="/simplifying_skills_logo.png"
+                alt="Simplifying SKILLS"
+                className="w-full mx-auto"
+              />
 
-        {/* Blurred Background Circles */}
-        <div className="absolute w-[598px] h-[535px] top-[338px] left-[352px] bg-[#007fff59] rounded-[299px/267.5px] blur-[125px]" />
-        <div className="absolute w-[568px] h-[535px] top-[157px] left-[83px] bg-[#0011ff59] rounded-[284px/267.5px] blur-[125px]" />
+              <h1 className="mt-6 text-3xl font-bold text-[#0062ff]">
+                OTP VERIFICATION
+              </h1>
+              <p className="mt-2 text-gray-600 text-sm">
+                Enter the OTP sent to{" "}
+                <span className="text-[#007fff]">{maskedEmail}</span>
+              </p>
 
-        {/* Decorative Illustrations */}
-        <img
-          className="absolute w-[370px] h-[209px] top-[434px] left-[950px]"
-          alt="Bot"
-          src="/bot.png"
-        />
-        <img
-          className="absolute w-[370px] h-[289px] top-[510px] left-[1080px]"
-          alt="Code"
-          src="/code.png"
-        />
-        <img
-          className="absolute w-[420px] h-[328px] top-[439px] left-[1230px]"
-          alt="Messenger"
-          src="/messenger.png"
-        />
-        <img
-          className="absolute w-[417px] h-[315px] top-[250px] left-[1080px]"
-          alt="Money"
-          src="/money.png"
-        />
-
-        {/* OTP Card */}
-        <div className="absolute w-[623px] h-[858px] top-[57px] left-36 shadow-[0px_4px_4px_#00000040]">
-          <Card className="relative w-[625px] h-[860px] bg-white rounded-[20px] shadow-[3px_-5px_40px_#cdcdd31a]">
-            <CardContent className="p-0">
-              <div className="flex flex-col w-[436px] items-center gap-[49px] absolute top-40 left-[95px]">
-                {/* Logo */}
-                <img
-                  className="absolute w-[366px] h-[91px] top-[-100px] left-[35px] object-cover"
-                  alt="Simplifying SKILLS"
-                  src="/image34.png"
-                />
-
-                {/* Heading */}
-                <h1 className="font-poppins font-semibold text-[#0062ff] text-[38px] tracking-[0.10px] leading-normal text-center">
-                  OTP VERIFICATION
-                </h1>
-
-                {/* Subheading */}
-                <p className="font-poppins font-medium text-xl text-center tracking-[0] leading-normal max-w-[340px]">
-                  <span className="text-black">
-                    Enter the 6-digit verification code sent to{" "}
-                  </span>
-                  <span className="text-[#007fff]">{maskedEmail}</span>
-                </p>
-
-                {/* OTP Inputs */}
-                <div className="flex items-center gap-3.5">
-                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                    <InputOTPGroup className="gap-3.5">
-                      {otpSlots.map((slot) => (
-                        <InputOTPSlot
-                          key={slot.id}
-                          index={slot.id}
-                          className="w-[68px] h-[68px] bg-white rounded-3xl border border-[#e2e2ea] font-roboto font-normal text-[#7f7f7f] text-xl tracking-[0.10px] leading-normal flex items-center justify-center"
-                        />
-                      ))}
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-
-                {/* Timer */}
-                <div className="font-poppins font-medium text-black text-xl text-center tracking-[0] leading-normal">
-                  {formatTime(timer)} Sec
-                </div>
-
-                {successMessage && (
-                  <div className="text-green-500 text-sm text-center max-w-[340px]">
-                    {successMessage}
-                  </div>
-                )}
-                {error && (
-                  <div className="text-red-500 text-sm text-center">
-                    {error}
-                  </div>
-                )}
-
-                {/* Resend Button */}
-                <div className="flex flex-col items-center gap-4">
-                  <p className="font-poppins font-medium text-lg text-center tracking-[0] leading-normal">
-                    <span className="text-black">Didn't receive the email? </span>
-                  </p>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={handleResend}
-                    disabled={!canResend || resendLoading}
-                    className="w-[280px] h-[45px] border-[#007fff] text-[#007fff] hover:bg-[#007fff] hover:text-white"
-                  >
-                    {resendLoading ? (
-                      "Resending..."
-                    ) : canResend ? (
-                      "🔄 Resend Email"
-                    ) : (
-                      `Resend in ${formatTime(timer)}`
-                    )}
-                  </Button>
-                </div>
-
-                {/* Verify Button */}
-                <div className="relative w-[340px] h-[53px]">
-                  <Button 
-                    onClick={handleSubmit}
-                    disabled={loading || otp.length !== 6}
-                    className="relative w-[342px] h-[55px] -top-px -left-px bg-[#007fff] rounded-3xl hover:bg-[#007fff]/90"
-                  >
-                    <span className="font-poppins font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-normal">
-                      {loading ? "Verifying..." : "Verify"}
-                    </span>
-                  </Button>
-                </div>
-
+              {/* OTP Inputs */}
+              <div className="mt-6 flex justify-center">
+                <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                  <InputOTPGroup className="gap-3.5">
+                    {otpSlots.map((slot) => (
+                      <InputOTPSlot
+                        key={slot.id}
+                        index={slot.id}
+                        className="w-[50px] h-[50px] rounded-xl border border-gray-300 text-xl"
+                      />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
               </div>
+
+              {/* Timer */}
+              <div className="mt-4 text-gray-700 font-medium">
+                {formatTime(timer)} Sec
+              </div>
+
+              {/* Resend */}
+              <p className="mt-2 text-sm text-gray-600">
+                Didn’t Receive code?{" "}
+                <button
+                  onClick={handleResend}
+                  disabled={!canResend || resendLoading}
+                  className="text-[#007fff] hover:underline disabled:opacity-50"
+                >
+                  {resendLoading
+                    ? "Resending..."
+                    : canResend
+                    ? "Re-send"
+                    : `Resend in ${formatTime(timer)}`}
+                </button>
+              </p>
+
+              {/* Error/Success */}
+              {error && <div className="mt-3 text-red-500 text-sm">{error}</div>}
+              {successMessage && (
+                <div className="mt-3 text-green-500 text-sm">
+                  {successMessage}
+                </div>
+              )}
+
+              {/* Submit */}
+              <Button
+                onClick={handleSubmit}
+                disabled={loading || otp.length !== 6}
+                className="mt-6 w-full h-[50px] bg-[#0062ff] rounded-3xl text-white font-semibold"
+              >
+                {loading ? "Verifying..." : "Submit"}
+              </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Right Section - Illustration */}
+        <div className="w-full lg:w-1/2 relative hidden lg:block">
+          <img
+            src="/Mask group.png"
+            alt="Illustration"
+            className="w-full h-full object-cover rounded-br-[30px] rounded-tr-[30px]"
+          />
+          <img
+            src="/bot.png"
+            alt="bot"
+            className="absolute top-[35%] right-[70%]"
+          />
+          <img
+            src="/code.png"
+            alt="code"
+            className="absolute top-[45%] right-[48%]"
+          />
+          <img
+            src="/messenger.png"
+            alt="messenger"
+            className="absolute top-[35%] right-[25%]"
+          />
+          <img
+            src="/money.png"
+            alt="money"
+            className="absolute top-[15%] right-[47%]"
+          />
         </div>
       </div>
     </div>
