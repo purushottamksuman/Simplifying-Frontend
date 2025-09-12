@@ -393,7 +393,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                                 </div>
                               )}
                               
-                              <Button 
+                              <Button disabled
                                 onClick={() => {
                                   if (isPurchased) {
                                     navigate(`/exam-details/${exam.exam_id}`);
@@ -403,7 +403,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
                                     handleExamPayment(exam);
                                   }
                                 }}
-                                disabled={paymentLoading}
+                                // disabled={paymentLoading}
                                 className={`w-full mt-4 ${
                                   isPurchased 
                                     ? 'bg-green-500 hover:bg-green-600' 
