@@ -26,6 +26,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "../../../../components/ui/avatar";
+import { OnboardingFlow } from "../../../../components/onboarding/OnboardingFlow";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
@@ -73,30 +74,32 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
   const [exams, setExams] = useState<Exam[]>([]);
   const [activeSection, setActiveSection] = useState("Dashboard");
   const [userPurchases, setUserPurchases] = useState<string[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-  useEffect(() => {
+ useEffect(() => {
     const checkAuth = async () => {
       try {
         const { user, error } = await authHelpers.getCurrentUser();
-        
+
         if (error || !user) {
           console.log("❌ No authenticated user, redirecting to login");
-          navigate('/login');
+          navigate("/login");
           return;
         }
-        
+
         setUser(user);
-        const name = user.email?.split('@')[0] || user.user_metadata?.full_name || "User";
+        const name =
+          user.email?.split("@")[0] ||
+          user.user_metadata?.full_name ||
+          "User";
         setUserName(name);
         console.log("✅ Dashboard loaded for user:", name);
-        
-        // Fetch exams for payment plans
+
         await fetchExams();
         await fetchUserPurchases(user?.id);
-        
       } catch (err) {
         console.error("❌ Auth check error:", err);
-        navigate('/login');
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -104,6 +107,49 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
 
     checkAuth();
   }, [navigate]);
+
+  // 🔹 Check onboarding state after user is loaded
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (!user) {
+        console.log("⏳ No user yet, skipping onboarding check");
+        return;
+      }
+
+      console.log("🔍 Checking profile for user:", user.id);
+
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("edu_level, career_domain, onboarded")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("❌ Profile fetch error:", error);
+        console.log("➡️ No profile found, showing onboarding");
+        setShowOnboarding(true);
+        return;
+      }
+
+      console.log("📄 Profile data:", data);
+
+      const needsOnboard =
+        !data?.onboarded ||
+        !data?.edu_level ||
+        !data?.career_domain;
+
+      if (needsOnboard) {
+        console.log("🚪 User profile incomplete, showing onboarding");
+      } else {
+        console.log("✅ User already onboarded");
+      }
+
+      setShowOnboarding(Boolean(needsOnboard));
+    };
+
+    checkProfile();
+  }, [user]);
+
 
   const fetchExams = async () => {
     try {
@@ -582,6 +628,7 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
     );
   };
 
+
   if (loading) {
     return (
       <div className="flex w-full h-screen items-center justify-center">
@@ -595,6 +642,19 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
       <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
         <div className="text-white text-xl">Redirecting to login...</div>
       </div>
+    );
+  }
+
+  // 🔹 Show onboarding if needed
+  if (showOnboarding) {
+    return (
+      <OnboardingFlow
+        user={user}
+        onFinish={() => {
+          console.log("🎉 Onboarding finished, hiding flow");
+          setShowOnboarding(false);
+        }}
+      />
     );
   }
 

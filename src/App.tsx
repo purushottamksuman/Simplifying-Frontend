@@ -24,6 +24,7 @@ import { ExamEnvironment } from './components/ExamEnvironment/ExamEnvironment';
 import { PropertyCommanSubsection } from "./screens/Frame/sections/PropertyCommanSubsection/PropertyCommanSubsection";
 import { PropertyOtpSubsection } from "./screens/Frame/sections/PropertyOtpSubsection/PropertyOtpSubsection";
 import { SomethingWentWrong } from "./screens/Frame/sections/SomethingWentWrong/SomethingWentWrong";
+import { PropertyStudent3Subsection } from "./screens/Frame/sections/PropertyStudent3Subsection/PropertyStudent3Subsection";
 
 function App() {
   return (
@@ -34,6 +35,8 @@ function App() {
         <Route path="/login" element={<PropertyLoginSubsection />} />
         <Route path="/otp" element={<PropertyOtpSubsection />} />
         <Route path="/error" element={<SomethingWentWrong />} />
+        <Route path="/student3" element={<PropertyStudent3Subsection />} />
+
 
         {/* Dashboard Layout */}
         <Route path="/component" element={<DashboardLayout />}>

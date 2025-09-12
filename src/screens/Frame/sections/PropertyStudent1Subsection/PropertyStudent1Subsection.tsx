@@ -24,8 +24,19 @@ const educationOptions = [
   },
 ];
 
-export const PropertyStudent1Subsection = (): JSX.Element => {
-  const [selectedEducation, setSelectedEducation] = useState("school");
+export const PropertyStudent1Subsection = ({
+  initialValue,
+  onNext,
+  onBack,
+}: {
+  initialValue?: string;
+  onNext: (value: string) => void;
+  onBack?: () => void;
+}) => {
+  const [selectedEducation, setSelectedEducation] = useState(
+    initialValue || "school"
+  );
+
 
   return (
     <div className="w-full max-w-[1317px] h-auto bg-white rounded-[37px] overflow-hidden relative">
@@ -130,12 +141,18 @@ export const PropertyStudent1Subsection = (): JSX.Element => {
               </RadioGroup>
 
               <div className="w-[340px] h-[53px]">
-                <Button className="w-full h-full bg-[#007fff] rounded-3xl hover:bg-[#0066cc] h-auto">
-                  <span className="[font-family:'Poppins',Helvetica] font-semibold text-[#fafafb] text-2xl text-center tracking-[0] leading-[normal]">
-                    Next
-                  </span>
-                </Button>
-              </div>
+        <Button
+          className="w-full h-full bg-[#007fff] rounded-3xl hover:bg-[#0066cc]"
+          onClick={() => onNext(selectedEducation)}
+        >
+          <span className="font-semibold text-white text-2xl">Next</span>
+        </Button>
+      </div>
+      {onBack && (
+        <button onClick={onBack} className="mt-3 text-sm text-gray-500">
+          Back
+        </button>
+      )}
             </div>
           </div>
         </div>

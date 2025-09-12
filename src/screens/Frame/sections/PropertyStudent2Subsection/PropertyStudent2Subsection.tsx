@@ -11,8 +11,18 @@ import {
   RadioGroupItem,
 } from "../../../../components/ui/radio-group";
 
-export const PropertyStudent2Subsection = (): JSX.Element => {
-  const [selectedCareer, setSelectedCareer] = useState("doctor");
+interface PropertyStudent2SubsectionProps {
+  initialValue?: string;
+  onNext: (value: string) => void;
+  onBack?: () => void;
+}
+
+export const PropertyStudent2Subsection: React.FC<PropertyStudent2SubsectionProps> = ({
+  initialValue,
+  onNext,
+  onBack,
+}) => {
+  const [selectedCareer, setSelectedCareer] = useState(initialValue || "doctor");
 
   const careerOptions = [
     {
@@ -139,11 +149,15 @@ export const PropertyStudent2Subsection = (): JSX.Element => {
                 </RadioGroup>
 
                 {/* Next Button */}
-                <Button className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc]">
+                <Button className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc]"
+                onClick={() => onNext(selectedCareer)} 
+                >
                   <span className="font-semibold text-white text-2xl">
                     Next
                   </span>
                 </Button>
+
+
               </div>
             </div>
           </div>

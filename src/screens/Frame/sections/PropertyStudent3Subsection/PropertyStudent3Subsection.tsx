@@ -6,7 +6,21 @@ import { Progress } from "../../../../components/ui/progress";
 import { FaGamepad, FaMusic, FaBook } from "react-icons/fa";
 import { SiCodementor } from "react-icons/si";
 
-export const PropertyStudent3Subsection = (): JSX.Element => {
+
+interface PropertyStudent3SubsectionProps {
+  initialValue?: string;
+  onNext: (value: string) => void;
+  onBack?: () => void;
+}
+
+export const PropertyStudent3Subsection: React.FC<PropertyStudent3SubsectionProps> = ({
+  initialValue,
+  onNext,
+}) => {
+
+  const [selectedHobby, setSelectedHobby] = React.useState(initialValue || "music");
+
+  
   const hobbies = [
     {
       id: "gaming",
@@ -112,33 +126,27 @@ export const PropertyStudent3Subsection = (): JSX.Element => {
               <div className="flex flex-col items-center gap-[53px] w-full">
                 <div className="flex flex-col items-start gap-[23px] w-full">
                   {hobbies.map((hobby) => (
-                    <div key={hobby.id} className={hobby.className}>
-                      {hobby.wrapperClassName ? (
-                        <div className={hobby.wrapperClassName}>
-                          <div className={hobby.contentClassName}>
-                            {hobby.icon}
-                            <div className="font-normal text-[#007fff] text-lg">
-                              {hobby.label}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={hobby.contentClassName}>
-                          {hobby.icon}
-                          <div className="font-normal text-[#007fff] text-lg">
-                            {hobby.label}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+  <div
+    key={hobby.id}
+    className={`${hobby.className} ${
+      selectedHobby === hobby.id ? "border-[#007fff57] shadow-[0px_0px_20px_#007fff33]" : ""
+    }`}
+    onClick={() => setSelectedHobby(hobby.id)}
+  >
+    {hobby.icon}
+    <div className="font-normal text-[#007fff] text-lg">{hobby.label}</div>
+  </div>
+))}
+
                 </div>
 
-                <Button className="w-[342px] h-[55px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc]">
-                  <span className="font-semibold text-[#fafafb] text-2xl">
-                    Next
-                  </span>
-                </Button>
+<Button
+  className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc]"
+  onClick={() => onNext(selectedHobby)} // ✅ pass selectedHobby
+>
+  <span className="font-semibold text-white text-2xl">Next</span>
+</Button>
+
               </div>
             </div>
           </div>
