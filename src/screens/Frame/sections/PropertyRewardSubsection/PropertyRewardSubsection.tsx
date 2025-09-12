@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
@@ -8,20 +9,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../../../components/ui/tabs";
-
-const navigationItems = [
-  { icon: "", label: "Dashboard" },
-  { icon: "", label: "Profile Settings" },
-  { icon: "", label: "My Course" },
-  { icon: "", label: "Live Classes" },
-  { icon: "", label: "Test & Assessment" },
-  { icon: "", label: "Certificates" },
-  { icon: "", label: "Leaderboard" },
-  { icon: "", label: "Badges & Rewards", active: true },
-  { icon: "", label: "Clubs & Community" },
-  { icon: "", label: "Raise a Doubt" },
-  { icon: "", label: "Referrals Program" },
-];
 
 const rewardTiers = [
   {
@@ -84,55 +71,13 @@ const rewardTiers = [
 
 export const PropertyRewardSubsection = (): JSX.Element => {
   return (
-    <div className="w-full h-full bg-[#3479ff] flex">
-      <aside className="w-[315px] bg-[#3479ff] p-[59px_19px_0_19px]">
-        <img className="w-[262px] h-[68px] mb-[34px]" alt="Frame" />
+      
 
-        <nav className="flex flex-col gap-[43px] mb-[90px]">
-          {navigationItems.map((item, index) => (
-            <div key={index} className="flex items-center gap-[17px]">
-              <img className="w-[26px] h-[26px]" alt={item.label} />
-              <div
-                className={`font-extrabold text-lg [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] whitespace-nowrap ${
-                  item.active ? "text-[#13377c]" : "text-white"
-                }`}
-              >
-                {item.label}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-[17px]">
-          <img className="w-7 h-7" alt="Sign out" />
-          <div className="[font-family:'Poppins',Helvetica] font-semibold text-white text-xl tracking-[0.40px] leading-[normal]">
-            Log Out
-          </div>
-        </div>
-      </aside>
-
-      <main className="flex-1 bg-white shadow-[0px_0px_29px_#00000075] relative">
+      
         <div className="p-[46px_0_0_34px]">
-          <header className="flex items-center justify-between px-8 py-0 mb-[59px]">
-            <div className="flex items-center gap-[57px]">
-              <img className="w-[25px] h-[25px]" alt="Component" />
-              <div className="[font-family:'Nunito',Helvetica] font-bold text-[#13377c] text-2xl tracking-[0] leading-[normal]">
-                Badges & Rewards
-              </div>
-            </div>
+          
 
-            <div className="flex items-center gap-[23px]">
-              <div className="w-6 h-6">
-                <div className="w-[17px] h-5 bg-[100%_100%] mt-0.5 ml-1" />
-              </div>
-              <div className="w-14 h-14 bg-cover bg-[50%_50%]">
-                <div className="h-14 rounded-[28px] border-4 border-solid border-[#3479ff99]" />
-              </div>
-              <img className="w-6 h-6" alt="Iconly light outline" />
-            </div>
-          </header>
-
-          <div className="flex gap-[65px] px-[25px]">
+          <div className="flex gap-[50px] p-10px">
             <div className="flex-1 max-w-[1036px]">
               <div className="mb-6">
                 <h1 className="[font-family:'Nunito',Helvetica] font-bold text-[#13377c] text-4xl tracking-[0] leading-[26px] mb-6">
@@ -147,8 +92,8 @@ export const PropertyRewardSubsection = (): JSX.Element => {
                 </p>
               </div>
 
-              <Tabs defaultValue="course-completion" className="w-full">
-                <TabsList className="h-[60px] p-2.5 bg-white rounded-[21px] shadow-[0px_0px_20px_#3479ff40] w-full justify-start gap-44">
+              <Tabs defaultValue="course-completion" className="w-full mt-10">
+                <TabsList className="h-[60px] bg-white rounded-[21px] shadow-[0px_0px_20px_#3479ff40] w-full justify-start gap-32">
                   <TabsTrigger
                     value="course-completion"
                     className="w-[254px] bg-[#007fff59] rounded-[20px] p-2.5 font-bold text-[#083a50] text-2xl [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] data-[state=active]:bg-[#007fff59] data-[state=active]:text-[#083a50]"
@@ -163,7 +108,7 @@ export const PropertyRewardSubsection = (): JSX.Element => {
                   </TabsTrigger>
                   <TabsTrigger
                     value="special"
-                    className="font-bold text-[#888888] text-2xl [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] data-[state=active]:bg-[#007fff59] data-[state=active]:text-[#083a50]"
+                    className="font-bold mr-14 text-[#888888] text-2xl [font-family:'Nunito',Helvetica] tracking-[0] leading-[19.6px] data-[state=active]:bg-[#007fff59] data-[state=active]:text-[#083a50]"
                   >
                     Special
                   </TabsTrigger>
@@ -183,10 +128,10 @@ export const PropertyRewardSubsection = (): JSX.Element => {
               </Tabs>
             </div>
 
-            <div className="w-[339.2px] flex flex-col gap-[46px]">
-              <Card className="h-[496px] p-[22.2px] bg-white rounded-[12.75px] shadow-[0px_0px_20px_#3479ff40] border-0">
-                <CardContent className="p-0 flex flex-col gap-[20.4px]">
-                  <div className="h-[87.43px]">
+            <div className="w-[334px] mt-40 flex flex-col gap-[46px]">
+              <Card className="h-[496px] p-[24px] bg-white rounded-[12.75px] shadow-[0px_0px_20px_#3479ff40] border-0">
+                <CardContent className="p-0 flex flex-col gap-[10.4px]">
+                  <div className="h-[87.43px] w-[300px]">
                     <div className="flex items-center justify-center mb-[7px]">
                       <img className="w-7 h-[21px] mr-2" alt="Svg margin" src="/trophy.png" />
                       <div className="font-www-figma-com-semantic-heading-3 font-[number:var(--www-figma-com-semantic-heading-3-font-weight)] text-wwwfigmacommirage text-[length:var(--www-figma-com-semantic-heading-3-font-size)] text-center tracking-[var(--www-figma-com-semantic-heading-3-letter-spacing)] leading-[var(--www-figma-com-semantic-heading-3-line-height)] [font-style:var(--www-figma-com-semantic-heading-3-font-style)]">
@@ -291,7 +236,6 @@ export const PropertyRewardSubsection = (): JSX.Element => {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    // </div>
   );
 };
