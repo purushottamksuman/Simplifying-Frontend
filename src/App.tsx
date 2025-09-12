@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { ComponentPage } from './pages/ComponentPage';
 import { AdminExamManagement } from './pages/AdminExamManagement';
 import { CreateAssessment } from './pages/CreateAssessment';
+import { UploadQuestions } from './pages/UploadQuestions';
 import { ExamDetailsPage } from './pages/ExamDetailsPage';
 import { ExamEnvironment } from './components/ExamEnvironment/ExamEnvironment';
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/admin/exam-management" element={<AdminExamManagement />} />
         <Route path="/admin/create-assessment" element={<CreateAssessment />} />
         <Route path="/admin/edit-assessment/:assessmentId" element={<CreateAssessment />} />
+        <Route path="/admin/upload-questions" element={<UploadQuestions />} />
         <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
         <Route path="/exam/:examId" element={<ExamEnvironment />} />
       </Routes>
