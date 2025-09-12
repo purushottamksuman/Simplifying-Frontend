@@ -11,11 +11,13 @@ interface PropertyStudent3SubsectionProps {
   initialValue?: string;
   onNext: (value: string) => void;
   onBack?: () => void;
+  onClose?: () => void;
 }
 
 export const PropertyStudent3Subsection: React.FC<PropertyStudent3SubsectionProps> = ({
   initialValue,
   onNext,
+  onClose,
 }) => {
 
   const [selectedHobby, setSelectedHobby] = React.useState(initialValue || "music");
@@ -65,102 +67,94 @@ export const PropertyStudent3Subsection: React.FC<PropertyStudent3SubsectionProp
     },
   ];
 
+  
   return (
-    <div className="w-full h-full bg-white rounded-[37px] overflow-hidden relative">
-      <div className="flex w-full h-full">
-        {/* Left Card */}
-        <div className="w-[655px] h-full relative">
-          <Card className="w-[655px] h-[810px] mt-[13px] bg-[#007fff] rounded-[23px] overflow-hidden shadow-[0px_0px_20px_#3479ff40] border-0">
-            <CardContent className="p-0 relative w-full h-full">
-              <div className="absolute w-[342px] top-[593px] left-[46px] [font-family:'Playfair_Display',Helvetica] font-black text-white text-[28.7px]">
-                Learning Became Easy
-              </div>
-              <div className="absolute w-[508px] top-[679px] left-[46px] [font-family:'Poppins',Helvetica] font-medium text-white text-sm">
-                Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut
-                Nec Vitae Gravida Ullamcorper.
-              </div>
-              <img
-                className="absolute w-[555px] h-[405px] top-[127px] left-[47px]"
-                src="/happy_teacher.png"
-                alt="happy"
-              />
-            </CardContent>
-          </Card>
-          <img
-            className="w-[651px] h-[633px] left-px absolute top-0"
-            src="/framestudent.png"
-            alt="Frame"
-          />
-        </div>
-
-        {/* Right Section */}
-        <div className="flex flex-col w-[450px] items-center gap-[51px] pt-[51px] pl-[64px]">
-          <img
-            className="w-[366px] h-[91px] object-cover"
-            src="/logosimplify.png"
-            alt="Simplifying SKILLS"
-          />
-
-          <div className="flex flex-col w-[420px] items-center gap-8">
-            <div className="w-[379px] font-medium text-[#13377c] text-xl text-center">
-              Dream it. Do it. Live it.
+    <div className="fixed top-0 left-0 w-screen h-screen flex overflow-hidden shadow-lg z-[9999] bg-white">
+      {/* LEFT BLUE PANEL */}
+      <div className="w-1/2 h-full bg-[#007fff] relative flex flex-col justify-center items-center p-8">
+        <Card className="w-full h-full bg-transparent rounded-none overflow-hidden border-0 shadow-none">
+          <CardContent className="relative w-full h-full p-0">
+            <div className="absolute bottom-[90px] left-[50px] max-w-[400px] font-black text-white text-[32px] leading-snug">
+              Learning Became Easy
+            </div>
+            <div className="absolute bottom-[20px] left-[50px] max-w-[508px] font-medium text-white text-sm">
+              Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut Nec
+              Vitae Gravida Ullamcorper.
             </div>
 
-            {/* Progress */}
-            <div className="flex flex-col w-[410px] items-center gap-[18px]">
-              <div className="relative w-[410px] h-[18px] bg-[#bddeff] rounded-[100px]">
-                <Progress value={50} className="w-full h-full bg-[#bddeff]" />
-                <div className="absolute top-0 left-0 w-[194px] h-[18px] bg-[#007fff] rounded-[100px]" />
-              </div>
-              <div className="font-medium text-[#81b3ff] text-lg">
-                50% Completed
-              </div>
-            </div>
+            <img
+              className="absolute w-[434px] h-[453px] top-[50px] left-[139px]"
+              src="/happy_teacher.png"
+              alt="Illustration"
+            />
+          </CardContent>
+        </Card>
 
-            {/* Hobby Selection */}
-            <div className="flex flex-col w-[420px] items-start gap-[26px]">
-              <div className="font-semibold text-[#007fff] text-lg">
-                Select your Hobbies &amp; Interest
-              </div>
+        <img
+          className="absolute top-0 left-0 w-[742px] h-[627px]"
+          src="/framestudent.png"
+          alt="Frame"
+        />
+      </div>
 
-              <div className="flex flex-col items-center gap-[53px] w-full">
-                <div className="flex flex-col items-start gap-[23px] w-full">
-                  {hobbies.map((hobby) => (
-  <div
-    key={hobby.id}
-    className={`${hobby.className} ${
-      selectedHobby === hobby.id ? "border-[#007fff57] shadow-[0px_0px_20px_#007fff33]" : ""
-    }`}
-    onClick={() => setSelectedHobby(hobby.id)}
-  >
-    {hobby.icon}
-    <div className="font-normal text-[#007fff] text-lg">{hobby.label}</div>
-  </div>
-))}
+      {/* RIGHT FORM PANEL */}
+      <div className="w-1/2 h-full bg-white flex flex-col justify-center items-center p-12 relative">
+        <img
+          className="w-[366px] h-[91px] object-contain mb-12"
+          src="/logosimplify.png"
+          alt="logosimplify"
+        />
 
-                </div>
-
-<Button
-  className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc]"
-  onClick={() => onNext(selectedHobby)} // ✅ pass selectedHobby
->
-  <span className="font-semibold text-white text-2xl">Next</span>
-</Button>
-
-              </div>
-            </div>
+        <div className="flex flex-col w-full max-w-[420px] gap-8 items-center">
+          <div className="text-center text-xl font-medium text-[#13377c]">
+            Select your Hobbies & Interests
           </div>
+
+          <div className="w-full flex flex-col items-center gap-3">
+            <Progress value={50} className="w-full h-[10px] bg-[#bddeff] rounded-full" />
+            <span className="text-[#81b3ff] font-medium text-lg mt-1">
+              50% Completed
+            </span>
+          </div>
+
+          <div className="flex flex-col w-full gap-4">
+            {hobbies.map((hobby) => (
+              <div
+                key={hobby.id}
+                className={`w-full h-[55px] flex items-center gap-4 px-4 cursor-pointer rounded-3xl border ${
+                  selectedHobby === hobby.id
+                    ? "bg-white border-[#007fff57] shadow-[0px_0px_20px_#007fff33]"
+                    : "bg-white border-[#e2e2ea]"
+                }`}
+                onClick={() => setSelectedHobby(hobby.id)}
+              >
+                {hobby.icon}
+                <span className="font-normal text-[#007fff] text-lg">{hobby.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            disabled={!selectedHobby}
+            className="w-full h-[55px] bg-[#007fff] rounded-3xl text-white text-2xl font-semibold hover:bg-[#0066cc]"
+            onClick={() => onNext(selectedHobby)}
+          >
+            Next
+          </Button>
         </div>
       </div>
 
-      {/* Close Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute w-[30px] h-[30px] top-7 right-[43px] p-0"
-      >
-        <XIcon className="w-[30px] h-[30px]" />
-      </Button>
+      {/* CLOSE BUTTON */}
+      {onClose && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-5 right-5 w-10 h-10 p-0 hover:bg-gray-100"
+          onClick={onClose}
+        >
+          <XIcon className="w-6 h-6" />
+        </Button>
+      )}
     </div>
   );
 };

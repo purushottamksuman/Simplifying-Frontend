@@ -21,109 +21,92 @@ export const SectionComponentNodeSubsection: React.FC<SectionComponentNodeSubsec
   const [dob, setDob] = useState(initialValue || "");
 
   return (
-    <div className="w-full h-auto bg-white rounded-[37px] overflow-hidden relative">
-      <div className="flex flex-col lg:flex-row w-full min-h-[835px]">
-        {/* LEFT */}
-        <div className="w-full lg:w-[666px] h-[810px] relative p-[13px] pb-0 pl-0">
-          <Card className="w-full h-full bg-[#007fff] rounded-[23px] overflow-hidden shadow-[0px_0px_20px_#3479ff40] border-0">
-            <CardContent className="relative w-full h-full p-0">
-              <div className="absolute w-[342px] top-[593px] left-[46px] font-black text-white text-[28.7px]">
-                Learning Became Easy
-              </div>
-
-              <div className="absolute w-[508px] top-[679px] left-[46px] font-medium text-white text-sm">
-                Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut
-                Nec Vitae Gravida Ullamcorper.
-              </div>
-
-              <img
-                className="absolute w-[375px] h-[433px] top-[105px] left-[139px]"
-                src="/birthday_girl.png"
-                alt="Group"
-              />
-            </CardContent>
-          </Card>
+  <div className="fixed top-0 left-0 w-screen h-screen flex overflow-hidden shadow-lg z-[9999] bg-white">
+    {/* LEFT BLUE PANEL */}
+    <div className="w-1/2 h-full bg-[#007fff] relative flex flex-col justify-center items-center p-8">
+      <Card className="w-full h-full bg-transparent rounded-none overflow-hidden border-0 shadow-none">
+        <CardContent className="relative w-full h-full p-0">
+          <div className="absolute bottom-[90px] left-[50px] max-w-[400px] font-black text-white text-[32px] leading-snug">
+            Learning Became Easy
+          </div>
+          <div className="absolute bottom-[20px] left-[50px] max-w-[508px] font-medium text-white text-sm">
+            Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut Nec
+            Vitae Gravida Ullamcorper.
+          </div>
 
           <img
-            className="w-[642px] h-[627px] left-0 absolute top-0"
-            src="/framestudent.png"
-            alt="Frame"
+            className="absolute w-[375px] h-[433px] top-[70px] left-[139px]"
+            src="/birthday_girl.png"
+            alt="Illustration"
           />
+        </CardContent>
+      </Card>
+
+      <img
+        className="absolute top-0 left-0 w-[742px] h-[627px]"
+        src="/framestudent.png"
+        alt="Frame"
+      />
+    </div>
+
+    {/* RIGHT FORM PANEL */}
+    <div className="w-1/2 h-full bg-white flex flex-col justify-center items-center p-12 relative">
+      <img
+        className="w-[366px] h-[91px] object-contain mb-12"
+        src="/logosimplify.png"
+        alt="logosimplify"
+      />
+
+      <div className="flex flex-col w-full max-w-[420px] gap-8 items-center">
+        <div className="text-center text-xl font-medium text-[#13377c]">
+          Please verify your age
         </div>
 
-        {/* RIGHT */}
-        <div className="flex-1 flex flex-col items-center justify-start pt-[139px] px-4 lg:px-0 lg:pl-[98px] lg:pr-[103px] relative">
-          <div className="flex flex-col w-full max-w-[450px] items-center gap-[51px]">
-            <img
-              className="w-[366px] h-[91px] object-cover"
-              src="/logosimplify.png"
-              alt="logosimplify"
-            />
-
-            <div className="flex flex-col items-center gap-[39px] w-full">
-              <div className="w-full max-w-[379px] font-medium text-[#13377c] text-xl text-center">
-                Please verify your age
-              </div>
-
-              <div className="flex flex-col w-full max-w-[410px] items-center gap-[18px]">
-                <Progress value={5} className="w-full h-[18px] bg-[#bddeff]" />
-                <div className="w-full text-[#81b3ff] text-lg text-center font-medium">
-                  5% Completed
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center gap-[63px] w-full">
-                <div className="flex flex-col items-center gap-9 w-full">
-                  <div className="flex flex-col w-[246px] items-center gap-3.5">
-                    <div className="w-full font-medium text-[#13377c] text-xl text-center">
-                      Enter Your Date Of Birth
-                    </div>
-                  </div>
-
-                  <div className="w-full max-w-[450px] relative">
-                    <div className="relative">
-                      <Label className="absolute -top-2 left-[17px] bg-white px-2 z-10 font-normal text-[#7f7f7f] text-xs">
-                        Date of Birth
-                      </Label>
-
-                      <Input
-                        value={dob}
-                        onChange={(e) => setDob(e.target.value)}
-                        placeholder="DD/MM/YY"
-                        className="w-full h-[55px] bg-white rounded-3xl border border-solid border-[#e2e2ea] pl-[23px] pr-[45px] text-sm text-[#7f7f7f]"
-                      />
-
-                      <CalendarIcon className="absolute w-3 h-3 top-1/2 right-[35px] transform -translate-y-1/2 text-[#7f7f7f]" />
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  disabled={!dob.trim()}
-                  className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl border-0 hover:bg-[#0066cc]"
-                  onClick={() => onNext(dob.trim())}
-                >
-                  <span className="font-semibold text-[#fafafb] text-2xl text-center">
-                    Next
-                  </span>
-                </Button>
-              </div>
-            </div>
-          </div>
+        <div className="w-full flex flex-col items-center gap-3">
+          <Progress value={5} className="w-full h-[10px] bg-[#bddeff] rounded-full" />
+          <span className="text-[#81b3ff] font-medium text-lg mt-1">
+            5% Completed
+          </span>
         </div>
 
-        {/* Close */}
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-7 right-[73px] w-[30px] h-[30px] p-0 hover:bg-transparent"
-            onClick={onClose}
-          >
-            <XIcon className="w-[30px] h-[30px]" />
-          </Button>
-        )}
+        <div className="text-center text-xl font-medium text-[#13377c]">
+          Enter Your Date Of Birth
+        </div>
+
+        <div className="w-full relative">
+          <Input
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+            placeholder="DD/MM/YY"
+            className="w-full h-[55px] rounded-3xl border border-[#e2e2ea] px-4 text-sm text-[#7f7f7f]"
+          />
+          <Label className="absolute -top-2 left-4 bg-white px-1 text-xs text-[#7f7f7f]">
+            Date of Birth
+          </Label>
+        </div>
+
+        <Button
+          disabled={!dob.trim()}
+          className="w-full h-[55px] bg-[#007fff] rounded-3xl text-white text-2xl font-semibold hover:bg-[#0066cc]"
+          onClick={() => onNext(dob.trim())}
+        >
+          Next
+        </Button>
       </div>
     </div>
-  );
+
+    {/* CLOSE BUTTON */}
+    {onClose && (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute top-5 right-5 w-10 h-10 p-0 hover:bg-gray-100"
+        onClick={onClose}
+      >
+        <XIcon className="w-6 h-6" />
+      </Button>
+    )}
+  </div>
+);
+
 };

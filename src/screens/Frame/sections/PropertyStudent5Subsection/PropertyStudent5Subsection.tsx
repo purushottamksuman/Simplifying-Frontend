@@ -43,104 +43,94 @@ export const PropertyStudent5Subsection: React.FC<PropertyStudent5SubsectionProp
 
   const selectedLanguage = languageOptions.find((lang) => lang.selected)?.name;
 
-  return (
-    <div className="w-full bg-white rounded-[37px] overflow-hidden p-5 relative">
-      <div className="flex flex-col lg:flex-row gap-8 h-full">
-        {/* Left section with images */}
-        <div className="flex-1 relative">
-          <Card className="bg-[#007fff] rounded-[23px] overflow-hidden shadow-[0px_0px_20px_#3479ff40] border-0 h-full min-h-[810px] relative">
-            <CardContent className="p-0 relative h-full">
-              <div className="absolute w-[342px] top-[593px] left-[46px] font-black text-white text-[28.7px]">
-                Learning Became Easy
-              </div>
-              <div className="absolute w-[508px] top-[679px] left-[46px] font-medium text-white text-sm">
-                Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut
-                Nec Vitae Gravida Ullamcorper.
-              </div>
-              <img
-                className="w-[651px] h-[633px] left-px absolute top-0"
-                src="/framestudent.png"
-                alt="Frame"
-              />
-              <img
-                className="absolute w-[463px] h-[464px] top-[125px] left-[94px] object-cover"
-                src="/hindi_student.png"
-                alt="Image"
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right section */}
-        <div className="flex flex-col w-full lg:w-[450px] items-center gap-[51px] pt-32">
-          <img
-            className="w-[366px] h-[91px] object-cover"
-            src="/logosimplify.png"
-            alt="Simplifying SKILLS"
-          />
-
-          <div className="flex flex-col w-[420px] items-center gap-8">
-            <div className="w-[379px] font-medium text-[#13377c] text-xl text-center">
-              Talk the world, one word at a time.
+    return (
+    <div className="fixed top-0 left-0 w-screen h-screen flex overflow-hidden shadow-lg z-[9999] bg-white">
+      {/* LEFT BLUE PANEL */}
+      <div className="w-1/2 h-full bg-[#007fff] relative flex flex-col justify-center items-center p-8">
+        <Card className="w-full h-full bg-transparent rounded-none overflow-hidden border-0 shadow-none">
+          <CardContent className="relative w-full h-full p-0">
+            <div className="absolute bottom-[90px] left-[50px] max-w-[400px] font-black text-white text-[32px] leading-snug">
+              Learning Became Easy
+            </div>
+            <div className="absolute bottom-[20px] left-[50px] max-w-[508px] font-medium text-white text-sm">
+              Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut Nec
+              Vitae Gravida Ullamcorper.
             </div>
 
-            {/* Progress */}
-            <div className="flex flex-col w-[410px] items-center gap-[18px]">
-              <Progress value={80} className="w-full h-[18px] bg-[#bddeff]" />
-              <div className="font-medium text-[#81b3ff] text-lg text-center">80% Completed</div>
-            </div>
+            <img
+              className="absolute w-[415px] h-[453px] top-[70px] left-[139px]"
+              src="/hindi_student.png"
+              alt="Illustration"
+            />
+          </CardContent>
+        </Card>
 
-            {/* Language Selection */}
-            <div className="flex flex-col w-[420px] items-start justify-center gap-[26px]">
-              <div className="font-semibold text-[#007fff] text-lg text-center whitespace-nowrap">
-                Select Preferred Language
-              </div>
+        <img
+          className="absolute top-0 left-0 w-[742px] h-[627px]"
+          src="/framestudent.png"
+          alt="Frame"
+        />
+      </div>
 
-              <div className="flex flex-col items-center gap-[53px] w-full">
-                <div className="flex flex-col items-start gap-[23px] w-full">
-                  {languageOptions.map((language) => (
-                    <Card
-                      key={language.id}
-                      onClick={() => handleSelect(language.id)}
-                      className={`w-[420px] h-[54px] bg-white rounded-3xl border border-solid cursor-pointer transition-all ${
-                        language.selected
-                          ? "border-[#007fff57] shadow-[0px_0px_20px_#007fff33]"
-                          : "border-[#e2e2ea]"
-                      }`}
-                    >
-                      <CardContent className="p-0 flex items-center h-full pl-6 gap-4">
-                        {language.icon}
-                        <div className="font-normal text-[#007fff] text-lg">{language.name}</div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+      {/* RIGHT FORM PANEL */}
+      <div className="w-1/2 h-full bg-white flex flex-col justify-center items-center p-12 relative">
+        <img
+          className="w-[366px] h-[91px] object-contain mb-12"
+          src="/logosimplify.png"
+          alt="logosimplify"
+        />
 
-                <div className="flex gap-4 w-full">
-<Button
-  className="flex-1 h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc]"
-  onClick={() => selectedLanguage && onNext(selectedLanguage)}
->
-  <span className="font-semibold text-white text-2xl">Next</span>
-</Button>
-                </div>
-              </div>
-            </div>
+        <div className="flex flex-col w-full max-w-[420px] gap-8 items-center">
+          <div className="text-center text-xl font-medium text-[#13377c]">
+            Talk the world, one word at a time.
+          </div>
+
+          {/* Progress */}
+          <div className="flex flex-col w-full items-center gap-3">
+            <Progress value={80} className="w-full h-[10px] bg-[#bddeff] rounded-full" />
+            <span className="text-[#81b3ff] font-medium text-lg mt-1">80% Completed</span>
+          </div>
+
+          {/* Language Selection */}
+          <div className="flex flex-col w-full gap-6">
+            {languageOptions.map((language) => (
+  <div
+    key={language.id}
+    onClick={() => handleSelect(language.id)}
+    className={`flex items-center gap-4 w-full h-[55px] px-4 cursor-pointer rounded-3xl border transition-all ${
+      language.selected
+        ? "bg-white border-[#007fff57] shadow-[0px_0px_20px_#007fff33]" // ✅ active glow
+        : "bg-white border-[#e2e2ea]"
+    }`}
+  >
+    <div className="w-10 h-10 flex items-center justify-center">{language.icon}</div>
+    <span className="font-normal text-[#007fff] text-lg">{language.name}</span>
+  </div>
+))}
+
+            <Button
+              disabled={!selectedLanguage}
+              className="w-full h-[55px] bg-[#007fff] rounded-3xl text-white text-2xl font-semibold hover:bg-[#0066cc]"
+              onClick={() => selectedLanguage && onNext(selectedLanguage)}
+            >
+              Next
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Close button */}
+      {/* CLOSE BUTTON */}
       {onClose && (
         <Button
           variant="ghost"
           size="icon"
-          className="absolute w-[30px] h-[30px] top-7 right-[30px] p-0"
+          className="absolute top-5 right-5 w-10 h-10 p-0 hover:bg-gray-100"
           onClick={onClose}
         >
-          <XIcon className="w-[30px] h-[30px]" />
+          <XIcon className="w-6 h-6" />
         </Button>
       )}
     </div>
   );
 };
+
