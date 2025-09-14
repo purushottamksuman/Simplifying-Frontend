@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { AdminExamManagement } from "./pages/AdminExamManagement";
@@ -34,6 +33,7 @@ function App() {
         <Route path="/login" element={<PropertyLoginSubsection />} />
         <Route path="/otp" element={<PropertyOtpSubsection />} />
         <Route path="/error" element={<SomethingWentWrong />} />
+
 
         {/* Dashboard Layout */}
         <Route path="/component" element={<DashboardLayout />}>

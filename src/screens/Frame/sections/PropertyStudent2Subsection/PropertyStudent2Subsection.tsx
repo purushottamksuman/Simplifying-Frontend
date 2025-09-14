@@ -2,162 +2,130 @@ import { XIcon } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
-import { FaUserMd, FaChalkboardTeacher, FaGavel } from "react-icons/fa";
-import { GiGearHammer } from "react-icons/gi"; // ✅ Added missing import
 import { Label } from "../../../../components/ui/label";
 import { Progress } from "../../../../components/ui/progress";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "../../../../components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "../../../../components/ui/radio-group";
+import { FaUserMd, FaChalkboardTeacher, FaGavel } from "react-icons/fa";
+import { GiGearHammer } from "react-icons/gi";
 
-export const PropertyStudent2Subsection = (): JSX.Element => {
-  const [selectedCareer, setSelectedCareer] = useState("doctor");
+interface PropertyStudent2SubsectionProps {
+  initialValue?: string;
+  onNext: (value: string) => void;
+  onBack?: () => void;
+  onClose?: () => void;
+}
+
+export const PropertyStudent2Subsection: React.FC<PropertyStudent2SubsectionProps> = ({
+  initialValue,
+  onNext,
+  onBack,
+  onClose,
+}) => {
+  const [selectedCareer, setSelectedCareer] = useState(initialValue || "doctor");
 
   const careerOptions = [
-    {
-      id: "doctor",
-      label: "Doctor",
-      icon: <FaUserMd size={28} className="text-[#007fff]" />,
-    },
-    {
-      id: "engineer",
-      label: "Engineer",
-      icon: <GiGearHammer size={28} className="text-[#007fff]" />,
-    },
-    {
-      id: "teacher",
-      label: "Teacher",
-      icon: <FaChalkboardTeacher size={28} className="text-[#007fff]" />,
-    },
-    {
-      id: "lawyer",
-      label: "Lawyer",
-      icon: <FaGavel size={28} className="text-[#007fff]" />,
-    },
+    { id: "doctor", label: "Doctor", icon: <FaUserMd size={28} className="text-[#007fff]" /> },
+    { id: "engineer", label: "Engineer", icon: <GiGearHammer size={28} className="text-[#007fff]" /> },
+    { id: "teacher", label: "Teacher", icon: <FaChalkboardTeacher size={28} className="text-[#007fff]" /> },
+    { id: "lawyer", label: "Lawyer", icon: <FaGavel size={28} className="text-[#007fff]" /> },
   ];
 
   return (
-    <div className="w-full h-[835px] bg-white rounded-[37px] overflow-hidden relative">
-      <div className="flex h-full">
-        {/* Left Section */}
-        <div className="w-[655px] h-[810px] mt-[13px] ml-[11px] rounded-[23px]">
-          <Card className="w-full h-full bg-[#007fff] rounded-[23px] overflow-hidden shadow-[0px_0px_20px_#3479ff40] border-0">
-            <CardContent className="relative w-full h-full p-0">
-              <h2 className="absolute w-[342px] top-[593px] left-[46px] font-black text-white text-[28.7px] leading-normal">
-                Learning Became Easy
-              </h2>
-
-              <p className="absolute w-[508px] top-[679px] left-[46px] font-medium text-white text-sm leading-normal">
-                Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut
-                Nec Vitae Gravida Ullamcorper .
-              </p>
-
-              <img
-                className="absolute w-[365px] h-[457px] top-[103px] left-[145px]"
-                src="/topper_girl.png"
-                alt="Student"
-              />
-
-              <img
-                className="absolute w-[651px] h-[627px] top-0 left-0"
-                src="/framestudent.png"
-                alt="Frame"
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Section */}
-        <div className="flex flex-col w-[450px] items-center gap-[51px] mt-[51px] ml-[113px]">
-          <img
-            className="w-[366px] h-[91px] object-cover"
-            src="/logosimplify.png"
-            alt="Simplifying SKILLS"
-          />
-
-          <div className="flex flex-col w-[420px] items-center gap-8">
-            <h3 className="w-[379px] font-medium text-[#13377c] text-xl text-center">
-              Map your dreams, chart your career
-            </h3>
-
-            {/* Progress Bar */}
-            <div className="flex flex-col w-[410px] items-center gap-[18px]">
-              <div className="w-[410px] h-[18px] bg-[#bddeff] rounded-[100px] overflow-hidden">
-                <Progress value={35} className="h-full bg-transparent border-0">
-                  <div
-                    className="h-full bg-[#007fff] rounded-[100px] transition-all"
-                    style={{ width: "35%" }}
-                  />
-                </Progress>
-              </div>
-
-              <p className="font-medium text-[#81b3ff] text-lg text-center">
-                35% Completed
-              </p>
+    <div className="fixed top-0 left-0 w-screen h-screen flex overflow-hidden shadow-lg z-[9999] bg-white">
+      {/* LEFT BLUE PANEL */}
+      <div className="w-1/2 h-full bg-[#007fff] relative flex flex-col justify-center items-center p-8">
+        <Card className="w-full h-full bg-transparent rounded-none overflow-hidden border-0 shadow-none">
+          <CardContent className="relative w-full h-full p-0">
+            <div className="absolute bottom-[90px] left-[50px] max-w-[400px] font-black text-white text-[32px] leading-snug">
+              Learning Became Easy
+            </div>
+            <div className="absolute bottom-[20px] left-[50px] max-w-[508px] font-medium text-white text-sm">
+              Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut Nec Vitae Gravida Ullamcorper.
             </div>
 
-            {/* Career Options */}
-            <div className="flex flex-col w-[420px] items-start gap-[26px]">
-              <h4 className="font-semibold text-[#007fff] text-lg">
-                Select Preferred Career Domain
-              </h4>
+            <img
+              className="absolute w-[315px] h-[443px] top-[60px] left-[180px]"
+              src="/topper_girl.png"
+              alt="Illustration"
+            />
+          </CardContent>
+        </Card>
 
-              <div className="flex flex-col items-center gap-[23px] w-full">
-                <RadioGroup
-                  value={selectedCareer}
-                  onValueChange={setSelectedCareer}
-                  className="flex flex-col items-start gap-[23px] w-full"
-                >
-                  {careerOptions.map((option) => (
-                    <div
-                      key={option.id}
-                      className="w-[420px] h-[54px] relative"
-                    >
-                      <Label
-                        htmlFor={option.id}
-                        className={`flex items-center w-full h-full cursor-pointer rounded-3xl border ${
-                          selectedCareer === option.id
-                            ? "bg-white border-[#007fff57] shadow-[0px_0px_20px_#007fff33]"
-                            : "bg-white border-[#e2e2ea]"
-                        }`}
-                      >
-                        <RadioGroupItem
-                          value={option.id}
-                          id={option.id}
-                          className="sr-only"
-                        />
-                        <div className="flex items-center gap-2 ml-6">
-                          {option.icon} {/* ✅ Fixed (no <img>) */}
-                          <span className="font-normal text-[#007fff] text-lg">
-                            {option.label}
-                          </span>
-                        </div>
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
+        <img
+          className="absolute top-0 left-0 w-[742px] h-[627px]"
+          src="/framestudent.png"
+          alt="Frame"
+        />
+      </div>
 
-                {/* Next Button */}
-                <Button className="w-[340px] h-[53px] bg-[#007fff] rounded-3xl hover:bg-[#0066cc]">
-                  <span className="font-semibold text-white text-2xl">
-                    Next
-                  </span>
-                </Button>
-              </div>
-            </div>
+      {/* RIGHT FORM PANEL */}
+      <div className="w-1/2 h-full bg-white flex flex-col justify-center items-center p-12 relative">
+        <img
+          className="w-[366px] h-[91px] object-contain mb-12"
+          src="/logosimplify.png"
+          alt="logosimplify"
+        />
+
+        <div className="flex flex-col w-full max-w-[420px] gap-8 items-center">
+          <div className="text-center text-xl font-medium text-[#13377c]">
+            Map your dreams, chart your career
           </div>
+
+          <div className="w-full flex flex-col items-center gap-3">
+            <Progress value={35} className="w-full h-[10px] bg-[#bddeff] rounded-full" />
+            <span className="text-[#81b3ff] font-medium text-lg mt-1">35% Completed</span>
+          </div>
+
+          <div className="text-center text-xl font-medium text-[#13377c]">
+            Select Preferred Career Domain
+          </div>
+
+          <div className="flex flex-col w-full items-center gap-4">
+            <RadioGroup
+              value={selectedCareer}
+              onValueChange={setSelectedCareer}
+              className="flex flex-col gap-4 w-full"
+            >
+              {careerOptions.map((option) => (
+                <Label
+                  key={option.id}
+                  htmlFor={option.id}
+                  className={`flex items-center w-full h-[55px] cursor-pointer rounded-3xl border px-4 ${
+                    selectedCareer === option.id
+                      ? "bg-white border-[#007fff57] shadow-[0px_0px_20px_#007fff33]"
+                      : "bg-white border-[#e2e2ea]"
+                  }`}
+                >
+                  <RadioGroupItem value={option.id} id={option.id} className="sr-only" />
+                  <div className="flex items-center gap-2">
+                    {option.icon}
+                    <span className="font-normal text-[#007fff] text-lg">{option.label}</span>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
+          <Button
+            className="w-full h-[55px] bg-[#007fff] rounded-3xl text-white text-2xl font-semibold hover:bg-[#0066cc]"
+            onClick={() => onNext(selectedCareer)}
+          >
+            Next
+          </Button>
         </div>
       </div>
 
-      {/* Close Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-7 right-[43px] w-[30px] h-[30px] p-0 hover:bg-gray-100"
-      >
-        <XIcon className="w-[30px] h-[30px]" />
-      </Button>
+      {/* CLOSE BUTTON */}
+      {onClose && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-5 right-5 w-10 h-10 p-0 hover:bg-gray-100"
+          onClick={onClose}
+        >
+          <XIcon className="w-6 h-6" />
+        </Button>
+      )}
     </div>
   );
 };
