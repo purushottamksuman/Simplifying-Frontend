@@ -69,33 +69,43 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       }
 
       const { data, error } = await authHelpers.verifyOTP(
-        userEmail,
-        otp,
-        "signup"
-      );
+  userEmail,
+  otp,
+  "signup"
+);
 
-      if (error) {
-        setError("Invalid OTP. Please try again.");
-        return;
-      }
+if (error) {
+  setError("Invalid or expired OTP. Please try again.");
+  return;
+}
 
-      // Save session
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify({
-          id: data.user.id,
-          email: data.user.email,
-          user_metadata: data.user.user_metadata,
-        })
-      );
-      localStorage.removeItem("pendingUser");
+if (data?.user) {
+  const user_type = data.user.user_metadata?.user_type;
 
-      if (isLoginFlow) {
-        navigate("/login");
-      } else {
-        navigate("/component/dashboard");
-      }
-    } catch (err) {
+  localStorage.setItem(
+    "currentUser",
+    JSON.stringify({
+      id: data.user.id,
+      email: data.user.email,
+      user_metadata: data.user.user_metadata,
+    })
+  );
+
+  if (isLoginFlow) {
+    navigate("/login");
+  } else {
+    if (user_type === "student") {
+      navigate("/student/dashboard");
+    } else if (user_type === "teacher") {
+      navigate("/teacher/dashboard");
+    } else if (user_type === "parent") {
+      navigate("/parent/dashboard");
+    } else {
+      navigate("/component/dashboard"); // fallback
+    }
+  }
+} 
+}catch (err) {
       setError("Failed to verify OTP. Please try again.");
     } finally {
       setLoading(false);

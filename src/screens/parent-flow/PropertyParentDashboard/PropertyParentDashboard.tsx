@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent } from "../../../components/ui/card";
 import { authHelpers, supabase } from "../../../lib/supabase";
+import { OnboardingFlow } from "../../../components/onboarding/OnboardingFlow";
 
 const PropertyParentDashboard = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
   const [userName, setUserName] = useState("Parent");
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -17,9 +20,11 @@ const PropertyParentDashboard = () => {
         return;
       }
 
+      setUser(user);
+
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("user_type, full_name")
+        .select("user_type, full_name, onboarded, edu_level, career_domain")
         .eq("id", user.id)
         .single();
 
@@ -27,6 +32,16 @@ const PropertyParentDashboard = () => {
         navigate("/component/dashboard");
         return;
       }
+
+     if (
+  !profile?.onboarded ||
+  !profile?.edu_level ||
+  !profile?.career_domain
+) {
+  setShowOnboarding(true);
+  setLoading(false); // ✅ stop loading when showing onboarding
+  return;
+}
 
       setUserName(profile.full_name || user.email?.split("@")[0] || "Parent");
       setLoading(false);
@@ -36,12 +51,30 @@ const PropertyParentDashboard = () => {
   }, [navigate]);
 
   if (loading) {
-    return (
-      <div className="flex w-full h-screen items-center justify-center">
-        <div className="text-[#3479ff] text-xl">Loading Parent Dashboard...</div>
-      </div>
-    );
+    return <div>Loading Parent Dashboard...</div>;
   }
+
+if (showOnboarding) {
+  return (
+    <OnboardingFlow
+      user={user}
+      onFinish={async () => {
+        console.log("🎉 Onboarding finished for parent");
+
+        // ✅ Mark onboarded in DB
+        await supabase
+          .from("user_profiles")
+          .update({ onboarded: true })
+          .eq("id", user.id);
+
+        // ✅ Hide onboarding & show dashboard
+        setShowOnboarding(false);
+        setLoading(false);
+      }}
+    />
+  );
+}
+
 
   return (
     <div className="flex flex-col gap-8">

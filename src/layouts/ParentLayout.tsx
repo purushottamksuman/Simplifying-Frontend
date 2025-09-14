@@ -122,7 +122,7 @@ const ParentLayout = () => {
             {parentNavigationItems.map((item, index) => (
               <NavLink
                 key={index}
-                to={`/teacher/${item.path}`}
+                to={`/parent/${item.path}`}
                 className={({ isActive }) =>
                   `w-full justify-start gap-3 px-4 py-3 h-auto relative z-10 transition-all duration-200 rounded-2xl flex items-center ${
                     isActive
