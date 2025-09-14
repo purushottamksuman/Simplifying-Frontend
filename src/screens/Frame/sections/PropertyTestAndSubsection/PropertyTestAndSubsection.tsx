@@ -250,7 +250,8 @@ const PropertyTestAndSubsection = (): JSX.Element => {
                           handleExamPayment(exam);
                         }
                       }}
-                      disabled={paymentLoading}
+                      disabled
+                      // disabled={paymentLoading}
                       className={`w-full mt-4 ${
                         isPurchased
                           ? "bg-green-500 hover:bg-green-600"

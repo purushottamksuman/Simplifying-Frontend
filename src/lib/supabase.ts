@@ -5,6 +5,19 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Handle auth state changes and clear stale tokens
+supabase.auth.onAuthStateChange((event, session) => {
+  if ((event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') && !session) {
+    // Clear any stale auth data from localStorage
+    const keys = Object.keys(localStorage)
+    keys.forEach(key => {
+      if (key.startsWith('sb-') && key.includes('-auth-token')) {
+        localStorage.removeItem(key)
+      }
+    })
+  }
+})
+
 // Auth helper functions
 export const authHelpers = {
   // Sign up with email and password
