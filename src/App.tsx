@@ -4,6 +4,7 @@ import { AdminExamManagement } from "./pages/AdminExamManagement";
 import { CreateAssessment } from "./pages/CreateAssessment";
 
 import DashboardLayout from "./layouts/DashboardLayout";
+import TeacherLayout from "./layouts/TeacherLayout";
 
 // Import your components
 import { PropertyDasboardSubsection } from "./screens/Frame/sections/PropertyDasboardSubsection/PropertyDasboardSubsection";
@@ -23,6 +24,9 @@ import { ExamEnvironment } from './components/ExamEnvironment/ExamEnvironment';
 import { PropertyCommanSubsection } from "./screens/Frame/sections/PropertyCommanSubsection/PropertyCommanSubsection";
 import { PropertyOtpSubsection } from "./screens/Frame/sections/PropertyOtpSubsection/PropertyOtpSubsection";
 import { SomethingWentWrong } from "./screens/Frame/sections/SomethingWentWrong/SomethingWentWrong";
+import ParentLayout from "./layouts/ParentLayout";
+import PropertyParentDashboard from "./screens/parent-flow/PropertyParentDashboard/PropertyParentDashboard";
+import PropertyTeacherDashboard from "./screens/teacher-flow/PropertyTeacherDashboard/PropertyTeacherDashboard";
 
 function App() {
   return (
@@ -48,8 +52,40 @@ function App() {
           <Route path="rewards" element={<PropertyRewardSubsection />} />
           <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
           <Route path="referrals" element={<PropertyReffrealSubsection />} />
-
         </Route>
+
+
+          {/* Teacher Layout */}
+<Route path="/teacher" element={<TeacherLayout />}>
+  <Route path="dashboard" element={<PropertyTeacherDashboard />} />
+  <Route path="courses" element={<PropertyMycourseSubsection />} />
+  <Route path="live" element={<PropertyLiveSubsection />} />
+  <Route path="tests" element={<PropertyTestAndSubsection />} />
+  <Route path="clubs" element={<PropertyClubAndSubsection />} />
+  <Route path="profile" element={<DivWrapperSubsection />} />
+  <Route path="certificates" element={<PropertyWrapperSubsection />} />
+  <Route path="leaderboard" element={<PropertySubsection />} />
+  <Route path="rewards" element={<PropertyRewardSubsection />} />
+  <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
+  <Route path="referrals" element={<PropertyReffrealSubsection />} />
+</Route>
+
+{/* Parent Layout  */}
+<Route path="/parent" element={<ParentLayout />}>
+  <Route path="dashboard" element={<PropertyParentDashboard />} />
+  <Route path="courses" element={<PropertyMycourseSubsection />} />
+  <Route path="live" element={<PropertyLiveSubsection />} />
+  <Route path="tests" element={<PropertyTestAndSubsection />} />
+  <Route path="clubs" element={<PropertyClubAndSubsection />} />
+  <Route path="profile" element={<DivWrapperSubsection />} />
+  <Route path="certificates" element={<PropertyWrapperSubsection />} />
+  <Route path="leaderboard" element={<PropertySubsection />} />
+  <Route path="rewards" element={<PropertyRewardSubsection />} />
+  <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
+  <Route path="referrals" element={<PropertyReffrealSubsection />} />
+</Route>
+
+
 
         {/* Admin Routes */}
         <Route path="/admin/exam-management" element={<AdminExamManagement />} />

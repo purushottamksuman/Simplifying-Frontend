@@ -27,7 +27,7 @@ import { Input } from "../components/ui/input";
 import { authHelpers } from "../lib/supabase";
 
 const teacherNavigationItems = [
-  { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
+  { icon: HomeIcon, label: "Teacher Dashboard", path: "dashboard" },
   { icon: UserIcon, label: "Profile Settings", path: "profile" },
   { icon: FolderIcon, label: "My Course", path: "courses" },
   { icon: PresentationIcon, label: "Live Classes", path: "live" },
@@ -41,21 +41,7 @@ const teacherNavigationItems = [
 ];
 
 
-const navigationItems = [
-  { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
-  { icon: UserIcon, label: "Profile Settings", path: "profile" },
-  { icon: FolderIcon, label: "My Course", path: "courses" },
-  { icon: PresentationIcon, label: "Live Classes", path: "live" },
-  { icon: FileTextIcon, label: "Test & Assessment", path: "tests" },
-  { icon: AwardIcon, label: "Certificates", path: "certificates" },
-  { icon: TrophyIcon, label: "Leaderboard", path: "leaderboard" },
-  { icon: GiftIcon, label: "Badges & Rewards", path: "rewards" },
-  { icon: UsersIcon, label: "Clubs & Community", path: "clubs" },
-  { icon: HelpCircleIcon, label: "Raise a Doubt", path: "doubts" },
-  { icon: UserPlusIcon, label: "Referrals Program", path: "referrals" },
-];
-
-const DashboardLayout = () => {
+const TeacherLayout = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [userName, setUserName] = useState("User");
@@ -134,10 +120,10 @@ const DashboardLayout = () => {
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto sidebar-scrollbar">
           <div className="flex flex-col gap-1">
-            {navigationItems.map((item, index) => (
+            {teacherNavigationItems.map((item, index) => (
               <NavLink
                 key={index}
-                to={`/component/${item.path}`}
+                to={`/parent/${item.path}`}
                 className={({ isActive }) =>
                   `w-full justify-start gap-3 px-4 py-3 h-auto relative z-10 transition-all duration-200 rounded-2xl flex items-center ${
                     isActive
@@ -228,4 +214,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default TeacherLayout;

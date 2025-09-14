@@ -1,12 +1,7 @@
 import { XIcon } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "../../../../components/ui/button";
-import { Label } from "../../../../components/ui/label";
 import { Progress } from "../../../../components/ui/progress";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "../../../../components/ui/radio-group";
 import { Card, CardContent } from "../../../../components/ui/card";
 
 // ✅ React Icons
@@ -19,9 +14,7 @@ interface PropertyStudent6SubsectionProps {
   onClose?: () => void;
 }
 
-const decorativeElements = [];
 
-const textElements = [];
 
 const surveyOptions = [
   {
@@ -49,7 +42,6 @@ const surveyOptions = [
 export const PropertyStudent6Subsection: React.FC<PropertyStudent6SubsectionProps> = ({
   initialValue,
   onNext,
-  onBack,
   onClose,
 }) => {
   const [selectedOption, setSelectedOption] = useState(initialValue || "facebook");

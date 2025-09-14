@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
-import { authHelpers } from "../../../../lib/supabase";
+import { supabase, authHelpers } from "../../../../lib/supabase"; // 👈 include supabase
 
 export const PropertyLoginSubsection = (): JSX.Element => {
   const navigate = useNavigate();
@@ -21,11 +21,19 @@ export const PropertyLoginSubsection = (): JSX.Element => {
     setError("");
 
     try {
-      const { data, error } = await authHelpers.signIn(formData.email, formData.password);
+      const { data, error } = await authHelpers.signIn(
+        formData.email,
+        formData.password
+      );
 
       if (error) {
-        if (error.message === "Email not confirmed" || error.message.includes("email_not_confirmed")) {
-          const { error: resendError } = await authHelpers.resendConfirmation(formData.email);
+        if (
+          error.message === "Email not confirmed" ||
+          error.message.includes("email_not_confirmed")
+        ) {
+          const { error: resendError } = await authHelpers.resendConfirmation(
+            formData.email
+          );
 
           if (resendError) {
             setError("Failed to send confirmation email. Please try again.");
@@ -34,7 +42,11 @@ export const PropertyLoginSubsection = (): JSX.Element => {
 
           localStorage.setItem(
             "pendingUser",
-            JSON.stringify({ email: formData.email, password: formData.password, isLogin: true })
+            JSON.stringify({
+              email: formData.email,
+              password: formData.password,
+              isLogin: true,
+            })
           );
 
           navigate("/component/otp");
@@ -46,6 +58,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
       }
 
       if (data.user) {
+        // Save user in localStorage
         localStorage.setItem(
           "currentUser",
           JSON.stringify({
@@ -54,7 +67,29 @@ export const PropertyLoginSubsection = (): JSX.Element => {
             user_metadata: data.user.user_metadata,
           })
         );
-        navigate("/component/dashboard");
+
+        // Fetch role from user_profiles
+        const { data: profile, error: profileError } = await supabase
+          .from("user_profiles")
+          .select("user_type")
+          .eq("id", data.user.id) // auth UID = id in user_profiles
+          .single();
+
+        if (profileError || !profile) {
+          console.error("Profile fetch error:", profileError);
+          navigate("/component/dashboard"); // fallback to student dashboard
+          return;
+        }
+
+
+        if (profile.user_type === "teacher") {
+  navigate("/teacher/dashboard");
+} else if (profile.user_type === "parent") {
+  navigate("/parent/dashboard");
+} else {
+  navigate("/student/dashboard"); // default to student
+}
+
       }
     } catch {
       setError("An unexpected error occurred");
