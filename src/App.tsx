@@ -49,6 +49,7 @@ function App() {
           <Route path="rewards" element={<PropertyRewardSubsection />} />
           <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
           <Route path="referrals" element={<PropertyReffrealSubsection />} />
+          <Route path="questionManagementSystem" element={<QuestionManagementSystem />} />
 
         </Route>
 
@@ -58,7 +59,6 @@ function App() {
         <Route path="/admin/edit-assessment/:assessmentId" element={<CreateAssessment />} />
         <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
         <Route path="/exam/:examId" element={<ExamEnvironment />} />
-        <Route path="/admin/questionManagementSystem" element={<QuestionManagementSystem />} />
       </Routes>
     </Router>
   );

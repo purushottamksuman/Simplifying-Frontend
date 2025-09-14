@@ -17,6 +17,7 @@ import { DetailedResultsPage } from '../ExamResultComponents/components/Detailed
 import { useAuth } from '../../hooks/useAuth';
 import { useQuestions } from '../../hooks/useQuestions';
 import { QuestionWithOptions } from '../../types/database';
+import { PropertyLoginSubsection } from '../../screens/Frame/sections/PropertyLoginSubsection/PropertyLoginSubsection';
 
 function QuestionManagementSystem() {
   const { user, loading: authLoading } = useAuth();
@@ -94,7 +95,8 @@ function QuestionManagementSystem() {
 
   // Show auth form if user is not authenticated
   if (!user) {
-    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
+    // return <AuthForm onAuthSuccess={handleAuthSuccess} />;
+    return <PropertyLoginSubsection />
   }
 
   // Handle new exam system views
