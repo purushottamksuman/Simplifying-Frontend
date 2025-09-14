@@ -23,6 +23,7 @@ import { ExamEnvironment } from './components/ExamEnvironment/ExamEnvironment';
 import { PropertyCommanSubsection } from "./screens/Frame/sections/PropertyCommanSubsection/PropertyCommanSubsection";
 import { PropertyOtpSubsection } from "./screens/Frame/sections/PropertyOtpSubsection/PropertyOtpSubsection";
 import { SomethingWentWrong } from "./screens/Frame/sections/SomethingWentWrong/SomethingWentWrong";
+import QuestionManagementSystem from "./components/QuestionManagementSystem/QuestionManagementSystem";
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
         <Route path="/admin/edit-assessment/:assessmentId" element={<CreateAssessment />} />
         <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
         <Route path="/exam/:examId" element={<ExamEnvironment />} />
+        <Route path="/admin/questionManagementSystem" element={<QuestionManagementSystem />} />
       </Routes>
     </Router>
   );
