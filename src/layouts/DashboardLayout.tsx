@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet, useNavigate, NavLink } from "react-router-dom";
+import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import {
   AwardIcon,
   BellIcon,
@@ -26,20 +26,6 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { authHelpers } from "../lib/supabase";
 
-const teacherNavigationItems = [
-  { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
-  { icon: UserIcon, label: "Profile Settings", path: "profile" },
-  { icon: FolderIcon, label: "My Course", path: "courses" },
-  { icon: PresentationIcon, label: "Live Classes", path: "live" },
-  { icon: FileTextIcon, label: "Test & Assessment", path: "tests" },
-  { icon: AwardIcon, label: "Certificates", path: "certificates" },
-  { icon: TrophyIcon, label: "Leaderboard", path: "leaderboard" },
-  { icon: GiftIcon, label: "Badges & Rewards", path: "rewards" },
-  { icon: UsersIcon, label: "Clubs & Community", path: "clubs" },
-  { icon: HelpCircleIcon, label: "Raise a Doubt", path: "doubts" },
-  { icon: UserPlusIcon, label: "Referrals Program", path: "referrals" },
-];
-
 
 const navigationItems = [
   { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
@@ -62,6 +48,20 @@ const DashboardLayout = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+
+  const location = useLocation();
+ 
+  useEffect(() => {
+  if (location.pathname === "/" || location.pathname === "/component") {
+    navigate("/component/dashboard", { replace: true });
+  }
+}, [location.pathname, navigate]);
+
+
+const activeNav = navigationItems.find(item =>
+  location.pathname.includes(item.path)
+);
+
 
   // Authentication check
   useEffect(() => {
@@ -177,7 +177,9 @@ const DashboardLayout = () => {
           <header className="flex-shrink-0 px-8 py-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
               {/* Title */}
-              <span className="text-[#3479ff] text-2xl font-bold">Dashboard</span>
+              <span className="text-[#3479ff] text-2xl font-bold">
+  {activeNav?.label || "Dashboard"}
+</span>
 
               {/* Search */}
               <div className="flex-1 max-w-md mx-8">
