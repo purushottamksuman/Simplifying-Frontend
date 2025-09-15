@@ -28,48 +28,52 @@ export const PropertyCommanSubsection = (): JSX.Element => {
   const handleSignUp = async () => {
     console.log("🚀 Starting registration process...");
 
-    // ✅ validations
+    // Validations
     if (!formData.email.trim()) return setError("Please enter your email address");
     if (!formData.phone.trim()) return setError("Please enter your phone number");
-    if (!formData.userType.trim()) return setError("Please select your user type (Student/Parent/Teacher)");
+    if (!formData.userType.trim())
+      return setError("Please select your user type (Student/Parent/Teacher)");
     if (!formData.password.trim()) return setError("Please enter a password");
-    if (formData.password.length < 6) return setError("Password must be at least 6 characters long");
-    if (formData.password !== formData.confirmPassword) return setError("Passwords do not match");
+    if (formData.password.length < 6)
+      return setError("Password must be at least 6 characters long");
+    if (formData.password !== formData.confirmPassword)
+      return setError("Passwords do not match");
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) return setError("Please enter a valid email address");
+    if (!emailRegex.test(formData.email))
+      return setError("Please enter a valid email address");
 
     setLoading(true);
     setError("");
 
     try {
-      // ✅ Sign up with Supabase and include role in user_metadata
-    const { data, error } = await authHelpers.signUp(
-  formData.email.trim(),
-  formData.password,
-  {
-    user_type: formData.userType,   // ✅ unified naming
-    phone: `${formData.countryCode}${formData.phone.trim()}`,
-    full_name: "",
-    country_code: formData.countryCode,
-  }
-);
+      const { data, error } = await authHelpers.signUp(
+        formData.email.trim(),
+        formData.password,
+        {
+          user_type: formData.userType,
+          phone: `${formData.countryCode}${formData.phone.trim()}`,
+          full_name: "",
+          country_code: formData.countryCode,
+        }
+      );
 
-if (!error) {
-  localStorage.setItem(
-    "pendingUser",
-    JSON.stringify({
-      email: formData.email,
-      phone: formData.phone,
-      user_type: formData.userType,  // ✅ store same key
-      countryCode: formData.countryCode,
-      isRegistration: true,
-      userId: data.user?.id,
-    })
-  );
-
-  navigate("/otp");
-}
+      if (!error) {
+        localStorage.setItem(
+          "pendingUser",
+          JSON.stringify({
+            email: formData.email,
+            phone: formData.phone,
+            user_type: formData.userType,
+            countryCode: formData.countryCode,
+            isRegistration: true,
+            userId: data.user?.id,
+          })
+        );
+        navigate("/otp");
+      } else {
+        setError(error.message || "Registration failed");
+      }
     } catch (err: any) {
       console.error("❌ Registration error:", err);
       setError(`Registration failed: ${err.message || "Unknown error"}. Please try again.`);
@@ -182,6 +186,42 @@ if (!error) {
                 >
                   {loading ? "Signing Up..." : "Sign Up"}
                 </Button>
+
+                {/* Social Logins */}
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                  <Button
+                    variant="outline"
+                    className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                  >
+                    <img className="w-5 h-5" src="/google.png" alt="Google" />
+                    <span className="text-sm">Google</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                  >
+                    <img className="w-5 h-5" src="/apple.png" alt="Apple" />
+                    <span className="text-sm">Apple</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="col-span-2 h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
+                  >
+                    <img className="w-5 h-5" src="/linkedin.png" alt="LinkedIn" />
+                    <span className="text-sm">LinkedIn</span>
+                  </Button>
+                </div>
+
+                {/* Login Link */}
+                <p className="mt-6 text-center text-sm text-gray-600">
+                  Already have an account?{" "}
+                  <span
+                    onClick={() => navigate("/login")}
+                    className="text-[#0062ff] cursor-pointer hover:underline"
+                  >
+                    Login
+                  </span>
+                </p>
               </div>
             </CardContent>
           </Card>

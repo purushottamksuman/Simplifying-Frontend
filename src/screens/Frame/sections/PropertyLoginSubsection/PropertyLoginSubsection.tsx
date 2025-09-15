@@ -75,6 +75,9 @@ export const PropertyLoginSubsection = (): JSX.Element => {
           .eq("id", data.user.id) // auth UID = id in user_profiles
           .single();
 
+          console.log("User data:", data.user);
+console.log("Profile data:", profile);
+
         if (profileError || !profile) {
           console.error("Profile fetch error:", profileError);
           navigate("/component/dashboard"); // fallback to student dashboard
@@ -87,7 +90,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
 } else if (profile.user_type === "parent") {
   navigate("/parent/dashboard");
 } else {
-  navigate("/student/dashboard"); // default to student
+  navigate("/component/dashboard"); 
 }
 
       }

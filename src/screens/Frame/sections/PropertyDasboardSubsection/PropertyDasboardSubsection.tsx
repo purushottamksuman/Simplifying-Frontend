@@ -76,42 +76,54 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
   const [userPurchases, setUserPurchases] = useState<string[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
- useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { user, error } = await authHelpers.getCurrentUser();
+useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      const { user, error } = await authHelpers.getCurrentUser();
 
-        if (error || !user) {
-          console.log("❌ No authenticated user, redirecting to login");
-          navigate("/login");
-          return;
-        }
-
-        setUser(user);
-        const name =
-          user.email?.split("@")[0] ||
-          user.user_metadata?.full_name ||
-          "User";
-        setUserName(name);
-        console.log("✅ Dashboard loaded for user:", name);
-
-              if (profile?.user_type !== "student") {
+      if (error || !user) {
+        console.log("❌ No authenticated user, redirecting to login");
         navigate("/login");
         return;
       }
 
-        await fetchExams();
-        await fetchUserPurchases(user?.id);
-      } catch (err) {
-        console.error("❌ Auth check error:", err);
-        navigate("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
+      setUser(user);
+      const name = user.email?.split("@")[0] || user.user_metadata?.full_name || "User";
+      setUserName(name);
+      console.log("✅ Dashboard loaded for user:", name);
 
-    checkAuth();
-  }, [navigate]);
+      // 🔹 Fetch profile here to check role
+      const { data: profile, error: profileError } = await supabase
+        .from("user_profiles")
+        .select("user_type")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError || !profile) {
+        console.error("❌ Profile fetch error:", profileError);
+        navigate("/login"); // fallback
+        return;
+      }
+
+      if (profile.user_type?.toLowerCase() !== "student") {
+        navigate("/login");
+        return;
+      }
+
+      await fetchExams();
+      await fetchUserPurchases(user.id);
+
+    } catch (err) {
+      console.error("❌ Auth check error:", err);
+      navigate("/login");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  checkAuth();
+}, [navigate]);
+
 
   // 🔹 Check onboarding state after user is loaded
   useEffect(() => {
