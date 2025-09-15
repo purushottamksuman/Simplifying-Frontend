@@ -12,7 +12,8 @@ import { PropertyMycourseSubsection } from "./screens/Frame/sections/PropertyMyc
 import { PropertyLiveSubsection } from "./screens/Frame/sections/PropertyLiveSubsection/PropertyLiveSubsection";
 import  PropertyTestAndSubsection  from "./screens/Frame/sections/PropertyTestAndSubsection/PropertyTestAndSubsection";
 import { PropertyClubAndSubsection } from "./screens/Frame/sections/PropertyClubAndSubsection/PropertyClubAndSubsection";
-import { DivWrapperSubsection } from "./screens/Frame/sections/DivWrapperSubsection/DivWrapperSubsection";
+import { DivWrapperSubsection as StudentProfile } from "./screens/Frame/sections/DivWrapperSubsection/DivWrapperSubsection";
+import { DivWrapperSubsection as TeacherProfile } from "./screens/teacher-flow/DivWrapperSubsection/DivWrapperSubsection";
 import { PropertyWrapperSubsection } from "./screens/Frame/sections/PropertyWrapperSubsection/PropertyWrapperSubsection"
 import PropertySubsection from "./screens/Frame/sections/PropertySubsection/PropertySubsection";
 import { PropertyRewardSubsection } from "./screens/Frame/sections/PropertyRewardSubsection/PropertyRewardSubsection";
@@ -27,6 +28,7 @@ import { SomethingWentWrong } from "./screens/Frame/sections/SomethingWentWrong/
 import ParentLayout from "./layouts/ParentLayout";
 import PropertyParentDashboard from "./screens/parent-flow/PropertyParentDashboard/PropertyParentDashboard";
 import PropertyTeacherDashboard from "./screens/teacher-flow/PropertyTeacherDashboard/PropertyTeacherDashboard";
+
 
 function App() {
   return (
@@ -46,7 +48,7 @@ function App() {
           <Route path="live" element={<PropertyLiveSubsection />} />
           <Route path="tests" element={<PropertyTestAndSubsection />} />
           <Route path="clubs" element={<PropertyClubAndSubsection />} />
-          <Route path="profile" element={<DivWrapperSubsection />} />
+          <Route path="profile" element={<StudentProfile />} />
           <Route path="certificates" element={<PropertyWrapperSubsection />} />
           <Route path="leaderboard" element={<PropertySubsection />} />
           <Route path="rewards" element={<PropertyRewardSubsection />} />
@@ -58,11 +60,11 @@ function App() {
           {/* Teacher Layout */}
 <Route path="/teacher" element={<TeacherLayout />}>
   <Route path="dashboard" element={<PropertyTeacherDashboard />} />
-  <Route path="courses" element={<PropertyMycourseSubsection />} />
-  <Route path="live" element={<PropertyLiveSubsection />} />
-  <Route path="tests" element={<PropertyTestAndSubsection />} />
+          <Route path="courses" element={<PropertyMycourseSubsection />} />
+          <Route path="live" element={<PropertyLiveSubsection />} />
+          <Route path="tests" element={<PropertyTestAndSubsection />} />
   <Route path="clubs" element={<PropertyClubAndSubsection />} />
-  <Route path="profile" element={<DivWrapperSubsection />} />
+  <Route path="profile" element={<TeacherProfile />} />
   <Route path="certificates" element={<PropertyWrapperSubsection />} />
   <Route path="leaderboard" element={<PropertySubsection />} />
   <Route path="rewards" element={<PropertyRewardSubsection />} />
@@ -77,7 +79,7 @@ function App() {
   <Route path="live" element={<PropertyLiveSubsection />} />
   <Route path="tests" element={<PropertyTestAndSubsection />} />
   <Route path="clubs" element={<PropertyClubAndSubsection />} />
-  <Route path="profile" element={<DivWrapperSubsection />} />
+  <Route path="profile" element={<ParentLayout />} />
   <Route path="certificates" element={<PropertyWrapperSubsection />} />
   <Route path="leaderboard" element={<PropertySubsection />} />
   <Route path="rewards" element={<PropertyRewardSubsection />} />

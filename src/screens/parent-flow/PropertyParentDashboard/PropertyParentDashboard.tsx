@@ -29,7 +29,7 @@ const PropertyParentDashboard = () => {
         .single();
 
       if (profile?.user_type !== "parent") {
-        navigate("/component/dashboard");
+        navigate("/login");
         return;
       }
 

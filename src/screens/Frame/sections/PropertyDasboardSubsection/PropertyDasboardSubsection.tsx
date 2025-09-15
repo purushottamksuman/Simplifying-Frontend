@@ -95,6 +95,11 @@ export const PropertyDasboardSubsection = (): JSX.Element => {
         setUserName(name);
         console.log("✅ Dashboard loaded for user:", name);
 
+              if (profile?.user_type !== "student") {
+        navigate("/login");
+        return;
+      }
+
         await fetchExams();
         await fetchUserPurchases(user?.id);
       } catch (err) {

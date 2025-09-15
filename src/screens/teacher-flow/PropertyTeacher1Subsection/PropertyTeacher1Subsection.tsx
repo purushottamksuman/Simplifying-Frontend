@@ -1,5 +1,6 @@
 import { GraduationCapIcon, SchoolIcon, XIcon } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
+import { FaChalkboardTeacher } from "react-icons/fa";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Label } from "../../../components/ui/label";
@@ -12,19 +13,25 @@ import {
 const educationOptions = [
   {
     id: "school",
-    label: "School",
+    label: "School Teacher",
     icon: SchoolIcon,
     selected: true,
   },
   {
     id: "university",
-    label: "University",
+    label: "University Professor",
     icon: GraduationCapIcon,
+    selected: false,
+  },
+    {
+    id: "private",
+    label: "Private Tutor",
+    icon: FaChalkboardTeacher,
     selected: false,
   },
 ];
 
-export const PropertyParent1Subsection = ({
+export const PropertyTeacher1Subsection = ({
   initialValue,
   onNext,
   onBack,
@@ -95,7 +102,7 @@ export const PropertyParent1Subsection = ({
           </div>
 
           <div className="text-center text-xl font-medium text-[#13377c]">
-            Is your kid in?
+            You are a ?
           </div>
 
           <div className="flex flex-col w-full items-center gap-6">
