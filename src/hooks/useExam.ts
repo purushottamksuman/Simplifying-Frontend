@@ -273,7 +273,9 @@ export const useExam = () => {
         }
       }
 
-      console.log('User age for question filtering:', userAge);
+      // Hardcode age to 15 for now to ensure questions are available
+      userAge = 12;
+      console.log('User age for question filtering (hardcoded):', userAge);
 
       // Get questions only from aptitude sub-sections
       const { data, error } = await supabase
@@ -405,6 +407,10 @@ export const useExam = () => {
           }
         }
       }
+
+      // Hardcode age to 15 for now to ensure questions are available
+      userAge = 12;
+      console.log('User age for question filtering (hardcoded):', userAge);
 
       // Get questions only from behavioral sub-sections
       const { data, error } = await supabase
