@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet, useNavigate, NavLink } from "react-router-dom";
+import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import {
   AwardIcon,
   BellIcon,
@@ -48,6 +48,20 @@ const TeacherLayout = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+
+    const location = useLocation();
+ 
+  useEffect(() => {
+  if (location.pathname === "/" || location.pathname === "/teacher") {
+    navigate("/teacher/dashboard", { replace: true });
+  }
+}, [location.pathname, navigate]);
+
+
+const activeNav = teacherNavigationItems.find(item =>
+  location.pathname.includes(item.path)
+);
+
 
   // Authentication check
   useEffect(() => {
@@ -163,8 +177,9 @@ const TeacherLayout = () => {
           <header className="flex-shrink-0 px-8 py-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
               {/* Title */}
-              <span className="text-[#3479ff] text-2xl font-bold">Dashboard</span>
-
+              <span className="text-[#3479ff] text-2xl font-bold">
+  {activeNav?.label || "Dashboard"}
+</span>
               {/* Search */}
               <div className="flex-1 max-w-md mx-8">
                 <div className="relative">

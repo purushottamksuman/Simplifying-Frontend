@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
+import { HomePg } from "./pages/HomePg";
 import { AdminExamManagement } from "./pages/AdminExamManagement";
 import { CreateAssessment } from "./pages/CreateAssessment";
 
@@ -35,7 +36,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomePg />} />
+        <Route path="/admin" element={<HomePage />} />
           <Route path="signup" element={<PropertyCommanSubsection />} />
         <Route path="/login" element={<PropertyLoginSubsection />} />
         <Route path="/otp" element={<PropertyOtpSubsection />} />
