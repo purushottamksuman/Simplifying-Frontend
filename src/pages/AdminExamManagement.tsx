@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { calculateAssessmentResult } from '../lib/assessment';
+import type { SubmissionPayload } from '../lib/assessment/types';
 import { Plus, Edit, Trash2, Eye, BookOpen, FileText, Users, Clock, Target, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -287,6 +289,24 @@ export const AdminExamManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-6 py-8">
+        <details className="mb-6 bg-white rounded-xl border p-4">
+          <summary className="cursor-pointer font-medium">Compute Assessment (Paste Payload JSON)</summary>
+          <textarea id="admin-compute-payload" className="w-full border rounded p-2 mt-2" rows={8} placeholder='{"version":2,"submissions":[],"questions":[]}' />
+          <button
+            className="mt-2 px-3 py-2 bg-blue-600 text-white rounded"
+            onClick={() => {
+              try {
+                const el = document.getElementById('admin-compute-payload') as HTMLTextAreaElement | null;
+                const payload = JSON.parse(el?.value || '{}') as SubmissionPayload;
+                const result = calculateAssessmentResult(payload);
+                console.log('Assessment Result', result);
+                alert('Computed. Check console.');
+              } catch (e) {
+                alert('Invalid JSON');
+              }
+            }}
+          >Compute</button>
+        </details>
         {/* Header */}
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">

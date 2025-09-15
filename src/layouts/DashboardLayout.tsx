@@ -46,6 +46,7 @@ const navigationItems = [
   { icon: UserIcon, label: "Profile Settings", path: "profile" },
   { icon: FolderIcon, label: "My Course", path: "courses" },
   { icon: PresentationIcon, label: "Live Classes", path: "live" },
+  { icon: FileTextIcon, label: "SkillSphere Assessment", path: "questionManagementSystem" },
   { icon: FileTextIcon, label: "Test & Assessment", path: "tests" },
   { icon: AwardIcon, label: "Certificates", path: "certificates" },
   { icon: TrophyIcon, label: "Leaderboard", path: "leaderboard" },

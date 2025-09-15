@@ -29,6 +29,7 @@ import ParentLayout from "./layouts/ParentLayout";
 import PropertyParentDashboard from "./screens/parent-flow/PropertyParentDashboard/PropertyParentDashboard";
 import PropertyTeacherDashboard from "./screens/teacher-flow/PropertyTeacherDashboard/PropertyTeacherDashboard";
 
+import QuestionManagementSystem from "./components/QuestionManagementSystem/QuestionManagementSystem";
 
 function App() {
   return (
@@ -54,6 +55,8 @@ function App() {
           <Route path="rewards" element={<PropertyRewardSubsection />} />
           <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
           <Route path="referrals" element={<PropertyReffrealSubsection />} />
+          <Route path="questionManagementSystem" element={<QuestionManagementSystem />} />
+
         </Route>
 
 
