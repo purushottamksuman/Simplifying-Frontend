@@ -243,35 +243,38 @@ useEffect(() => {
       });
 
       if (paymentResult.success) {
-        console.log("✅ Payment completed successfully:", paymentResult);
-        
-        // Record exam purchase - handle duplicate constraint
-        const { error: purchaseError } = await supabase
-          .from('exam_purchases')
-          .upsert({
-            user_id: user.id,
-            exam_id: exam.exam_id,
-            payment_id: paymentResult.payment.payment_id,
-            purchase_type: 'paid',
-            amount_paid: totalAmount
-          }, {
-            onConflict: 'user_id,exam_id'
-          });
-        
-        if (purchaseError) {
-          console.error('Error recording purchase:', purchaseError);
-          // Don't throw error if it's just a duplicate - payment was successful
-          if (!purchaseError.message.includes('duplicate key')) {
-            throw new Error('Failed to record purchase');
-          }
-        }
-        
-        setPaymentSuccess(true);
-        alert(`🎉 Payment successful! You now have access to ${exam.exam_name}.`);
-        
-        // Refresh user purchases
-        await fetchUserPurchases(user?.id);
-      }
+  console.log("✅ Payment completed successfully:", paymentResult);
+
+  // Record exam purchase
+  const { error: purchaseError } = await supabase
+    .from('exam_purchases')
+    .upsert({
+      user_id: user.id,
+      exam_id: exam.exam_id,
+      payment_id: paymentResult.payment.payment_id,
+      purchase_type: 'paid',
+      amount_paid: totalAmount
+    }, { onConflict: 'user_id,exam_id' });
+
+  if (purchaseError) {
+    console.error('Error recording purchase:', purchaseError);
+  }
+
+  // 🔹 Update skillsphere_enabled
+  const { error: updateError } = await supabase
+    .from('user_profiles')
+    .update({ skillsphere_enabled: true })
+    .eq('id', user.id);
+
+  if (updateError) console.error("❌ Failed to update skillsphere_enabled:", updateError);
+
+  setPaymentSuccess(true);
+  alert(`🎉 Payment successful! You now have access to ${exam.exam_name}. Please Refresh to`);
+
+  // Refresh user purchases
+  await fetchUserPurchases(user.id);
+}
+
 
     } catch (error) {
       console.error("❌ Payment failed:", error);
@@ -350,6 +353,75 @@ useEffect(() => {
   </CardContent>
 </Card>
 
+<Card className="rounded-3xl border-0 shadow-xl">
+  <CardContent className="p-8">
+    <h3 className="font-bold text-[#13377c] text-3xl mb-8">Summary</h3>
+    <div className="space-y-6">
+
+      {/* Payment Section */}
+<div className="bg-gradient-to-r from-[#e9efff] to-[#f0f4ff] rounded-2xl p-6 relative overflow-hidden">
+  <div className="max-w-lg relative z-10">
+    <h4 className="font-bold text-gray-900 text-2xl mb-3">
+      Unlock Your SkillSphere Assessment
+    </h4>
+    <p className="text-gray-700 text-base mb-6 leading-relaxed">
+      Get access to your personalized SkillSphere assessment. Complete the payment to evaluate your strengths, track progress, and unlock insights that help you grow faster.
+    </p>
+
+    {exams.length > 0 && (() => {
+  const exam = exams.find(e => e.discounted_price + e.tax > 0);
+  if (!exam) return null; // no paid exams
+
+  const totalPrice = exam.discounted_price + exam.tax;
+
+  return (
+    <Button
+      onClick={() => handleExamPayment(exam)}
+      disabled={paymentLoading}
+      className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold"
+    >
+      {paymentLoading ? "Processing..." : `Pay ₹${totalPrice}`}
+    </Button>
+  );
+})()}
+
+  </div>
+
+  {/* Image floated right */}
+  <img
+    className="absolute top-1/2 right-6 -translate-y-1/2 w-40 h-auto opacity-90"
+    alt="Payment illustration"
+    src="/CashlessPayment.png"
+  />
+</div>
+
+
+
+      {/* Cashback Section */}
+      <div className="bg-gradient-to-r from-[#fff4fb] to-[#fef7fc] rounded-2xl p-6 relative overflow-hidden">
+        {/* Content */}
+        <div className="max-w-lg relative z-10">
+          <h4 className="font-bold text-gray-900 text-2xl mb-2">
+            You Have ₹200 Cashback
+          </h4>
+          <p className="text-gray-600 text-sm mb-6">T&C Apply</p>
+          <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
+            Refer & Earn
+          </Button>
+        </div>
+
+        {/* Image floated right */}
+        <img
+          className="absolute top-1/2 right-8 -translate-y-1/2 w-44 h-auto opacity-90"
+          alt="Wallet illustration"
+          src="/Wallet.png"
+        />
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
+
 
 
             {/* Payment Plans Card */}
@@ -410,7 +482,7 @@ useEffect(() => {
                                 </div>
                               )}
                               
-                              <Button disabled
+                              <Button 
                                 onClick={() => {
                                   if (isPurchased) {
                                     navigate(`/exam-details/${exam.exam_id}`);

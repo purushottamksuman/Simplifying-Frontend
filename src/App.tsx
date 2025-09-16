@@ -35,6 +35,7 @@ import { QuestionsList } from "./components/ExamResultComponents/components/Ques
 
 function App() {
   return (
+    <div>
     <Router>
       <Routes>
         <Route path="/" element={<HomePg />} />
@@ -103,7 +104,47 @@ function App() {
         <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
         <Route path="/exam/:examId" element={<ExamEnvironment />} />
       </Routes>
-    </Router>
+    </Router> <style jsx>{`
+        /* Remove horizontal scrollbar */
+        .sidebar-scrollbar {
+          overflow-x: hidden;
+        }
+        
+        .sidebar-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .sidebar-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .sidebar-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 10px;
+          transition: background 0.2s ease;
+        }
+        
+        .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+        .main-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .main-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .main-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(52, 121, 255, 0.2);
+          border-radius: 10px;
+          transition: background 0.2s ease;
+        }
+        
+        .main-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(52, 121, 255, 0.3);
+        }
+      `}</style></div>
   );
 }
 
