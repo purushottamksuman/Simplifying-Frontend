@@ -4,22 +4,14 @@ import { useAuth } from '../../../hooks/useAuth';
 import { supabase } from '../../../lib/supabase';
 import { calculateDetailedAssessmentResult } from '../../../../utils/utils/assessmentCalculation';
 import type { DetailedAssessmentResult, QuestionSubmission, QuestionData } from '../../../../utils/utils/assessmentCalculation';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
 interface DetailedResultsPageProps {
   attemptId: string;
   onBack: () => void;
 }
 
-interface ExamResponse {
-  id: string;
-  question_id: string;
-  selected_option_id: string;
-  selected_option_text: string;
-  option_marks: number;
-  section_type: string;
-  answered_at: string;
-}
+// Removed unused ExamResponse interface
 
 interface UserInfo {
   name: string;
@@ -201,37 +193,10 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
     setSubSectionStats(stats);
   };
 
-  const handleDownloadPDF = () => {
+  const handleGenerateHTML = () => {
     if (!detailedResults || !userInfo || !user) return;
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-
-    // Helper function to add multi-line text
-    const addMultiLineText = (text: string, x: number, y: number, maxWidth: number, lineHeight = 5) => {
-      const lines = doc.splitTextToSize(text, maxWidth);
-      lines.forEach((line, index) => {
-        doc.text(line as string, x, y + index * lineHeight);
-      });
-      return lines.length * lineHeight;
-    };
-
-    // Helper to draw speech bubble
-    const drawSpeechBubble = (text: string, x: number, y: number, width: number, height: number) => {
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(x, y, width, height, 5, 5, 'F');
-      doc.setDrawColor(0, 0, 0);
-      doc.roundedRect(x, y, width, height, 5, 5, 'D');
-      // Tail
-      doc.moveTo(x + 10, y + height);
-      doc.lineTo(x + 20, y + height + 10);
-      doc.lineTo(x + 30, y + height);
-      doc.fill();
-      doc.text(text, x + width / 2, y + height / 2 + 2, { align: 'center' });
-    };
-
-    // Aptitude descriptions and what it means templates
+    // Aptitude descriptions and templates (same as in PDF)
     const aptitudeDescriptions = {
       verbal: 'Verbal Reasoning: This test measures the ability to reason with words, to understand and use concepts expressed in words. This skill is important in academic courses, in jobs requiring written or oral communication and in jobs involving high levels of authority and responsibility.',
       numerical: 'Numerical Reasoning: This test measures the ability to perform mathematical reasoning tasks. This strength is generally important in schoolwork especially for fields such as math, chemistry, physics and engineering.',
@@ -299,47 +264,14 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
       conventional: 'You are an Organizer! You\'re someone who loves structure and order. You thrive in environments where things are planned out, organized, and clearly defined. You pay attention to the smallest details, and you can take pride in keeping things running smoothly. Whether it\'s managing data, following rules, or handling paperwork, you enjoy tasks that require precision and consistency. This makes you perfect for careers in administration, finance, accounting, or any field where organization is key. Your ability to organize and manage is a skill that will help you succeed in any career that requires planning, coordination, and structure.',
     };
 
-    // SEI what templates
-    const seiWhatTemplates = {
-      selfAwareness: {
-        High: 'You are highly attuned to your emotions, strengths, and weaknesses. This self-insight allows you to make better decisions and build stronger relationships. Continue reflecting and seeking feedback to maintain this strength.',
-        Moderate: 'You have a decent understanding of your emotions and behaviors. With more self-reflection, you can enhance this awareness. Practice journaling or mindfulness to improve.',
-        Low: 'Sometimes, emotions can feel confusing, and you may not always notice how they impact your actions. For example, you might get upset with a friend without realizing that you\'re actually stressed about school. It can be tough to recognize feelings in the moment, but small steps like journaling or talking to a trusted person can help. Learning to notice and name your emotions will make it easier to understand yourself. With time, you can grow stronger in this area and feel more in control of your thoughts and reactions.',
-      },
-      selfManagement: {
-        High: 'You excel at regulating your emotions and behaviors, staying motivated even in challenging situations. This skill helps in achieving long-term goals. Keep practicing stress management techniques.',
-        Moderate: 'You can manage your emotions in many situations but may struggle in high-stress scenarios. Build resilience through goal-setting and positive habits.',
-        Low: 'You might find it difficult to control your emotions, especially when something upsetting or stressful happens. For example, if you get a low grade on an assignment, you might react by shutting down or getting angry instead of looking for ways to improve. This can make it harder to achieve your goals. The good news is that self-management is a skill that can be improved! Simple habits like taking deep breaths, counting to ten, or asking for help when you need it can make a big difference. The more you practice staying calm and focused, the easier it will become in any situation.',
-      },
-      socialAwareness: {
-        High: 'You are excellent at understanding others\' emotions and perspectives. This empathy helps in building strong relationships. Continue practicing active listening.',
-        Moderate: 'You generally understand people\'s feelings and social dynamics, but sometimes you might miss small clues. For example, a classmate might seem upset, but you\'re not entirely sure why or how to respond. That\'s okay! Asking simple questions like "Are you okay?" can also help strengthen your ability to connect with people. With a little effort, you\'ll become even better at reading emotions and responding in a way that makes people feel understood and supported.',
-        Low: 'You may find it challenging to pick up on social cues or understand others\' perspectives. Practice empathy exercises and observe social interactions to improve.',
-      },
-      socialSkills: {
-        High: 'You are skilled at communicating, resolving conflicts, and building relationships. This ability is key for teamwork and leadership. Keep honing these skills in group settings.',
-        Moderate: 'You have decent communication skills and can work well with others, but there\'s room to improve in handling conflicts or expressing ideas clearly. You might do fine in a group discussion but hesitate to give feedback or speak up in tough situations. With practice, you can become a stronger communicator. Smiles.',
-        Low: 'You have room to grow in social interactions. Practice conversation skills and conflict resolution to build confidence.',
-      },
-    };
+    // SEI templates
+    // Removed unused SEI templates
 
-    // Adversity what templates
-    const adversityWhatTemplates = {
-      High: 'You have a high AQ, meaning you thrive in the face of challenges. You see setbacks as opportunities and persist until you succeed. This resilience will take you far in life. Continue to challenge yourself and support others in their journeys.',
-      'Mod High': 'Your AQ is moderately high, indicating good resilience. You handle most challenges well but can improve in extreme situations. Focus on building endurance through consistent practice.',
-      Moderate: 'You have a moderate AQ. You manage average challenges but may struggle with major setbacks. Work on ownership and control to enhance your resilience.',
-      'Mod Low': 'Your AQ is moderately low. Challenges can feel difficult, but with effort, you can improve. Start with small goals to build confidence and persistence.',
-      Low: 'This is just the beginning of your growth! Right now, challenges might feel overwhelming, and setbacks can seem like the end of the road. Maybe failing a test or facing rejection makes you want to stop trying. But remember—everyone starts somewhere! Building resilience takes time and effort. Start with small steps: ask for help, reflect on what you can learn from mistakes, and celebrate small wins. Over time, you\'ll see a huge change in how you handle difficulties. Believe in yourself—you have so much potential, and this is just the start of your journey!',
-    };
+    // Adversity templates
+    // Removed unused Adversity templates
 
     // Psychometric descriptions
-    const psychometricDescriptions = {
-      openness: 'Openness: People who like to learn new things and enjoy new experiences usually score high in openness. Openness includes personality traits like being insightful and imaginative and having a wide variety of interests.',
-      conscientiousness: 'Conscientiousness: People that have a high degree of conscientiousness are reliable and prompt. Personality traits include being organized, methodical, and thorough.',
-      extraversion: 'Extraversion: Extraverts get their energy from interacting with others, while introverts get their energy from within themselves. Extraversion includes the personality traits of energetic, talkative, and assertive.',
-      agreeableness: 'Agreeableness: These individuals are friendly, cooperative, and compassionate. People with low agreeableness may be more distant. Personality traits include being kind, affectionate, and sympathetic.',
-      neuroticism: 'Neuroticism: Neuroticism is also sometimes called Emotional Stability. This dimension relates to one\'s emotional stability and degree of negative emotions. People that score high on neuroticism often experience emotional instability and negative emotions. Personality traits include being moody and tense for example.',
-    };
+    // Removed unused Psychometric descriptions
 
     // Get aptitude data
     const aptitude = detailedResults.aptitudeScore.categoryWiseScore;
@@ -359,7 +291,7 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
         const data = aptitude[realKey];
 
         return {
-          name: data?.categoryDisplayText ?? realKey,   // fallback to key
+          name: data?.categoryDisplayText ?? realKey,   
           percentage: data?.categoryPercentage ?? 0,
           level: data?.categoryScoreLevel ?? "N/A",
         };
@@ -371,552 +303,540 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
     const sortedInterests = Object.entries(interests).sort(([, a], [, b]) => b.categoryScore - a.categoryScore).slice(0, 3);
     const interestCode = sortedInterests.map(([, data]) => data.categoryLetter ?? '').join('');
 
-    // Get SEI data
-    const sei = detailedResults.seiScore.categoryWiseScore;
-    const seiCategories = {
-      selfAwareness: sei.selfAwareness,
-      selfManagement: sei.selfManagement,
-      socialAwareness: sei.socialAwareness,
-      socialSkills: sei.socialSkills,
+    // Removed unused derived data declarations
+
+    // Compute sorted scores outside the template
+    const aptiCategoryWiseScores = Object.entries(detailedResults.aptitudeScore.categoryWiseScore)
+      .map(([category, scoreObject]) => ({ category, scoreObject }))
+      .sort((a, b) => b.scoreObject.categoryPercentage - a.scoreObject.categoryPercentage);
+
+    const interestAndPreferenceScore = Object.entries(detailedResults.interestAndPreferenceScore.categoryWiseScore)
+      .map(([category, scoreObject]) => ({ category, scoreObject }))
+      .sort((a, b) => b.scoreObject.categoryScore - a.scoreObject.categoryScore);
+
+    const seiScore = Object.entries(detailedResults.seiScore.categoryWiseScore)
+      .map(([category, scoreObject]) => ({ category, scoreObject }))
+      .sort((a, b) => b.scoreObject.categoryScore - a.scoreObject.categoryScore);
+
+    const psychometricScore = Object.entries(detailedResults.detailedPsychometricScore.categoryWiseScore)
+      .map(([category, scoreObject]) => ({ category, scoreObject }))
+      .sort((a, b) => b.scoreObject.categoryScore - a.scoreObject.categoryScore);
+
+    // Build HTML content
+    let html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSphere Assessment Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; }
+        .page { background-color: white; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #333; }
+        .cover { text-align: center; }
+        .section-header { background-color: #0000ff; color: white; padding: 10px; }
+        .bubble { background-color: #fff; border: 1px solid #000; border-radius: 5px; padding: 5px; display: inline-block; }
+        .bar { height: 20px; background-color: #00aaff; color: white; text-align: right; padding-right: 5px; }
+        .funnel-bar { margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        ul { list-style-type: disc; padding-left: 20px; }
+        .svg-container {
+            position: relative;
+        }
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+        text {
+            white-space: pre;
+        }
+        .absolute-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="svg-container">
+            <svg viewBox="0 0 595 842">
+                <text x="0" y="20">
+ 
+     
+         
+         
+             
+        
+    
+     
+         
+         
+             
+                 
+            
+        
+         
+             
+                 
+                     
+                
+            
+        
+         “When we think we know, we cease to
+            learn.”
+         Dr
+         Sarvepalli
+         Radhakrishnan
+         
+             
+                 
+                     
+                
+            
+        
+         
+             
+                 
+                     
+                
+            
+        
+         SkillSphere
+         Assessment
+         
+         A 360
+         °
+         MEASURE OF PERSONALITY,
+         RESILIENCE, APTITUDE, AND
+            INTERESTS
+         —
+         EMPOWERING EVERY STUDENT’S
+            JOURNEY
+         This report provides a comprehensive
+            analysis of the
+         student's personality traits, interests,
+            aptitude, strengths, and
+         growth areas, utilizing multiple industry
+         -
+         standard
+         assessment frameworks. The insights gained
+            are designed to
+         guide the student's learning journey,
+            enabling them to unlock
+         their full potential and ultimately
+            pursue successful and
+         fulfilling careers.
+    
+                </text>
+            </svg>
+        </div>
+    </div>
+
+    <div class="page">
+        <div class="svg-container">
+            <svg viewBox="0 0 595 842">
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+            
+                
+            
+            
+            
+            
+                
+                
+                    
+                        
+                        
+                    
+                
+            
+            
+                
+                    
+                        
+                            
+                        
+                    
+                
+            
+            </svg>
+            <div class="absolute-text">
+                <pre>
+Congratulations on
+                successfully completing the SkillSphere Assessment!
+Your results highlight key
+                strengths such as brilliance, resilience, and a
+            strong mindset, all of
+                which position you for continued success. Each
+            score reflects your
+                dedication, intelligence, and boundless potential to
+            conquer challenges and
+                achieve extraordinary success.
+            THIS ASSESSMENT MARKS THE
+                BEGINNING OF YOUR
+            PROFESSIONAL DEVELOPMENT
+                JOURNEY
+            With your demonstrated talent and
+                determination, there is
+            significant potential for you to reach new
+                heights in your career
+            and personal growth. Keep striving toward
+                excellence, as your
+            future holds limitless possibilities.
+            STUDENT ID : ${attemptId ?? 'N/A'}
+            NAME: ${userInfo.name ?? 'N/A'}
+            ASSESSMENT DATE : ${detailedResults.assessmentDate ? new Date(detailedResults.assessmentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'September 16, 2025'}
+            EMAIL: ${user.email ?? 'N/A'}
+            PHONE
+            :
+            ${userInfo.phone ?? 'N/A'}
+            EVALUATOR :
+            SKILLSPHERE ASSESSMENT SYSTEM
+            
+                
+                    
+                        
+                    
+                
+            
+        
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+        <div class="svg-container">
+            <svg viewBox="0 0 595 842">
+                
+                
+            
+            
+                
+                
+            
+            
+                
+                
+            
+            
+            
+            
+                
+                
+            
+            </svg>
+            <div class="absolute-text">
+                <pre>
+
+    
+        
+            
+        
+        
+            
+        
+        
+            
+        
+        
+    
+    
+        
+        
+            
+                
+            
+        Assessment RESULT
+        
+        
+        
+        SkillSphereAssessmentResult
+        Aptitude•${aptiCategoryWiseScores[0]?.scoreObject.categoryDisplayText ?? ''}: ${aptiCategoryWiseScores[0]?.scoreObject.categoryPercentage ?? ''}•${aptiCategoryWiseScores[1]?.scoreObject.categoryDisplayText ?? ''}: ${aptiCategoryWiseScores[1]?.scoreObject.categoryPercentage ?? ''}•${aptiCategoryWiseScores[2]?.scoreObject.categoryDisplayText ?? ''}: ${aptiCategoryWiseScores[2]?.scoreObject.categoryPercentage ?? ''}
+        Interest and
+            Preferences•${interestAndPreferenceScore[0]?.scoreObject.categoryDisplayText ?? ''}•${interestAndPreferenceScore[1]?.scoreObject.categoryDisplayText ?? ''}•${interestAndPreferenceScore[2]?.scoreObject.categoryDisplayText ?? ''}
+        Psychometric
+            Traits•${psychometricScore[0]?.scoreObject.categoryDisplayText ?? psychometricScore[0]?.category ?? ''}•${psychometricScore[1]?.scoreObject.categoryDisplayText ?? psychometricScore[1]?.category ?? ''}•${psychometricScore[2]?.scoreObject.categoryDisplayText ?? psychometricScore[2]?.category ?? ''}
+        Socio
+            EconomicIntelligence•${seiScore[0]?.scoreObject.categoryDisplayText ?? ''}: ${seiScore[0]?.scoreObject.categoryScore ?? ''}•${seiScore[1]?.scoreObject.categoryDisplayText ?? ''}: ${seiScore[1]?.scoreObject.categoryScore ?? ''}•${seiScore[2]?.scoreObject.categoryDisplayText ?? ''}: ${seiScore[2]?.scoreObject.categoryScore ?? ''}•${seiScore[3]?.scoreObject.categoryDisplayText ?? ''}: ${seiScore[3]?.scoreObject.categoryScore ?? ''}
+        Adversity Quotient
+            score•Adversity Response Profile(ARP) : ${detailedResults.adversityScore.aqScore ?? ''}
+        Measure skills, abilities, and
+            potentialto succeed in a particular role orenvironment.It is based on DifferentialAptitude Test (DAT), which evaluateson 8 different aptitude components.
+        Provides
+            professionalaspirations, values, andmotivations.It is measured on 6personality types based onHolland’s model.
+        Helps identify
+            personalitytype leveragingBig FiveModel with 5 broaddimensions.
+        Measures the individual’s
+            mental abilityto succeed in any environmentalcircumstance.Leverages Bar-On Model of Emotional-Social Intelligence.
+        Measures a person's
+            abilityto deal with challenges inlife.Higher score indicatesbetter resilience toadversity. Highest possiblescore: 200
+    
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+        <div class="section-header">DETAILED ASSESSMENT REPORT</div>
+        <h2>1. Aptitude (IQ)</h2>
+        <p>Aptitude tests measure skills, abilities, and potential to succeed in a particular role or environment. This assessment framework is modeled after the widely recognized Differential Aptitude Test (DAT) and evaluates individuals across eight key aptitude components: Verbal Reasoning, Numerical Ability, Abstract Reasoning, Perceptual Speed and Accuracy, Mechanical Reasoning, Spatial Relations, Spelling, and Language Usage.</p>
+        <ul>
+            ${Object.values(aptitudeDescriptions).map(desc => `<li>${desc}</li>`).join('')}
+        </ul>
+    </div>
+
+    <div class="page">
+        <div class="bubble">Your Score</div>
+        <div>
+            ${aptitudeBars.map((bar, index) => `
+                <div class="funnel-bar" style="width: ${100 - index * 10}%; background-color: cyan; color: white; padding: 5px;">
+                    ${bar.name} ${bar.percentage.toFixed(2)}%
+                </div>
+            `).join('')}
+        </div>
+    </div>
+
+    <div class="page">
+        <div class="bubble">What it means</div>
+        <ul>
+            ${(() => {
+              const getTemplate = (catDisplayName: string, level: string): string => {
+                const categoryKey = (Object.keys(aptitudeKeyMap) as Array<keyof typeof aptitudeKeyMap>)
+                  .find(c => aptitude[aptitudeKeyMap[c]]?.categoryDisplayText === catDisplayName);
+                if (!categoryKey) return '';
+                if (level === 'High' || level === 'Moderate' || level === 'Low') {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  return (aptitudeWhatTemplates as any)[categoryKey]?.[level] ?? '';
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return (aptitudeWhatTemplates as any)[categoryKey]?.['Low'] ?? '';
+              };
+              return aptitudeBars.map(bar => `<li>You have scored ${bar.percentage.toFixed(2)}% in ${bar.name} which is a ${bar.level} score. ${getTemplate(bar.name, bar.level)}</li>`).join('');
+            })()}
+        </ul>
+    </div>
+
+    <!-- Add similar div.page for other sections: Interest, SEI, Adversity, Psychometric -->
+
+    <div class="page">
+        <h2>2. Interest & Preferences</h2>
+        <p>Interest & Preferences test results provide an objective basis for engaging in meaningful discussions about professional aspirations, values and motivations. This assessment framework is modeled after Holland's theory which defines personality types as: Realistic, Investigative, Artistic, Social, Enterprising, and Conventional (RIASEC).</p>
+        <ul>
+            ${Object.values(interestDescriptions).map(desc => `<li>${desc}</li>`).join('')}
+        </ul>
+    </div>
+
+    <div class="page">
+        <div class="bubble">Your Score</div>
+        <!-- Hexagon representation can be approximated with CSS or text -->
+        <p>Your Interest Code: ${interestCode}</p>
+        <p>Your results reflect the alignment of your skills and interests with specific areas within the RIASEC model...</p>
+        <div class="bubble">What it means</div>
+        <ul>
+            ${sortedInterests.map(([key, data]) => {
+              const template = interestWhatTemplates[key as keyof typeof interestWhatTemplates] ?? '';
+              return `<li>${data.categoryDisplayText ?? 'N/A'}: ${template}</li>`;
+            }).join('')}
+        </ul>
+    </div>
+
+    <!-- Continue for SEI, Adversity, Psychometric similarly, using tables or lists for scores, ul for descriptions -->
+
+</body>
+</html>
+    `;
+
+    // Download HTML
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SkillSphere_${(userInfo.name ?? 'User').toUpperCase().replace(' ', '_')}_${(attemptId ?? 'N/A').toUpperCase()}_Report.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!detailedResults || !userInfo || !user) return;
+
+    const loadHtml2Canvas = async (): Promise<void> => {
+      if ((window as any).html2canvas) return;
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load html2canvas'));
+        document.body.appendChild(script);
+      });
     };
 
-    // Get adversity data
-    const adversity = detailedResults.adversityScore;
-    const adversityCategories = adversity.categoryWiseScore || { control: { categoryScore: 0 }, ownership: { categoryScore: 0 }, reach: { categoryScore: 0 }, endurance: { categoryScore: 0 } };
-    const adversityBars = [
-      { name: 'CONTROL', score: adversityCategories.control.categoryScore ?? 0 },
-      { name: 'OWNERSHIP', score: adversityCategories.ownership.categoryScore ?? 0 },
-      { name: 'REACH', score: adversityCategories.reach.categoryScore ?? 0 },
-      { name: 'ENDURANCE', score: adversityCategories.endurance.categoryScore ?? 0 },
+    const pageFiles = [
+      'page1/page1.component.html',
+      'page2/page2.component.html',
+      'page3/page3.component.html',
+      'page4/page4.component.html',
+      'page5/page5.component.html',
+      'page6/page6.component.html',
+      'page7/page7.component.html',
+      'page8/page8.component.html',
+      'page9/page9.component.html',
+      'page10/page10.component.html',
+      'page11/page11.component.html',
+      'page12/page12.component.html',
+      'page13/page13.component.html',
+      'page14/page14.component.html',
+      'page15/page15.component.html',
+      'page16/page16.component.html',
+      'page17/page17.component.html',
+      'page18/page18.component.html',
+      'page19/page19.component.html',
     ];
 
-    // Get psychometric data
-    const psychometric = detailedResults.detailedPsychometricScore.categoryWiseScore;
-    const psychometricCategories = ['extraversion', 'openness', 'agreeableness', 'neuroticism', 'conscientiousness'];
-    const psychometricBars = psychometricCategories.map(cat => ({
-      name: cat.toUpperCase(),
-      percentage: (psychometric[cat].categoryPercentage || (psychometric[cat].categoryScore / 25 * 100)) ?? 0,
-    }));
+    // Compute helper arrays similar to Angular template usage
+    const aptiCategoryWiseScores = Object.entries(detailedResults.aptitudeScore.categoryWiseScore)
+      .map(([category, scoreObject]) => ({ category, scoreObject }))
+      .sort((a, b) => (b as any).scoreObject.categoryPercentage - (a as any).scoreObject.categoryPercentage) as any[];
 
-    // Start building PDF
+    const interestAndPreferenceScore = Object.entries(detailedResults.interestAndPreferenceScore.categoryWiseScore)
+      .map(([category, scoreObject]) => ({ category, scoreObject }))
+      .sort((a, b) => (b as any).scoreObject.categoryScore - (a as any).scoreObject.categoryScore) as any[];
 
-    // Page 1: Cover
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 255);
-    doc.text('Simplifying Skills Transforming Education', 10, 10);
-    doc.setFontSize(50);
-    doc.text('SkillSphere', 30, 50);
-    doc.setFontSize(40);
-    doc.text('Assessment', 30, 80);
-    doc.setFillColor(255, 255, 0);
-    doc.roundedRect(20, 95, 170, 30, 15, 15, 'F');
-    doc.setTextColor(0, 0, 255);
-    doc.setFontSize(12);
-    const yellowText1 = 'A 360° MEASURE OF PERSONALITY,';
-    const yellowText2 = 'RESILIENCE, APTITUDE, AND INTERESTS';
-    const yellowText3 = '—EMPOWERING EVERY STUDENT\'S JOURNEY';
-    doc.text(yellowText1, 25, 105, { maxWidth: 160 });
-    doc.text(yellowText2, 25, 110, { maxWidth: 160 });
-    doc.text(yellowText3, 25, 115, { maxWidth: 160 });
-    doc.setTextColor(0);
-    doc.setFontSize(12);
-    doc.text('"When we think we know, we cease to learn."', 50, 140);
-    doc.text('Dr. Sarvepalli Radhakrishnan', 60, 150);
-    doc.setFillColor(200, 220, 255);
-    doc.roundedRect(20, 160, 170, 80, 10, 10, 'F');
-    const desc = 'This report provides a comprehensive analysis of the student\'s personality traits, interests, aptitude, strengths, and growth areas, utilizing multiple industry-standard assessment frameworks. The insights gained are designed to guide the student\'s learning journey, enabling them to unlock their full potential and ultimately pursue successful and fulfilling careers.';
-    addMultiLineText(desc, 25, 170, 160, 5);
+    const seiScore = Object.entries(detailedResults.seiScore.categoryWiseScore)
+      .map(([category, scoreObject]) => ({ category, scoreObject }))
+      .sort((a, b) => (b as any).scoreObject.categoryScore - (a as any).scoreObject.categoryScore) as any[];
 
-    // Page 2: Student Info
-    doc.addPage();
-    doc.setFillColor(230, 240, 255);
-    doc.rect(20, 20, 170, 70, 'F');
-    doc.setDrawColor(0, 0, 255);
-    doc.rect(20, 20, 170, 70);
-    doc.setTextColor(0);
-    doc.setFontSize(12);
-    doc.text('STUDENT ID : ' + (attemptId ?? 'N/A').toUpperCase(), 25, 30);
-    doc.text('NAME : ' + (userInfo?.name ?? 'N/A').toUpperCase(), 25, 40);
-    const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    doc.text('ASSESSMENT DATE : ' + date, 25, 50);
-    doc.text('EMAIL : ' + (user.email ?? 'N/A'), 25, 60);
-    doc.text('PHONE : ' + (userInfo.phone ?? 'N/A'), 25, 70);
-    doc.text('EVALUATOR : SKILLSPHERE ASSESSMENT SYSTEM', 25, 80);
-    const cong = 'Congratulations on successfully completing the SkillSphere Assessment! Your results highlight key strengths such as brilliance, resilience, and a strong mindset, all of which position you for continued success. Each score reflects your dedication, intelligence, and boundless potential to conquer challenges and achieve extraordinary success.';
-    addMultiLineText(cong, 10, 100, 190, 5);
-    doc.line(50, 130, 160, 130);
-    doc.setFontSize(16);
-    doc.text('THIS ASSESSMENT MARKS THE BEGINNING OF YOUR PROFESSIONAL DEVELOPMENT JOURNEY.', 10, 140, { maxWidth: 190 });
-    doc.setFillColor(255, 240, 220);
-    doc.roundedRect(10, 150, 190, 40, 10, 10, 'F');
-    const bottom = 'With your demonstrated talent and determination, there is significant potential for you to reach new heights in your career and personal growth. Keep striving toward excellence, as your future holds limitless possibilities.';
-    addMultiLineText(bottom, 15, 160, 180, 5);
+    const assessmentDate = detailedResults.assessmentDate
+      ? new Date(detailedResults.assessmentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      : new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-    // Page 3: Assessment Result
-    doc.addPage();
-    doc.setFontSize(24);
-    doc.text('ASSESSMENT RESULT', 60, 20);
-    // Central circle
-    doc.setFillColor(0, 0, 255);
-    doc.circle(105, 140, 30, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
-    doc.text('SkillSphere', 80, 135);
-    doc.text('Assessment', 75, 145);
-    doc.text('Result', 90, 155);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-    // Aptitude circle
-    doc.setFillColor(200, 100, 100);
-    doc.circle(105, 60, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('Aptitude', 95, 60);
-    doc.setTextColor(0, 0, 0);
-    let aptY = 50;
-    aptitudeBars.slice(0, 3).forEach(bar => {
-      doc.text(bar.name + ' ' + bar.percentage.toFixed(2) + '%', 85, aptY);
-      aptY += 5;
-    });
-    doc.setFillColor(255, 255, 255);
-    doc.rect(70, 30, 70, 20, 'F');
-    doc.setDrawColor(0, 0, 0);
-    doc.rect(70, 30, 70, 20);
-    const aptBox = 'Measure skills, abilities, and potential to succeed in a particular role or environment. It is based on Differential Aptitude Test (DAT), which evaluates on 8 different components.';
-    addMultiLineText(aptBox, 75, 35, 60, 4);
-    // Interest circle
-    doc.setFillColor(100, 200, 100);
-    doc.circle(175, 110, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('Interest and Preferences', 155, 100, { maxWidth: 40, align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    let intY = 100;
-    sortedInterests.forEach(([, data]) => {
-      doc.text(data.categoryDisplayText ?? 'N/A', 160, intY);
-      intY += 5;
-    });
-    doc.setFillColor(255, 255, 255);
-    doc.rect(155, 70, 40, 20, 'F');
-    doc.setDrawColor(0, 0, 0);
-    doc.rect(155, 70, 40, 20);
-    const intBox = 'Provides professional aspirations, values, and motivations. 6 personality types based on RIASEC model.';
-    addMultiLineText(intBox, 160, 75, 30, 4);
-    // SEI circle
-    doc.setFillColor(100, 200, 200);
-    doc.circle(35, 110, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('Social Emotional Intelligence', 15, 100, { maxWidth: 40, align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    let seiY = 100;
-    Object.entries(seiCategories).forEach(([, data]) => {
-      doc.text((data?.categoryDisplayText ?? 'N/A') + ' ' + String(data?.categoryScore ?? 0), 20, seiY);
-      seiY += 5;
-    });
-    doc.setFillColor(255, 255, 255);
-    doc.rect(15, 70, 40, 20, 'F');
-    doc.setDrawColor(0, 0, 0);
-    doc.rect(15, 70, 40, 20);
-    const seiBox = 'Measure individual\'s mental ability to succeed in any environmental circumstance. Leveraged from Bar-On Model of Emotional-Social Intelligence.';
-    addMultiLineText(seiBox, 20, 75, 30, 4);
-    // Psychometric circle
-    doc.setFillColor(150, 100, 200);
-    doc.circle(35, 180, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('Psychometric Traits', 15, 170, { maxWidth: 40, align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    let psyY = 170;
-    psychometricBars.slice(0, 3).forEach(bar => {
-      doc.text(bar.name, 20, psyY);
-      psyY += 5;
-    });
-    doc.setFillColor(255, 255, 255);
-    doc.rect(15, 210, 40, 20, 'F');
-    doc.setDrawColor(0, 0, 0);
-    doc.rect(15, 210, 40, 20);
-    const psyBox = 'Help identify personality type leveraging Big Five Model with 5 broad dimensions.';
-    addMultiLineText(psyBox, 20, 215, 30, 4);
-    // Adversity circle
-    doc.setFillColor(255, 150, 0);
-    doc.circle(175, 180, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('Adversity Quotient', 155, 170, { maxWidth: 40, align: 'center' });
-    doc.text('Adversity Response Profile', 155, 180, { maxWidth: 40, align: 'center' });
-    doc.text('ARP ' + String(adversity.aqScore ?? 0), 160, 190);
-    doc.setTextColor(0, 0, 0);
-    doc.setFillColor(255, 255, 255);
-    doc.rect(155, 210, 40, 20, 'F');
-    doc.setDrawColor(0, 0, 0);
-    doc.rect(155, 210, 40, 20);
-    const advBox = 'Measures a person\'s ability to deal with life. Higher Score indicates better resilience to adversity. High score 200.';
-    addMultiLineText(advBox, 160, 215, 30, 4);
-    // Lines
-    doc.setDrawColor(200, 200, 200);
-    doc.line(105, 85, 105, 110);
-    doc.line(130, 110, 105, 140);
-    doc.line(80, 110, 105, 140);
-    doc.line(80, 180, 105, 140);
-    doc.line(130, 180, 105, 140);
-    doc.line(105, 170, 105, 195); // Adjust if needed
+    const replacements: Record<string, string> = {
+      '{{detailedReport.student?.id}}': attemptId ?? 'N/A',
+      '{{detailedReport.student?.studentName}}': userInfo.name ?? 'N/A',
+      '{{detailedReport.assessmentDate | date}}': assessmentDate,
+      '{{detailedReport.student?.emailAddress}}': user.email ?? 'N/A',
+      '{{detailedReport.student?.details?.contactNumber}}': userInfo.phone ?? 'N/A',
+      '{{detailedReport.adversityScore.aqScore}}': String(detailedResults.adversityScore?.aqScore ?? ''),
+    };
 
-    // Page 4: Detailed Assessment Report - Aptitude Intro
-    doc.addPage();
-    doc.setFillColor(0, 0, 255);
-    doc.rect(0, 0, pageWidth, 20, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
-    doc.text('DETAILED ASSESSMENT REPORT', 10, 15);
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 30, 190, pageHeight - 40, 10, 10, 'F');
-    doc.setFillColor(0, 0, 255);
-    doc.roundedRect(15, 35, 20, 20, 10, 10, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('1', 20, 45);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(16);
-    doc.text('Aptitude (IQ)', 40, 45);
-    doc.setFontSize(12);
-    const aptGeneral = 'Aptitude tests measure skills, abilities, and potential to succeed in a particular role or environment. This assessment framework is modeled after the widely recognized Differential Aptitude Test (DAT) and evaluates individuals across eight key aptitude components: Verbal Reasoning, Numerical Ability, Abstract Reasoning, Perceptual Speed and Accuracy, Mechanical Reasoning, Spatial Relations, Spelling, and Language Usage.';
-    let y = 60;
-    y += addMultiLineText(aptGeneral, 15, y, 180, 5);
-    Object.keys(aptitudeDescriptions).forEach(key => {
-      const desc = '• ' + aptitudeDescriptions[key as keyof typeof aptitudeDescriptions];
-      y += addMultiLineText(desc, 15, y, 180, 5) + 5;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
-      }
-    });
-
-    // Page 5: Aptitude Scores
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    drawSpeechBubble('Your Score', 15, 20, 60, 20);
-    y = 50;
-    const colors: [number, number, number][] = [[0,255,255], [0,200,255], [0,150,255], [0,100,255], [0,50,255], [100,50,200], [150,50,150], [200,50,100]];
-    let barWidth = 100;
-    const centerX = pageWidth / 2;
-    aptitudeBars.forEach((bar, index) => {
-      const currentWidth = barWidth - index * 10; // Funnel effect
-      const barX = centerX - currentWidth / 2;
-      doc.text(bar.name, barX - 50, y + 5); // Label to the left
-      doc.setFillColor(...colors[index % colors.length]);
-      doc.rect(barX, y, currentWidth, 10, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.text(bar.percentage.toFixed(2) + '%', barX + currentWidth - 30, y + 7);
-      doc.setTextColor(0, 0, 0);
-      y += 15;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
-      }
-    });
-
-    // Page 6: Aptitude What it means
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    drawSpeechBubble('What it means', 15, 20, 80, 20);
-    y = 50;
-    aptitudeBars.forEach((bar) => {
-      const category = Object.keys(aptitudeKeyMap).find(
-        (c) => aptitude[aptitudeKeyMap[c]]?.categoryDisplayText === bar.name
-      ) || "verbal";
-      const template = aptitudeWhatTemplates[category as keyof typeof aptitudeWhatTemplates]?.[bar.level] ?? "";
-      const text = '• You have scored ' + bar.percentage.toFixed(2) + '% in ' + bar.name + ' which is a ' + bar.level + ' score. ' + template;
-      y += addMultiLineText(text, 15, y, 180, 5) + 10;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
-      }
-    });
-
-    // Page 7: Interest Intro
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    doc.setFillColor(0, 0, 255);
-    doc.roundedRect(15, 15, 20, 20, 10, 10, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('2', 20, 25);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(16);
-    doc.text('Interest & Preferences', 40, 25);
-    doc.setFontSize(12);
-    const interestGeneral = 'Interest & Preferences test results provide an objective basis for engaging in meaningful discussions about professional aspirations, values and motivations. This assessment framework is modeled after Holland\'s theory which defines personality types as: Realistic, Investigative, Artistic, Social, Enterprising, and Conventional (RIASEC).';
-    y = 40;
-    y += addMultiLineText(interestGeneral, 15, y, 180, 5) + 5;
-    Object.keys(interestDescriptions).forEach(key => {
-      const desc = '• ' + interestDescriptions[key as keyof typeof interestDescriptions];
-      y += addMultiLineText(desc, 15, y, 180, 5) + 5;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
-      }
-    });
-
-    // Page 8: Interest Scores
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    drawSpeechBubble('Your Score', 15, 20, 60, 20);
-    // Hexagon
-    const hexCenterX = 105;
-    const hexCenterY = 60;
-    const hexSize = 30;
-    const hexPoints = [];
-    for (let i = 0; i < 6; i++) {
-      hexPoints.push([
-        hexCenterX + hexSize * Math.cos(Math.PI / 3 * i),
-        hexCenterY + hexSize * Math.sin(Math.PI / 3 * i)
-      ]);
-    }
-    doc.setDrawColor(0, 0, 255);
-    doc.lines(hexPoints.map((p, i) => [hexPoints[(i+1)%6][0] - p[0], hexPoints[(i+1)%6][1] - p[1]]), hexPoints[0][0], hexPoints[0][1]);
-    // Labels
-    const letters = ['R', 'I', 'A', 'S', 'E', 'C'];
-    letters.forEach((letter, i) => {
-      const px = hexPoints[i][0] + (i % 2 === 0 ? 5 : -5);
-      const py = hexPoints[i][1] + (i < 3 ? -5 : 5);
-      doc.text(letter, px, py);
-    });
-    // Highlight top 3 with triangle
-    if (sortedInterests.length >= 3) {
-      const topLetters = sortedInterests.map(([, data]) => data.categoryLetter ?? '');
-      const topIndices = topLetters.map(l => letters.indexOf(l));
-      if (topIndices.length === 3) {
-        doc.setFillColor(150, 50, 150); // Purple fill for triangle
-        doc.triangle(
-          hexPoints[topIndices[0]][0], hexPoints[topIndices[0]][1],
-          hexPoints[topIndices[1]][0], hexPoints[topIndices[1]][1],
-          hexPoints[topIndices[2]][0], hexPoints[topIndices[2]][1],
-          'F'
-        );
+    // Top Aptitude (first three)
+    for (let i = 0; i < 3; i++) {
+      const item = aptiCategoryWiseScores[i]?.scoreObject;
+      if (item) {
+        replacements[`{{aptiCategoryWiseScores[${i}].scoreObject.categoryDisplayText}}`] = String(item.categoryDisplayText ?? '');
+        replacements[`{{aptiCategoryWiseScores[${i}].scoreObject.categoryPercentage}}`] = String(item.categoryPercentage ?? '');
       }
     }
-    y = 100;
-    const interestResult = 'Your results reflect the alignment of your skills and interests with specific areas within the RIASEC model, helping to identify the environments and roles where you are most likely to thrive. It also highlights areas where further development may enhance your effectiveness and satisfaction in your chosen field. This alignment is a valuable tool for making informed decisions about your personal growth, education, and career options, as it offers clarity on the types of roles that would best suit your strengths and ambitions.';
-    y += addMultiLineText(interestResult, 15, y, 180, 5) + 5;
-    doc.text('Your Interest Code: ' + interestCode, 15, y);
-    y += 10;
-    drawSpeechBubble('What it means', 15, y, 80, 20);
-    y += 30;
-    sortedInterests.forEach(([key, data]) => {
-      const template = interestWhatTemplates[key as keyof typeof interestWhatTemplates] ?? '';
-      const text = '• ' + (data.categoryDisplayText ?? 'N/A') + ': ' + template;
-      y += addMultiLineText(text, 15, y, 180, 5) + 10;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
-      }
-    });
 
-    // Page 9: SEI Intro
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    doc.setFillColor(0, 0, 255);
-    doc.roundedRect(15, 15, 20, 20, 10, 10, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('3', 20, 25);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(16);
-    doc.text('Socio Emotional Intelligence (SEI)', 40, 25);
-    doc.setFontSize(12);
-    const seiGeneral = 'Socio Emotional Intelligence measures the individual\'s mental ability to succeed in any environmental circumstance. This assessment framework is leveraged from Bar-On Model of Emotional-Social Intelligence (ESI) which was developed by renowned psychologist Reuven Bar-On. As a measurement tool the Bar-On Emotion Quotient Inventory (EQ-i) was developed and estimates a person\'s both emotional and social intelligence.';
-    y = 40;
-    y += addMultiLineText(seiGeneral, 15, y, 180, 5) + 5;
-    const seiDims = {
-      selfAwareness: 'Self-awareness: This dimension involves recognizing and understanding your own emotions, strengths, weaknesses, values, and drivers. It helps you assess how your emotions affect your thoughts and behaviour and enables you to accurately assess your self-worth and confidence.',
-      selfManagement: 'Self-management: Self-management is the ability to regulate your emotions, thoughts, and behaviours in different situations. This includes managing stress, controlling impulses, staying motivated, and setting and achieving personal goals. It helps in maintaining emotional balance even in challenging situations.',
-      socialAwareness: 'Social awareness: This dimension focuses on the ability to recognize and understand the emotions, needs, and concerns of others. It includes empathy, the capacity to feel what others are feeling, and an awareness of social dynamics, allowing you to understand and relate to people from different backgrounds.',
-      socialSkills: 'Social skills: Social skills involve the ability to communicate, build relationships, and work well with others. This includes effective communication, teamwork, conflict resolution, and the ability to influence and inspire others. Strong social skills help you navigate social situations and build strong, healthy relationships.',
+    // Top Interests (first three names)
+    for (let i = 0; i < 3; i++) {
+      const item = interestAndPreferenceScore[i]?.scoreObject;
+      if (item) {
+        replacements[`{{interestAndPreferenceScore[${i}].scoreObject.categoryDisplayText}}`] = String(item.categoryDisplayText ?? '');
+      }
+    }
+
+    // SEI (four scores)
+    for (let i = 0; i < 4; i++) {
+      const item = seiScore[i]?.scoreObject;
+      if (item) {
+        replacements[`{{seiScore[${i}].scoreObject.categoryDisplayText}}`] = String(item.categoryDisplayText ?? '');
+        replacements[`{{seiScore[${i}].scoreObject.categoryScore}}`] = String(item.categoryScore ?? '');
+      }
+    }
+
+    // Optional placeholders that appeared without moustache in some pages
+    const topPsychometric = Object.entries(detailedResults.detailedPsychometricScore.categoryWiseScore)
+      .sort(([, a], [, b]) => (b as any).categoryScore - (a as any).categoryScore)
+      .slice(0, 3)
+      .map(([, data]) => (data as any).categoryDisplayText ?? '');
+    // Replace $BCA, $BCB, $BCC if found
+    replacements['$BCA'] = topPsychometric[0] ?? '';
+    replacements['$BCB'] = topPsychometric[1] ?? '';
+    replacements['$BCC'] = topPsychometric[2] ?? '';
+
+    const applyReplacements = (html: string): string => {
+      let out = html;
+      for (const [key, value] of Object.entries(replacements)) {
+        out = out.split(key).join(value);
+      }
+      return out;
     };
-    Object.entries(seiDims).forEach(([key, desc]) => {
-      y += addMultiLineText('• ' + desc, 15, y, 180, 5) + 5;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
+
+    try {
+      await loadHtml2Canvas();
+      const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      // Offscreen container to render pages
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.left = '-10000px';
+      container.style.top = '0';
+      container.style.width = `${pageWidth}px`;
+      container.style.background = '#ffffff';
+      document.body.appendChild(container);
+
+      const basePath = '/detailed/';
+      let firstPage = true;
+
+      for (const file of pageFiles) {
+        try {
+          const res = await fetch(basePath + file);
+          if (!res.ok) continue;
+          const rawHtml = await res.text();
+          const filledHtml = applyReplacements(rawHtml);
+
+          const pageDiv = document.createElement('div');
+          pageDiv.style.width = `${pageWidth}px`;
+          pageDiv.style.minHeight = `${pageHeight}px`;
+          pageDiv.innerHTML = filledHtml;
+          container.appendChild(pageDiv);
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const canvas = await (window as any).html2canvas(pageDiv, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+          const imgData = canvas.toDataURL('image/png');
+
+          // Fit image to page
+          const imgWidth = pageWidth;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+          if (!firstPage) {
+            pdf.addPage();
+          }
+          firstPage = false;
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+          container.removeChild(pageDiv);
+        } catch (e) {
+          // skip failed pages
+          // no-op
+        }
       }
-    });
 
-    // Page 10: SEI Scores
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    drawSpeechBubble('Your Score', 15, 20, 60, 20);
-    // Puzzle pieces
-    const puzzleColors = {
-      selfAwareness: [0, 255, 0],
-      selfManagement: [255, 255, 0],
-      socialAwareness: [255, 0, 0],
-      socialSkills: [255, 165, 0],
-    };
-    const puzzleX = 50;
-    const puzzleY = 50;
-    const puzzleWidth = 50;
-    const puzzleHeight = 30;
-    // Top left
-    doc.setFillColor(...puzzleColors.selfAwareness);
-    doc.roundedRect(puzzleX, puzzleY, puzzleWidth, puzzleHeight, 5, 5, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('Self Awareness', puzzleX + 5, puzzleY + 10);
-    doc.text(seiCategories.selfAwareness?.categoryScoreLevel ?? 'N/A', puzzleX + 5, puzzleY + 20);
-    doc.text(String(seiCategories.selfAwareness?.categoryScore ?? 0), puzzleX + 40, puzzleY + 20);
-    // Top right
-    doc.setFillColor(...puzzleColors.selfManagement);
-    doc.roundedRect(puzzleX + puzzleWidth, puzzleY, puzzleWidth, puzzleHeight, 5, 5, 'F');
-    doc.setTextColor(0, 0, 0);
-    doc.text('Self Management', puzzleX + puzzleWidth + 5, puzzleY + 10);
-    doc.text(seiCategories.selfManagement?.categoryScoreLevel ?? 'N/A', puzzleX + puzzleWidth + 5, puzzleY + 20);
-    doc.text(String(seiCategories.selfManagement?.categoryScore ?? 0), puzzleX + puzzleWidth + 40, puzzleY + 20);
-    // Bottom left
-    doc.setFillColor(...puzzleColors.socialAwareness);
-    doc.roundedRect(puzzleX, puzzleY + puzzleHeight, puzzleWidth, puzzleHeight, 5, 5, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('Social Awareness', puzzleX + 5, puzzleY + puzzleHeight + 10);
-    doc.text(seiCategories.socialAwareness?.categoryScoreLevel ?? 'N/A', puzzleX + 5, puzzleY + puzzleHeight + 20);
-    doc.text(String(seiCategories.socialAwareness?.categoryScore ?? 0), puzzleX + 40, puzzleY + puzzleHeight + 20);
-    // Bottom right
-    doc.setFillColor(...puzzleColors.socialSkills);
-    doc.roundedRect(puzzleX + puzzleWidth, puzzleY + puzzleHeight, puzzleWidth, puzzleHeight, 5, 5, 'F');
-    doc.setTextColor(0, 0, 0);
-    doc.text('Social Skills', puzzleX + puzzleWidth + 5, puzzleY + puzzleHeight + 10);
-    doc.text(seiCategories.socialSkills?.categoryScoreLevel ?? 'N/A', puzzleX + puzzleWidth + 5, puzzleY + puzzleHeight + 20);
-    doc.text(String(seiCategories.socialSkills?.categoryScore ?? 0), puzzleX + puzzleWidth + 40, puzzleY + puzzleHeight + 20);
-    doc.setTextColor(0, 0, 0);
-    y = puzzleY + 70;
-    const seiResult = 'This result looks at how well you understand and manage your emotions, connect with others, and navigate social interactions. It gives insight into your ability to build relationships, handle conflicts, and respond to social cues in everyday life.';
-    y += addMultiLineText(seiResult, 15, y, 180, 5) + 5;
-    drawSpeechBubble('What it means', 15, y, 80, 20);
-    y += 30;
-    Object.entries(seiCategories).forEach(([key, data]) => {
-      const template = seiWhatTemplates[key as keyof typeof seiWhatTemplates]?.[data?.categoryScoreLevel ?? 'Moderate'] ?? '';
-      const text = '• You have scored ' + String(data?.categoryScore ?? 0) + ' in ' + (data?.categoryDisplayText ?? 'N/A') + ' which is a ' + (data?.categoryScoreLevel ?? 'N/A') + ' score. ' + template;
-      y += addMultiLineText(text, 15, y, 180, 5) + 10;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
-      }
-    });
+      document.body.removeChild(container);
 
-    // Page 11: Adversity Intro
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    doc.setFillColor(0, 0, 255);
-    doc.roundedRect(15, 15, 20, 20, 10, 10, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('4', 20, 25);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(16);
-    doc.text('Adversity Quotient', 40, 25);
-    doc.setFontSize(12);
-    const advGeneral = 'Adversity Quotient (AQ) is a score that measures a person\'s ability to deal with challenges in life. It\'s also known as the science of resilience. This test uses four dimensions: Control, Ownership, Reach, and Endurance (CORE) to evaluate AQ. The average ARP Score is 147.5. The higher the better!';
-    y = 40;
-    y += addMultiLineText(advGeneral, 15, y, 180, 5) + 5;
-    const advDims = {
-      control: 'Control: This dimension measures how much influence you believe you have over a situation or adversity. People with a high sense of control tend to feel empowered to act, even in difficult circumstances. Conversely, those with low control may feel overwhelmed or helpless when faced with challenges.',
-      ownership: 'Ownership: Ownership assesses the extent to which people take responsibility for improving or resolving challenges. High ownership means holding themselves accountable for dealing with situations regardless of their cause. A low sense of ownership might lead to deflecting accountability, feeling victimized and helpless, and blaming external factors.',
-      reach: 'Reach: Reach evaluates how far you allow adversity to affect other areas of your life. High reach suggests that you can compartmentalize challenges and prevent them from spilling over into unrelated aspects of life. It means they can keep setbacks and challenges in their place, not let them infest the healthy areas of their work and lives. Low reach may result in difficulties in one area impacting overall mood, relationships, or productivity.',
-      endurance: 'Endurance: Endurance refers to your perception of how long adversity will last. High endurance is characterized by resilience and optimism, with the belief that challenges are temporary and solvable. Low endurance may involve feeling stuck or believing difficulties will persist indefinitely.',
-    };
-    Object.values(advDims).forEach(desc => {
-      y += addMultiLineText('• ' + desc, 15, y, 180, 5) + 5;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
-      }
-    });
-    doc.text('Your Adversity Response Profile (ARP) = ' + String(adversity.aqScore ?? 0), 15, y);
-    y += 5;
-    doc.text('Your AQ is ' + (adversity.aqLevel ?? 'N/A'), 15, y);
-    y += 10;
-
-    // Page 12: Adversity Scores
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    drawSpeechBubble('Your Score', 15, 20, 60, 20);
-    y = 50;
-    const advColors = [[0, 255, 0], [255, 165, 0], [165, 42, 42], [255, 255, 0]];
-    adversityBars.forEach((bar, index) => {
-      doc.setFillColor(200, 200, 200);
-      doc.rect(15, y, 80, 20, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.text(bar.name, 20, y + 12);
-      doc.setFillColor(...advColors[index]);
-      doc.rect(95, y, 30, 20, 'F');
-      doc.setTextColor(0, 0, 0);
-      doc.text(String(bar.score), 100, y + 12);
-      y += 25;
-    });
-    drawSpeechBubble('What it means', 15, y, 80, 20);
-    y += 30;
-    const advTemplate = adversityWhatTemplates[adversity.aqLevel as keyof typeof adversityWhatTemplates ?? 'Moderate'] ?? '';
-    addMultiLineText(advTemplate, 15, y, 180, 5);
-
-    // Page 13: Psychometric Intro
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    doc.setFillColor(0, 0, 255);
-    doc.roundedRect(15, 15, 20, 20, 10, 10, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.text('5', 20, 25);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(16);
-    doc.text('Psychometric Traits', 40, 25);
-    doc.setFontSize(12);
-    const psyGeneral = 'Psychometric tests help identify personality. Simplifying skills career quest uses Big Five model, also known as the Five Factor Model. This test delineates personality into five broad dimensions: openness, conscientiousness, extraversion, agreeableness, and neuroticism (OCEAN).';
-    y = 40;
-    y += addMultiLineText(psyGeneral, 15, y, 180, 5) + 5;
-    psychometricCategories.forEach(cat => {
-      const desc = '• ' + (psychometricDescriptions[cat] ?? 'No description');
-      y += addMultiLineText(desc, 15, y, 180, 5) + 5;
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        doc.setFillColor(240, 240, 255);
-        doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-        y = 20;
-      }
-    });
-
-    // Page 14: Psychometric Scores
-    doc.addPage();
-    doc.setFillColor(240, 240, 255);
-    doc.roundedRect(10, 10, 190, pageHeight - 20, 10, 10, 'F');
-    drawSpeechBubble('Your Score', 15, 20, 60, 20);
-    y = 50;
-    const psyColors = [[255, 0, 0], [0, 0, 255], [255, 255, 0], [0, 255, 0], [128, 0, 128]];
-    const barSpacing = 30;
-    barWidth = 20;
-    const baseY = y + 100;
-    psychometricBars.forEach((bar, index) => {
-      const barX = 20 + index * barSpacing;
-      doc.setFillColor(...psyColors[index]);
-      doc.rect(barX, baseY - bar.percentage, barWidth, bar.percentage, 'F');
-      doc.text(bar.name, barX, baseY + 10, { angle: 90 });
-      doc.text(bar.percentage.toFixed(0) + '%', barX + 5, baseY - bar.percentage - 5);
-    });
-
-    // Save PDF
-    doc.save(`SkillSphere_${(userInfo.name ?? 'User').toUpperCase().replace(' ', '_')}_${(attemptId ?? 'N/A').toUpperCase()}_Report.pdf`);
+      const fileName = `SkillSphere_${(userInfo.name ?? 'User').toUpperCase().replace(/\s+/g, '_')}_${(attemptId ?? 'N/A').toUpperCase()}_Report.pdf`;
+      pdf.save(fileName);
+    } catch (err) {
+      console.error('PDF generation failed', err);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
   if (loading) {
@@ -982,8 +902,15 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
             </button>
             <div className="flex space-x-3">
               <button 
-                onClick={handleDownloadPDF}
+                onClick={handleGenerateHTML}
                 className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download HTML
+              </button>
+              <button 
+                onClick={handleDownloadPDF}
+                className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Download PDF
@@ -1448,10 +1375,10 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Level Determination</h4>
                 <ul className="space-y-1 text-gray-700">
-                  <li>• <strong>Psychometric:</strong> High ≥17.5, Low &lt;17.5</li>
-                  <li>• <strong>Aptitude:</strong> High ≥77%, Moderate 24-76%, Low &lt;24%</li>
-                  <li>• <strong>AQ Score:</strong> High ≥178, Mod High ≥161, Moderate ≥135, Mod Low ≥118, Low &lt;118</li>
-                  <li>• <strong>SEI:</strong> High ≥8, Moderate 5-7, Low &lt;5 (normalized)</li>
+                  <li>• <strong>Psychometric:</strong> High ≥17.5, Low {'<'} 17.5</li>
+                  <li>• <strong>Aptitude:</strong> High ≥77%, Moderate 24-76%, Low {'<'} 24%</li>
+                  <li>• <strong>AQ Score:</strong> High ≥178, Mod High ≥161, Moderate ≥135, Mod Low ≥118, Low {'<'} 118</li>
+                  <li>• <strong>SEI:</strong> High ≥8, Moderate 5-7, Low {'<'} 5 (normalized)</li>
                   <li>• <strong>Career Rules:</strong> Based on top interest + aptitude + personality combination</li>
                 </ul>
               </div>
