@@ -11,6 +11,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 📌 Standard email/password login
   const handleLogin = async () => {
     if (!formData.email || !formData.password) {
       setError("Please fill in all fields");
@@ -72,27 +73,21 @@ export const PropertyLoginSubsection = (): JSX.Element => {
         const { data: profile, error: profileError } = await supabase
           .from("user_profiles")
           .select("user_type")
-          .eq("id", data.user.id) // auth UID = id in user_profiles
+          .eq("id", data.user.id)
           .single();
 
-          console.log("User data:", data.user);
-console.log("Profile data:", profile);
-
         if (profileError || !profile) {
-          console.error("Profile fetch error:", profileError);
-          navigate("/component/dashboard"); // fallback to student dashboard
+          navigate("/component/dashboard"); // fallback
           return;
         }
 
-
         if (profile.user_type === "teacher") {
-  navigate("/teacher/dashboard");
-} else if (profile.user_type === "parent") {
-  navigate("/parent/dashboard");
-} else {
-  navigate("/component/dashboard"); 
-}
-
+          navigate("/teacher/dashboard");
+        } else if (profile.user_type === "parent") {
+          navigate("/parent/dashboard");
+        } else {
+          navigate("/component/dashboard");
+        }
       }
     } catch {
       setError("An unexpected error occurred");
@@ -101,23 +96,41 @@ console.log("Profile data:", profile);
     }
   };
 
+  // 📌 Dynamic OAuth login
+  const handleOAuthLogin = async (provider: "google" | "apple" | "linkedin_oidc") => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin + "/auth/callback", // 👈 handle callback
+        },
+      });
+
+      if (error) {
+        console.error("OAuth error:", error.message);
+        setError("Failed to login with " + provider);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Unexpected error. Try again.");
+    }
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
-  <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
-    {/* Background Blur Circles */}
+    <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
+      {/* Background Blur Circles */}
+      <div className="absolute w-[900px] h-[900px] top-[-200px] left-[-200px] bg-[#007fff59] rounded-full blur-[200px] z-0" />
+      <div className="absolute w-[900px] h-[900px] bottom-[-200px] right-[-200px] bg-[#0011ff59] rounded-full blur-[200px] z-0" />
 
-    <div className="absolute w-[900px] h-[900px] top-[-200px] left-[-200px] bg-[#007fff59] rounded-full blur-[200px] z-0" />
-    <div className="absolute w-[900px] h-[900px] bottom-[-200px] right-[-200px] bg-[#0011ff59] rounded-full blur-[200px] z-0" />
-    {/* Main Wrapper */}
-    <div className="relative w-full max-w-8xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row shadow-xl  z-10 ">
-      
-      {/* Left Section - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12 relative z-10">
-        <Card className="w-full max-w-lg shadow-md rounded-3xl bg-white">
-          <CardContent className="p-8">
+      <div className="relative w-full max-w-8xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row shadow-xl z-10">
+        {/* Left Section - Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12 relative z-10">
+          <Card className="w-full max-w-lg shadow-md rounded-3xl bg-white">
+            <CardContent className="p-8">
               {/* Logo */}
               <div className="flex justify-center">
                 <img
@@ -194,6 +207,7 @@ console.log("Profile data:", profile);
               <div className="grid grid-cols-2 gap-4 mt-6">
                 <Button
                   variant="outline"
+                  onClick={() => handleOAuthLogin("google")}
                   className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
                 >
                   <img className="w-5 h-5" src="/google.png" alt="Google" />
@@ -201,6 +215,7 @@ console.log("Profile data:", profile);
                 </Button>
                 <Button
                   variant="outline"
+                  onClick={() => handleOAuthLogin("apple")}
                   className="h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
                 >
                   <img className="w-5 h-5" src="/apple.png" alt="Apple" />
@@ -208,6 +223,7 @@ console.log("Profile data:", profile);
                 </Button>
                 <Button
                   variant="outline"
+                  onClick={() => handleOAuthLogin("linkedin_oidc")}
                   className="col-span-2 h-[48px] rounded-xl border border-gray-300 hover:bg-gray-50 flex items-center justify-center gap-2"
                 >
                   <img className="w-5 h-5" src="/linkedin.png" alt="LinkedIn" />
@@ -237,7 +253,6 @@ console.log("Profile data:", profile);
             className="w-full h-full object-cover rounded-br-[30px] rounded-tr-[30px]"
           />
 
-          {/* Floating 3D Elements */}
           <img src="/bot.png" alt="bot" className="absolute top-[40%] right-[67%]" />
           <img src="/code.png" alt="code" className="absolute top-[45%] right-[43%]" />
           <img src="/messenger.png" alt="messenger" className="absolute top-[40%] right-[15%]" />

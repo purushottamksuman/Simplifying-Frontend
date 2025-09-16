@@ -31,6 +31,7 @@ import PropertyParentDashboard from "./screens/parent-flow/PropertyParentDashboa
 import PropertyTeacherDashboard from "./screens/teacher-flow/PropertyTeacherDashboard/PropertyTeacherDashboard";
 
 import QuestionManagementSystem from "./components/QuestionManagementSystem/QuestionManagementSystem";
+import { QuestionsList } from "./components/ExamResultComponents/components/QuestionsList";
 
 function App() {
   return (
@@ -97,6 +98,7 @@ function App() {
         {/* Admin Routes */}
         <Route path="/admin/exam-management" element={<AdminExamManagement />} />
         <Route path="/admin/create-assessment" element={<CreateAssessment />} />
+        <Route path="/admin/questions-list" element={<QuestionsList />} />
         <Route path="/admin/edit-assessment/:assessmentId" element={<CreateAssessment />} />
         <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
         <Route path="/exam/:examId" element={<ExamEnvironment />} />
