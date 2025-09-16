@@ -32,7 +32,7 @@ const navigationItems = [
   { icon: UserIcon, label: "Profile Settings", path: "profile" },
   { icon: FolderIcon, label: "My Course", path: "courses" },
   { icon: PresentationIcon, label: "Live Classes", path: "live" },
-  { icon: FileTextIcon, label: "SkillSphere Assessment", path: "questionManagementSystem" },
+  { icon: FileTextIcon, label: "SkillSphere Assessment", path: "questionManagementSystem", requiresPayment: true  },
   { icon: FileTextIcon, label: "Test & Assessment", path: "tests" },
   { icon: AwardIcon, label: "Certificates", path: "certificates" },
   { icon: TrophyIcon, label: "Leaderboard", path: "leaderboard" },
@@ -65,26 +65,34 @@ const activeNav = navigationItems.find(item =>
 
 
   // Authentication check
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { user, error } = await authHelpers.getCurrentUser();
-        if (error || !user) {
-          navigate("/login");
-          return;
-        }
-        setUser(user);
-        const name = user.email?.split("@")[0] || user.user_metadata?.full_name || "User";
-        setUserName(name);
-      } catch (err) {
-        console.error("❌ Auth check error:", err);
+useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      // 1️⃣ Get logged-in user
+      const { user, error } = await authHelpers.getCurrentUser();
+      if (error || !user) {
         navigate("/login");
-      } finally {
-        setLoading(false);
+        return;
       }
-    };
-    checkAuth();
-  }, [navigate]);
+
+      const { data: profile, error: profileError } = await authHelpers.getUserProfile(user.id); 
+      if (profileError || !profile) {
+        console.error("❌ Failed to fetch user profile:", profileError);
+      } else {
+        setUser({ ...user, ...profile }); // merge basic user + profile
+        const name = profile.full_name || user.email?.split("@")[0] || "User";
+        setUserName(name);
+      }
+    } catch (err) {
+      console.error("❌ Auth check error:", err);
+      navigate("/login");
+    } finally {
+      setLoading(false);
+    }
+  };
+  checkAuth();
+}, [navigate]);
+
 
   const handleLogout = async () => {
     try {
@@ -135,24 +143,33 @@ const activeNav = navigationItems.find(item =>
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto sidebar-scrollbar">
           <div className="flex flex-col gap-1">
-            {navigationItems.map((item, index) => (
-              <NavLink
-                key={index}
-                to={`/component/${item.path}`}
-                className={({ isActive }) =>
-                  `w-full justify-start gap-3 px-4 py-3 h-auto relative z-10 transition-all duration-200 rounded-2xl flex items-center ${
-                    isActive
-                      ? "bg-white text-[#3479ff] shadow-sm"
-                      : "text-white hover:bg-[#ffffff15]"
-                  } ${sidebarCollapsed ? "justify-center px-0" : "justify-start"}`
-                }
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && (
-                  <span className="font-medium text-sm truncate">{item.label}</span>
-                )}
-              </NavLink>
-            ))}
+            {navigationItems.map(item => {
+  const isLocked = item.requiresPayment && !user?.skillsphere_enabled;
+  return (
+<NavLink
+  key={item.path}
+  to={`/component/${item.path}`}
+  className={({ isActive }) =>
+    `w-full justify-start gap-3 px-4 py-3 h-auto relative z-10 transition-all duration-200 rounded-2xl flex items-center ${
+      isActive
+        ? "bg-white text-[#3479ff] shadow-sm"
+        : "text-white hover:bg-[#ffffff15]"
+    } ${sidebarCollapsed ? "justify-center px-0" : "justify-start"}`
+  }
+>
+  <item.icon className="w-5 h-5 flex-shrink-0" />
+  {!sidebarCollapsed && (
+    <span className="font-medium text-sm truncate">
+      {item.label} {item.requiresPayment && "🔒"}
+    </span>
+  )}
+</NavLink>
+
+  );
+})}
+
+
+
           </div>
         </nav>
 
