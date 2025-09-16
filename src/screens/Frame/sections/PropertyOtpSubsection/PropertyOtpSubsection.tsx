@@ -95,7 +95,7 @@ if (data?.user) {
     navigate("/login");
   } else {
     if (user_type === "student") {
-      navigate("/student/dashboard");
+      navigate("/component/dashboard");
     } else if (user_type === "teacher") {
       navigate("/teacher/dashboard");
     } else if (user_type === "parent") {

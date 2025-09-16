@@ -30,8 +30,6 @@ import { PropertyStudent3Subsection } from '../screens/Frame/sections/PropertySt
 import { PropertyRaiseSubsection } from '../screens/Frame/sections/PropertyRaiseSubsection/PropertyRaiseSubsection';
 import { PropertyLoginSubsection } from '../screens/Frame/sections/PropertyLoginSubsection/PropertyLoginSubsection';
 import { PropertyClubAndSubsection } from '../screens/Frame/sections/PropertyClubAndSubsection/PropertyClubAndSubsection';
-import { calculateAssessmentResult } from '../lib/assessment';
-import type { SubmissionPayload } from '../lib/assessment/types';
 
 const componentMap: Record<string, { component: React.ComponentType; name: string; description: string }> = {
   'dashboard': {
@@ -168,11 +166,6 @@ const componentMap: Record<string, { component: React.ComponentType; name: strin
 
 export const ComponentPage: React.FC = () => {
   const { componentName } = useParams<{ componentName: string }>();
-  // Dev-only: validate assessment import without UI side-effects
-  try {
-    const payload: SubmissionPayload = { version: 2, submissions: [], questions: [] };
-    calculateAssessmentResult(payload);
-  } catch {}
   
   if (!componentName || !componentMap[componentName]) {
     return (

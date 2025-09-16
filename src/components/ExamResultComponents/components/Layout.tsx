@@ -11,15 +11,15 @@ interface LayoutProps {
 export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
   const { user, signOut } = useAuth();
   
-  const navigation = [
-    { id: 'home', name: 'Home', icon: FileText },
-    { id: 'old-exam', name: 'Old Exam System', icon: BookOpen },
-    { id: 'report-methods', name: 'Report Methods', icon: BarChart3 },
-    { id: 'questions', name: 'Questions', icon: BookOpen },
-    { id: 'analytics', name: 'Analytics', icon: BarChart3 },
-    { id: 'test', name: 'DB Test', icon: Database },
-    { id: 'settings', name: 'Settings', icon: Settings },
-  ];
+  // const navigation = [
+  //   { id: 'home', name: 'Home', icon: FileText },
+  //   { id: 'old-exam', name: 'Old Exam System', icon: BookOpen },
+  //   { id: 'report-methods', name: 'Report Methods', icon: BarChart3 },
+  //   { id: 'questions', name: 'Questions', icon: BookOpen },
+  //   { id: 'analytics', name: 'Analytics', icon: BarChart3 },
+  //   { id: 'test', name: 'DB Test', icon: Database },
+  //   { id: 'settings', name: 'Settings', icon: Settings },
+  // ];
 
   const handleSignOut = async () => {
     if (window.confirm('Are you sure you want to sign out?')) {
@@ -29,7 +29,7 @@ export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
+      {/* <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -79,7 +79,7 @@ export const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">

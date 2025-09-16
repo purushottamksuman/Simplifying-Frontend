@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
@@ -12,6 +12,11 @@ import {
 } from "../../../../components/ui/select";
 import { authHelpers } from "../../../../lib/supabase";
 
+type Country = {
+  name: string;
+  code: string;
+};
+
 export const PropertyCommanSubsection = (): JSX.Element => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -22,8 +27,49 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     password: "",
     confirmPassword: "",
   });
+  const [countries, setCountries] = useState<{ name: string; code: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // 🔹 Fetch countries + dialing codes
+ useEffect(() => {
+  const fetchCountries = async () => {
+    try {
+      const res = await fetch("https://restcountries.com/v3.1/all?fields=name,idd");
+      if (!res.ok) {
+        throw new Error(`API Error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid response format");
+      }
+
+      const formatted = data
+        .map((c: any) => {
+          // Ensure idd and its properties exist
+          if (!c.idd || !c.idd.root || !c.idd.suffixes?.length) {
+            return null;
+          }
+          // build dial code, using the first suffix
+          const dialCode = `${c.idd.root}${c.idd.suffixes[0]}`;
+          return {
+            name: c.name.common,
+            code: dialCode,
+          };
+        })
+        .filter((c): c is { name: string; code: string } => c !== null)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      setCountries(formatted);
+    } catch (err) {
+      console.error("❌ Failed to fetch country codes:", err);
+    }
+  };
+
+  fetchCountries();
+}, []);
+
 
   const handleSignUp = async () => {
     console.log("🚀 Starting registration process...");
@@ -142,19 +188,32 @@ export const PropertyCommanSubsection = (): JSX.Element => {
                 />
 
                 {/* Phone */}
-                <div className="flex gap-2">
-                  <Input
-                    className="w-20 h-[53px] rounded-3xl border border-gray-300 text-center"
-                    value={formData.countryCode}
-                    onChange={(e) => handleInputChange("countryCode", e.target.value)}
-                  />
-                  <Input
-                    className="flex-1 h-[53px] rounded-3xl border border-gray-300 pl-4"
-                    placeholder="Phone Number"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    type="tel"
-                  />
+  <div className="flex gap-2">
+          <Select
+            onValueChange={(value) => handleInputChange("countryCode", value)}
+            value={formData.countryCode}
+          >
+            <SelectTrigger className="w-32 h-[53px] rounded-3xl border border-gray-300 pl-4">
+              <SelectValue placeholder="Code" />
+            </SelectTrigger>
+            <SelectContent className="max-h-60">
+  {countries.map((c) => (
+    <SelectItem key={`${c.name}-${c.code}`} value={c.code}>
+      {c.name} ({c.code})
+    </SelectItem>
+  ))}
+</SelectContent>
+
+          </Select>
+
+                  {/* Phone Number Input */}
+                     <Input
+            className="flex-1 h-[53px] rounded-3xl border border-gray-300 pl-4"
+            placeholder="Phone Number"
+            value={formData.phone}
+            onChange={(e) => handleInputChange("phone", e.target.value)}
+            type="tel"
+          />
                 </div>
 
                 {/* Password */}
