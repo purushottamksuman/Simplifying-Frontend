@@ -63,7 +63,7 @@ function App() {
         <Route path="/error" element={<SomethingWentWrong />} />
 
 
-        {/* Dashboard Layout */}
+        {/* Dashboard Layout ss */}
         <Route path="/component" element={<DashboardLayout />}>
           <Route path="dashboard" element={<PropertyDasboardSubsection />} />
           <Route path="courses" element={<PropertyMycourseSubsection />} />
