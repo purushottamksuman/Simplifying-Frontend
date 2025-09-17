@@ -102,7 +102,7 @@ export const ExamDetailsPage: React.FC = () => {
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/component/login');
+        navigate('/login');
         return;
       }
 
