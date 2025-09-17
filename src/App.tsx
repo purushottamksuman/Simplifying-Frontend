@@ -104,7 +104,8 @@ function App() {
         <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
         <Route path="/exam/:examId" element={<ExamEnvironment />} />
       </Routes>
-    </Router> <style jsx>{`
+    </Router> 
+    <style jsx>{`
         /* Remove horizontal scrollbar */
         .sidebar-scrollbar {
           overflow-x: hidden;

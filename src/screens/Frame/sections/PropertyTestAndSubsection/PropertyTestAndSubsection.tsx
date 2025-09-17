@@ -250,7 +250,7 @@ const PropertyTestAndSubsection = (): JSX.Element => {
                           handleExamPayment(exam);
                         }
                       }}
-                      disabled
+                      // disabled
                       // disabled={paymentLoading}
                       className={`w-full mt-4 ${
                         isPurchased
