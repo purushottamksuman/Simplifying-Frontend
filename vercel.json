@@ -1,16 +1,9 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "redirects": [
-    {
+  "rewrites":  [
+     {
       "source": "/:path(.*)//+:rest(.*)",
       "destination": "/:path/:rest",
       "permanent": true
     }
-  ],
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/index.html" }
   ]
 }
-
