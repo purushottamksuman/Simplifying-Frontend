@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { HomePg } from "./pages/HomePg";
 import { AdminExamManagement } from "./pages/AdminExamManagement";
@@ -29,15 +29,31 @@ import { SomethingWentWrong } from "./screens/Frame/sections/SomethingWentWrong/
 import ParentLayout from "./layouts/ParentLayout";
 import PropertyParentDashboard from "./screens/parent-flow/PropertyParentDashboard/PropertyParentDashboard";
 import PropertyTeacherDashboard from "./screens/teacher-flow/PropertyTeacherDashboard/PropertyTeacherDashboard";
+import { useEffect } from "react";
 
 import QuestionManagementSystem from "./components/QuestionManagementSystem/QuestionManagementSystem";
 import { QuestionsList } from "./components/ExamResultComponents/components/QuestionsList";
 import { QuestionsListWrapper } from "./components/ExamResultComponents/components/QuestionsListWrapper";
 
+function RouteNormalizer() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const normalizedPath = location.pathname.replace(/\/{2,}/g, "/");
+    if (normalizedPath !== location.pathname) {
+      navigate({ pathname: normalizedPath, search: location.search }, { replace: true });
+    }
+  }, [location.pathname, location.search, navigate]);
+
+  return null;
+}
+
 function App() {
   return (
     <div>
     <Router>
+      <RouteNormalizer />
       <Routes>
         <Route path="/" element={<HomePg />} />
         <Route path="/admin" element={<HomePage />} />
