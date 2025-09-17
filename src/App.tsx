@@ -97,7 +97,7 @@ function App() {
 
 
 
-        {/* Admin Routes */}
+        {/* Admin Routes here*/}
         <Route path="/admin/exam-management" element={<AdminExamManagement />} />
         <Route path="/admin/create-assessment" element={<CreateAssessment />} />
         <Route
