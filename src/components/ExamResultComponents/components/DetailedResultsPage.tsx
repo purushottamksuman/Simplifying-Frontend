@@ -731,6 +731,13 @@ Your results highlight key
       '{{detailedReport.student?.emailAddress}}': user.email ?? 'N/A',
       '{{detailedReport.student?.details?.contactNumber}}': userInfo.phone ?? 'N/A',
       '{{detailedReport.adversityScore.aqScore}}': String(detailedResults.adversityScore?.aqScore ?? ''),
+      '{{detailedReport.adversityScore.resultInterpretation}}': String(detailedResults.adversityScore?.resultInterpretation ?? ''),
+      // Career mapping placeholders (if present in templates)
+      '{{careerMapping.clubToJoin}}': String(detailedResults.careerMapping?.clubToJoin ?? ''),
+      '{{careerMapping.tagLine}}': String(detailedResults.careerMapping?.tagLine ?? ''),
+      '{{careerMapping.topLine}}': String(detailedResults.careerMapping?.topLine ?? ''),
+      '{{careerMapping.idealCareer}}': String(detailedResults.careerMapping?.idealCareer ?? ''),
+      '{{careerMapping.idealFor}}': String(detailedResults.careerMapping?.idealFor ?? ''),
     };
 
     // Top Aptitude (first three)
@@ -742,11 +749,19 @@ Your results highlight key
       }
     }
 
+    // Single token used on page 15 header
+    const topAptiCategoryWiseScoresDisplay = aptiCategoryWiseScores.slice(0, 3)
+      .map((e: any) => e?.scoreObject?.categoryDisplayText)
+      .filter(Boolean)
+      .join(',');
+    replacements['{{topAptiCategoryWiseScoresDisplay}}'] = topAptiCategoryWiseScoresDisplay;
+
     // Top Interests (first three names)
     for (let i = 0; i < 3; i++) {
       const item = interestAndPreferenceScore[i]?.scoreObject;
       if (item) {
         replacements[`{{interestAndPreferenceScore[${i}].scoreObject.categoryDisplayText}}`] = String(item.categoryDisplayText ?? '');
+        replacements[`{{interestAndPreferenceScore[${i}].scoreObject.categoryLetter}}`] = String(item.categoryLetter ?? '');
       }
     }
 
@@ -756,7 +771,19 @@ Your results highlight key
       if (item) {
         replacements[`{{seiScore[${i}].scoreObject.categoryDisplayText}}`] = String(item.categoryDisplayText ?? '');
         replacements[`{{seiScore[${i}].scoreObject.categoryScore}}`] = String(item.categoryScore ?? '');
+        replacements[`{{seiScore[${i}].scoreObject.categoryScoreLevel}}`] = String(item.categoryScoreLevel ?? '');
       }
+    }
+
+    // Adversity (aqScore array placeholders)
+    const adversityCategoriesOrdered = ['control', 'ownership', 'reach', 'endurance'] as const;
+    const aqScore = adversityCategoriesOrdered.map((key) => {
+      const obj = detailedResults.adversityScore.categoryWiseScore?.[key] || { categoryScore: 0, categoryScoreLevel: '' };
+      return { scoreObject: obj };
+    });
+    for (let i = 0; i < aqScore.length; i++) {
+      replacements[`{{aqScore[${i}].scoreObject.categoryScore}}`] = String(aqScore[i].scoreObject.categoryScore ?? '');
+      replacements[`{{aqScore[${i}].scoreObject.categoryScoreLevel}}`] = String(aqScore[i].scoreObject.categoryScoreLevel ?? '');
     }
 
     // Optional placeholders that appeared without moustache in some pages
@@ -774,6 +801,107 @@ Your results highlight key
       for (const [key, value] of Object.entries(replacements)) {
         out = out.split(key).join(value);
       }
+
+      // Expand aptitude interpretation loop (@for ...)
+      const aptiLoopMatch = out.match(/@for \(item of aptiCategoryWiseScores[\s\S]*?\{([\s\S]*?)\}/);
+      if (aptiLoopMatch) {
+        const listHtml = aptiCategoryWiseScores.map((entry: any) => {
+          const so = entry.scoreObject;
+          return `<ul><li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;">You have scored ${so.categoryPercentage} in ${so.categoryDisplayText} which is a ${so.categoryScoreLevel} score</span><p>${so.categoryInterpretation ?? ''}</p></li></ul>`;
+        }).join('');
+        out = out.replace(/@for \(item of aptiCategoryWiseScores[\s\S]*?\{[\s\S]*?\}/, listHtml);
+      }
+
+      // Expand SEI list (*ngFor over seiScore)
+      out = out.replace(/<li\s+\*ngFor="let item of seiScore;[\s\S]*?<\/li>/g, () => {
+        return seiScore.map((entry: any) => {
+          const so = entry.scoreObject;
+          return `<li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;">${so.categoryScoreLevel} score in ${so.categoryDisplayText}</span><p>${so.categoryInterpretation ?? ''}</p></li>`;
+        }).join('');
+      });
+
+      // Replace interest top-3 *ngFor block
+      out = out.replace(/<li\s+\*ngFor="let item of interestAndPreferenceScore\.slice\(0,3\);[\s\S]*?<\/li>/g,
+        () => {
+          const items = interestAndPreferenceScore.slice(0, 3).map((entry: any) => {
+            const so = entry.scoreObject;
+            return `<li><span style=\"font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;\">${so.categoryLetter} - ${so.categoryDisplayText}</span><p>${so.categoryInterpretation ?? ''}</p></li>`;
+          }).join('');
+          return items;
+        });
+
+      // Inject aptitude "Your Score" dynamic bar graph for page 5 if absolute-text is empty
+      if (/<text[^>]*>Your Score<\/text>[\s\S]*?Spelling:/i.test(out) && /<div class="absolute-text">\s*<\/div>/.test(out)) {
+        const maxPct = Math.max(1, ...aptiCategoryWiseScores.map((e: any) => Number(e.scoreObject.categoryPercentage) || 0));
+        const colors = ['#22D3EE','#34AFC5','#1F76A8','#2F5B8F','#343C6E','#5A3B63','#7A4A63'];
+        const graph = `
+          <style>
+            .apti-graph{font-family:Arial, sans-serif; max-width:640px;}
+            .apti-row{display:flex; align-items:center; gap:12px; margin:8px 0;}
+            .apti-label{width:200px; color:#1F2937; font-size:12px}
+            .apti-bar-wrap{flex:1; background:#E5E7EB; height:18px; border-radius:4px; overflow:hidden}
+            .apti-bar{height:100%; border-radius:4px}
+            .apti-pct{width:60px; text-align:right; font-size:12px; color:#111827}
+          </style>
+          <div class="apti-graph">
+            ${aptiCategoryWiseScores.map((e: any, idx: number) => {
+              const pct = Math.max(0, Math.min(100, Number(e.scoreObject.categoryPercentage) || 0));
+              const width = (pct / maxPct) * 100;
+              const color = colors[idx % colors.length];
+              const label = e.scoreObject.categoryDisplayText || e.category;
+              return `<div class=\"apti-row\"><div class=\"apti-label\">${label}</div><div class=\"apti-bar-wrap\"><div class=\"apti-bar\" style=\"width:${width}%;background:${color}\"></div></div><div class=\"apti-pct\">${pct.toFixed(2)}%</div></div>`;
+            }).join('')}
+          </div>`;
+        out = out.replace(/<div class="absolute-text">\s*<\/div>/, `<div class="absolute-text">${graph}</div>`);
+      }
+
+      // Inject psychometric "Your Score" summary for page 13 if absolute-text is empty
+      if (/Psychometric traits/i.test(out) && /<text[^>]*>Your Score<\/text>/.test(out) && /<div class="absolute-text">\s*<\/div>/.test(out)) {
+        const psyItems = Object.entries(detailedResults.detailedPsychometricScore.categoryWiseScore)
+          .map(([category, so]: any) => ({ category, scoreObject: so }))
+          .sort((a: any, b: any) => a.scoreObject.categoryOrder - b.scoreObject.categoryOrder || b.scoreObject.categoryScore - a.scoreObject.categoryScore);
+        const summary = `<ul>${psyItems.map((e: any) => `<li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight:600;">${e.scoreObject.categoryDisplayText ?? e.category}</span> - ${e.scoreObject.categoryScore} (${e.scoreObject.categoryScoreLevel})</li>`).join('')}</ul>`;
+        out = out.replace(/<div class="absolute-text">\s*<\/div>/, `<div class="absolute-text">${summary}</div>`);
+      }
+
+      // Inject career recommendations list if "$CAREER_LIST" token exists
+      if (out.includes('$CAREER_LIST') && detailedResults.careerMapping?.idealCareer) {
+        const careers = String(detailedResults.careerMapping.idealCareer)
+          .split(',')
+          .map(c => c.trim())
+          .filter(Boolean)
+          .map(c => `<li>${c}</li>`) 
+          .join('');
+        out = out.replace(/\$CAREER_LIST/g, `<ul>${careers}</ul>`);
+      }
+
+      // If it's the Career Recommendations page, inject career block even if *ngIf exists
+      if (/(Career Recommendation|Career recommendations|Recommended Career Paths|Potential Career Roles)/i.test(out)) {
+        const careers = String(detailedResults.careerMapping?.idealCareer || '')
+          .split(',')
+          .map(c => c.trim())
+          .filter(Boolean)
+          .map(c => `<li>${c}</li>`) 
+          .join('');
+        const club = String(detailedResults.careerMapping?.clubToJoin || '');
+        const tag = String(detailedResults.careerMapping?.tagLine || '');
+        const topLine = String(detailedResults.careerMapping?.topLine || '');
+        const idealFor = String(detailedResults.careerMapping?.idealFor || '');
+        const careerHtml = `
+          <div>
+            ${topLine ? `<p style="margin-bottom:8px;">${topLine}</p>` : ''}
+            ${club ? `<h3 style="font-weight:700; color:#1f2937;">${club}</h3>` : ''}
+            ${tag ? `<p style="color:#4b5563;">${tag}</p>` : ''}
+            ${idealFor ? `<p style="margin:8px 0;"><strong>Ideal for:</strong> ${idealFor}</p>` : ''}
+            ${careers ? `<h4 style="margin-top:8px;">Recommended Careers</h4><ul>${careers}</ul>` : ''}
+          </div>
+        `;
+        // Replace Angular *ngIf block
+        out = out.replace(/<div\s+\*ngIf=\"careerMapping\"\s+class=\"absolute-text\">[\s\S]*?<\/div>/, `<div class=\"absolute-text\">${careerHtml}</div>`);
+        // Or fill empty absolute-text
+        out = out.replace(/<div class=\"absolute-text\">\s*<\/div>/, `<div class=\"absolute-text\">${careerHtml}</div>`);
+      }
+
       return out;
     };
 

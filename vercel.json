@@ -1,3 +1,15 @@
 {
-  "rewrites": [{ "source": "/:path*", "destination": "/index.html" }]
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/:path(.*)//+:rest(.*)",
+      "destination": "/:path/:rest",
+      "permanent": true
+    }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
+  ]
 }
