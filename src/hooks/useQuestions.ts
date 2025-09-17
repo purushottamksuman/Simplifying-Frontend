@@ -75,6 +75,7 @@ export const useQuestions = () => {
       await fetchQuestions();
       return questionResult;
     } catch (err) {
+      console.log('Error creating question:', err);
       throw err instanceof Error ? err : new Error('Failed to create question');
     }
   };

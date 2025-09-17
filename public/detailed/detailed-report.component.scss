@@ -1,0 +1,27 @@
+.a4-size {
+    width: 100%;
+    max-width: 793px; // A4 width in pixels
+    margin: 0 auto;
+    background: #fff;
+}
+
+.page-break {
+    page-break-after: always;
+    height: 1px;
+    background-color: lightgrey;
+}
+
+@media print {
+    .a4-size {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-break {
+        display: block;
+        height: 0;
+        page-break-after: always;
+    }
+}

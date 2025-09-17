@@ -1,0 +1,22 @@
+.svg-container {
+    position: relative;
+  }
+  
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  text {
+    white-space: pre;
+  }
+  
+  .absolute-text {
+    position: absolute;
+    top: 62%;
+    left: 0;
+    padding: 2%;
+    margin: 2%;
+    font-size: 1.15em;
+    font-weight: 400;
+  }
