@@ -1,9 +1,5 @@
 {
-  "redirects": [
-    {
-      "source": "/((?!api|.*\\..*).*)",
-      "destination": "/index.html",
-      "permanent": false
-    }
+  "rewrites":  [
+    {"source": "/(.*)", "destination": "/"}
   ]
 }
