@@ -9,8 +9,48 @@ export const PropertyLoginSubsection = (): JSX.Element => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState(""); // ✅ success message for reset
+
+// 📌 Forgot Password (OTP Based)
+const handleForgotPassword = async () => {
+  if (!formData.email) {
+    setError("Please enter your email first.");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+  setMessage("");
+
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email: formData.email,
+      options: {
+        shouldCreateUser: false, 
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      // Save info for OTP page
+      localStorage.setItem(
+        "pendingUser",
+        JSON.stringify({ email: formData.email, isPasswordReset: true })
+      );
+
+      // 🚀 Redirect to OTP page immediately
+      navigate("/otp");
+    }
+  } catch (err) {
+    setError("Something went wrong. Try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 📌 Standard email/password login
   const handleLogin = async () => {
@@ -21,6 +61,7 @@ const [showPassword, setShowPassword] = useState(false);
 
     setLoading(true);
     setError("");
+    setMessage("");
 
     try {
       const { data, error } = await authHelpers.signIn(
@@ -60,7 +101,6 @@ const [showPassword, setShowPassword] = useState(false);
       }
 
       if (data.user) {
-        // Save user in localStorage
         localStorage.setItem(
           "currentUser",
           JSON.stringify({
@@ -70,7 +110,6 @@ const [showPassword, setShowPassword] = useState(false);
           })
         );
 
-        // Fetch role from user_profiles
         const { data: profile, error: profileError } = await supabase
           .from("user_profiles")
           .select("user_type")
@@ -78,7 +117,7 @@ const [showPassword, setShowPassword] = useState(false);
           .single();
 
         if (profileError || !profile) {
-          navigate("/component/dashboard"); // fallback
+          navigate("/component/dashboard");
           return;
         }
 
@@ -94,26 +133,6 @@ const [showPassword, setShowPassword] = useState(false);
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // 📌 Dynamic OAuth login
-  const handleOAuthLogin = async (provider: "google" | "apple" | "linkedin_oidc") => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: window.location.origin + "/auth/callback", // 👈 handle callback
-        },
-      });
-
-      if (error) {
-        console.error("OAuth error:", error.message);
-        setError("Failed to login with " + provider);
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Unexpected error. Try again.");
     }
   };
 
@@ -142,7 +161,9 @@ const [showPassword, setShowPassword] = useState(false);
               </div>
 
               {/* Title */}
-              <h1 className="mt-4 text-3xl font-bold text-center text-[#0062ff]">Login</h1>
+              <h1 className="mt-4 text-3xl font-bold text-center text-[#0062ff]">
+                Login
+              </h1>
               <p className="mt-2 text-center text-gray-700 text-sm">
                 Log in to your personal account <br /> and begin your journey with us!
               </p>
@@ -158,37 +179,41 @@ const [showPassword, setShowPassword] = useState(false);
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     type="email"
                   />
-                  <div className="absolute top-[15px] right-4 text-gray-500 text-sm">@gmail.com</div>
+                  <div className="absolute top-[15px] right-4 text-gray-500 text-sm">
+                    @gmail.com
+                  </div>
                 </div>
 
                 {/* Password */}
-
-<div className="relative">
-  <Input
-    type={showPassword ? "text" : "password"} 
-    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-10 font-roboto text-sm"
-    placeholder="Password"
-    value={formData.password}
-    onChange={(e) => handleInputChange("password", e.target.value)}
-  />
-  <img
-    className="absolute w-[19px] h-[18px] top-[18px] right-[20px] cursor-pointer"
-    alt="password toggle"
-    src={showPassword ? "/eyes.png" : "/eyes.png"} 
-    onClick={() => setShowPassword((prev) => !prev)}
-  />
-</div>
-
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-10 font-roboto text-sm"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange("password", e.target.value)}
+                  />
+                  <img
+                    className="absolute w-[19px] h-[18px] top-[18px] right-[20px] cursor-pointer"
+                    alt="password toggle"
+                    src="/eyes.png"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  />
+                </div>
 
                 {/* Forgot Password */}
                 <div className="text-right">
-                  <button className="text-xs text-gray-500 hover:text-[#0062ff]">
+                  <button
+                    onClick={handleForgotPassword}
+                    className="text-xs text-gray-500 hover:text-[#0062ff]"
+                  >
                     Forgot Password?
                   </button>
                 </div>
 
-                {/* Error */}
+                {/* Error / Success */}
                 {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+                {message && <div className="text-green-500 text-sm text-center">{message}</div>}
 
                 {/* Login Button */}
                 <Button
@@ -196,7 +221,7 @@ const [showPassword, setShowPassword] = useState(false);
                   disabled={loading}
                   className="w-full h-[50px] bg-[#007fff] hover:bg-[#0066cc] rounded-3xl text-white font-semibold text-lg"
                 >
-                  {loading ? "Logging In..." : "Log In"}
+                  {loading ? "Processing..." : "Log In"}
                 </Button>
               </div>
 

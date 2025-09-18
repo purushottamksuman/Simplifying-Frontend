@@ -37,6 +37,7 @@ import { QuestionsListWrapper } from "./components/ExamResultComponents/componen
 import { DivWrapperSubsection } from "./screens/parent-flow/DivWrapperSubsection/DivWrapperSubsection";
 import { TeacherDoubtsSolve } from "./screens/teacher-flow/TeacherDoubtsSolve";
 import PropertyFeedback from "./screens/parent-flow/PropertyFeedback/PropertyFeedback";
+import ResetPassword from "./screens/Frame/sections/PropertyOtpSubsection/ResetPassword";
 
 function RouteNormalizer() {
   const location = useLocation();
@@ -63,6 +64,7 @@ function App() {
           <Route path="signup" element={<PropertyCommanSubsection />} />
         <Route path="/login" element={<PropertyLoginSubsection />} />
         <Route path="/otp" element={<PropertyOtpSubsection />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/error" element={<SomethingWentWrong />} />
 
 

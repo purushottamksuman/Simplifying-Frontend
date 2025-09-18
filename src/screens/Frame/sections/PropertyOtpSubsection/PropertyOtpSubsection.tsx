@@ -49,68 +49,75 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   }, [navigate]);
 
   const handleSubmit = async () => {
-    if (otp.length !== 6) {
-      setError("Please enter a valid 6-digit OTP");
+  if (otp.length !== 6) {
+    setError("Please enter a valid 6-digit OTP");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+  setSuccessMessage("");
+
+  try {
+    const pendingUser = localStorage.getItem("pendingUser");
+    const userData = pendingUser ? JSON.parse(pendingUser) : null;
+
+    if (!userData) {
+      setError("Session expired. Please start over.");
+      navigate("/login");
       return;
     }
 
-    setLoading(true);
-    setError("");
-    setSuccessMessage("");
+    // 👇 choose type dynamically
+    const flowType = userData.isPasswordReset ? "recovery" : "signup";
 
-    try {
-      const pendingUser = localStorage.getItem("pendingUser");
-      const userData = pendingUser ? JSON.parse(pendingUser) : null;
+    const { data, error } = await authHelpers.verifyOTP(userEmail, otp, flowType);
 
-      if (!userData) {
-        setError("Session expired. Please start over.");
-        navigate("/login");
+    if (error) {
+      setError("Invalid or expired OTP. Please try again.");
+      return;
+    }
+
+    if (data?.user) {
+      if (userData.isPasswordReset) {
+        // ✅ redirect to reset-password page
+        navigate("/reset-password");
         return;
       }
 
-      const { data, error } = await authHelpers.verifyOTP(
-  userEmail,
-  otp,
-  "signup"
-);
+      // ✅ Normal login/signup flow
+      const user_type = data.user.user_metadata?.user_type;
 
-if (error) {
-  setError("Invalid or expired OTP. Please try again.");
-  return;
-}
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          user_metadata: data.user.user_metadata,
+        })
+      );
 
-if (data?.user) {
-  const user_type = data.user.user_metadata?.user_type;
-
-  localStorage.setItem(
-    "currentUser",
-    JSON.stringify({
-      id: data.user.id,
-      email: data.user.email,
-      user_metadata: data.user.user_metadata,
-    })
-  );
-
-  if (isLoginFlow) {
-    navigate("/login");
-  } else {
-    if (user_type === "student") {
-      navigate("/component/dashboard");
-    } else if (user_type === "teacher") {
-      navigate("/teacher/dashboard");
-    } else if (user_type === "parent") {
-      navigate("/parent/dashboard");
-    } else {
-      navigate("/component/dashboard"); // fallback
+      if (isLoginFlow) {
+        navigate("/login");
+      } else {
+        if (user_type === "student") {
+          navigate("/component/dashboard");
+        } else if (user_type === "teacher") {
+          navigate("/teacher/dashboard");
+        } else if (user_type === "parent") {
+          navigate("/parent/dashboard");
+        } else {
+          navigate("/component/dashboard"); // fallback
+        }
+      }
     }
+  } catch (err) {
+    setError("Failed to verify OTP. Please try again.");
+  } finally {
+    setLoading(false);
   }
-} 
-}catch (err) {
-      setError("Failed to verify OTP. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+};
+
 
   const handleResend = async () => {
     if (!canResend) return;
