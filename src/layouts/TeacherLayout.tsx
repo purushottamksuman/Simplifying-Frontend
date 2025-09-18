@@ -9,6 +9,8 @@ import {
   HelpCircleIcon,
   HomeIcon,
   LockIcon,
+  UploadIcon,
+  BarChartIcon,
   LogOutIcon,
   MenuIcon,
   PresentationIcon,
@@ -27,17 +29,19 @@ import { Input } from "../components/ui/input";
 import { authHelpers } from "../lib/supabase";
 
 const teacherNavigationItems = [
-  { icon: HomeIcon, label: "Teacher Dashboard", path: "dashboard" },
+  { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
   { icon: UserIcon, label: "Profile Settings", path: "profile" },
   { icon: FolderIcon, label: "My Course", path: "courses" },
-  { icon: PresentationIcon, label: "Live Classes", path: "live" },
-  { icon: FileTextIcon, label: "Test & Assessment", path: "tests" },
-  { icon: AwardIcon, label: "Certificates", path: "certificates" },
-  { icon: TrophyIcon, label: "Leaderboard", path: "leaderboard" },
-  { icon: GiftIcon, label: "Badges & Rewards", path: "rewards" },
+  { icon: UploadIcon, label: "Upload Content", path: "upload" },
+  { icon: PresentationIcon, label: "Live Classes Scheduler", path: "live" },
+  { icon: FileTextIcon, label: "Test & Assessment Manager", path: "tests" },
+  { icon: AwardIcon, label: "FDP & Certificates", path: "certificates" },
+  { icon: BarChartIcon, label: "Student Performance", path: "performance" },
+  { icon: TrophyIcon, label: "Badges & Rewards", path: "rewards" },
   { icon: UsersIcon, label: "Clubs & Community", path: "clubs" },
-  { icon: HelpCircleIcon, label: "Raise a Doubt", path: "doubts" },
-  { icon: UserPlusIcon, label: "Referrals Program", path: "referrals" },
+  { icon: UsersIcon, label: "Referrals Program", path: "clubs" },
+  { icon: BellIcon, label: "Notifications", path: "notifications" },
+  { icon: LogOutIcon, label: "Log Out", path: "logout" },
 ];
 
 

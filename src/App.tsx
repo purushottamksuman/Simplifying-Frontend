@@ -34,6 +34,7 @@ import { useEffect } from "react";
 import QuestionManagementSystem from "./components/QuestionManagementSystem/QuestionManagementSystem";
 import { QuestionsList } from "./components/ExamResultComponents/components/QuestionsList";
 import { QuestionsListWrapper } from "./components/ExamResultComponents/components/QuestionsListWrapper";
+import { DivWrapperSubsection } from "./screens/parent-flow/DivWrapperSubsection/DivWrapperSubsection";
 
 function RouteNormalizer() {
   const location = useLocation();
@@ -103,7 +104,7 @@ function App() {
   <Route path="live" element={<PropertyLiveSubsection />} />
   <Route path="tests" element={<PropertyTestAndSubsection />} />
   <Route path="clubs" element={<PropertyClubAndSubsection />} />
-  <Route path="profile" element={<ParentLayout />} />
+  <Route path="profile" element={<DivWrapperSubsection />} />
   <Route path="certificates" element={<PropertyWrapperSubsection />} />
   <Route path="leaderboard" element={<PropertySubsection />} />
   <Route path="rewards" element={<PropertyRewardSubsection />} />
