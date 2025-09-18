@@ -35,6 +35,8 @@ import QuestionManagementSystem from "./components/QuestionManagementSystem/Ques
 import { QuestionsList } from "./components/ExamResultComponents/components/QuestionsList";
 import { QuestionsListWrapper } from "./components/ExamResultComponents/components/QuestionsListWrapper";
 import { DivWrapperSubsection } from "./screens/parent-flow/DivWrapperSubsection/DivWrapperSubsection";
+import { TeacherDoubtsSolve } from "./screens/teacher-flow/TeacherDoubtsSolve";
+import PropertyFeedback from "./screens/parent-flow/PropertyFeedback/PropertyFeedback";
 
 function RouteNormalizer() {
   const location = useLocation();
@@ -103,7 +105,7 @@ function App() {
   <Route path="courses" element={<PropertyMycourseSubsection />} />
   <Route path="live" element={<PropertyLiveSubsection />} />
   <Route path="tests" element={<PropertyTestAndSubsection />} />
-  <Route path="clubs" element={<PropertyClubAndSubsection />} />
+  <Route path="clubs" element={<PropertyFeedback />} />
   <Route path="profile" element={<DivWrapperSubsection />} />
   <Route path="certificates" element={<PropertyWrapperSubsection />} />
   <Route path="leaderboard" element={<PropertySubsection />} />
@@ -124,8 +126,10 @@ function App() {
           }
         />
         <Route path="/admin/edit-assessment/:assessmentId" element={<CreateAssessment />} />
+        <Route path="/admin/doubt-solve" element={<TeacherDoubtsSolve />} />
         <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
         <Route path="/exam/:examId" element={<ExamEnvironment />} />
+
       </Routes>
     </Router> 
     <style jsx>{`

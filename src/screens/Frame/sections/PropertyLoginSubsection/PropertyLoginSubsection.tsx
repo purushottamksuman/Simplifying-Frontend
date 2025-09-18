@@ -9,6 +9,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   // 📌 Standard email/password login
@@ -161,20 +162,23 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                 </div>
 
                 {/* Password */}
-                <div className="relative">
-                  <Input
-                    type="password"
-                    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-10 font-roboto text-sm"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                  />
-                  <img
-                    className="absolute w-[19px] h-[18px] top-[18px] right-[20px]"
-                    alt="password icon"
-                    src="/eyes.png"
-                  />
-                </div>
+
+<div className="relative">
+  <Input
+    type={showPassword ? "text" : "password"} 
+    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-10 font-roboto text-sm"
+    placeholder="Password"
+    value={formData.password}
+    onChange={(e) => handleInputChange("password", e.target.value)}
+  />
+  <img
+    className="absolute w-[19px] h-[18px] top-[18px] right-[20px] cursor-pointer"
+    alt="password toggle"
+    src={showPassword ? "/eyes.png" : "/eyes.png"} 
+    onClick={() => setShowPassword((prev) => !prev)}
+  />
+</div>
+
 
                 {/* Forgot Password */}
                 <div className="text-right">

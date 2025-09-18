@@ -161,8 +161,8 @@ const PropertyTestAndSubsection = (): JSX.Element => {
 
   if (loading) {
     return (
-      <div className="flex w-full h-screen bg-[#3479ff] items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="flex w-full h-screen items-center justify-center">
+        <div className="text-sm">Loading...</div>
       </div>
     );
   }
