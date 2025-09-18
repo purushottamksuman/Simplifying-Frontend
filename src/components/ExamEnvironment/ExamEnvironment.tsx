@@ -137,7 +137,7 @@ export const ExamEnvironment: React.FC = () => {
       // Check if user has purchased this exam
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/component/login');
+        navigate('/login');
         return;
       }
 
