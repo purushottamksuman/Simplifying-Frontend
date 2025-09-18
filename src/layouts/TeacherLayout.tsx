@@ -5,8 +5,6 @@ import {
   BellIcon,
   FileTextIcon,
   FolderIcon,
-  GiftIcon,
-  HelpCircleIcon,
   HomeIcon,
   LockIcon,
   UploadIcon,
@@ -31,7 +29,7 @@ import { authHelpers } from "../lib/supabase";
 const teacherNavigationItems = [
   { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
   { icon: UserIcon, label: "Profile Settings", path: "profile" },
-  { icon: FolderIcon, label: "My Course", path: "courses" },
+  { icon: FolderIcon, label: "My Students", path: "courses" },
   { icon: UploadIcon, label: "Upload Content", path: "upload" },
   { icon: PresentationIcon, label: "Live Classes Scheduler", path: "live" },
   { icon: FileTextIcon, label: "Test & Assessment Manager", path: "tests" },
@@ -41,7 +39,6 @@ const teacherNavigationItems = [
   { icon: UsersIcon, label: "Clubs & Community", path: "clubs" },
   { icon: UsersIcon, label: "Referrals Program", path: "clubs" },
   { icon: BellIcon, label: "Notifications", path: "notifications" },
-  { icon: LogOutIcon, label: "Log Out", path: "logout" },
 ];
 
 
