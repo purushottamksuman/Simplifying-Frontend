@@ -22,17 +22,30 @@ const PropertyTeacherDashboard = () => {
 
       setUser(user);
 
-      const { data: profile } = await supabase
+      // ✅ Get profile info
+      const { data: profile, error: profileError } = await supabase
         .from("user_profiles")
-        .select("user_type, full_name, onboarded, edu_level, career_domain, ref_source")
+        .select("full_name, user_type, onboarded, edu_level, career_domain, ref_source")
         .eq("id", user.id)
         .single();
 
-      if (profile?.user_type !== "teacher") {
+      if (profileError || !profile) {
+        console.error("❌ Profile fetch error:", profileError);
         navigate("/login");
         return;
       }
 
+      // ✅ Only teachers can access this dashboard
+      if (profile.user_type?.toLowerCase() !== "teacher") {
+        navigate("/login");
+        return;
+      }
+
+      // ✅ Set proper user name (only full_name, no email prefix)
+      setUserName(profile.full_name || "Teacher");
+      console.log("✅ Teacher Dashboard loaded for:", profile.full_name);
+
+      // ✅ Check onboarding
       if (
         !profile?.onboarded ||
         !profile?.edu_level ||
@@ -44,7 +57,6 @@ const PropertyTeacherDashboard = () => {
         return;
       }
 
-      setUserName(profile.full_name || user.email?.split("@")[0] || "Teacher");
       setLoading(false);
     };
 

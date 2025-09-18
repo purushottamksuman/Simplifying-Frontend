@@ -69,21 +69,23 @@ export const SectionComponentNodeSubsection: React.FC<SectionComponentNodeSubsec
           </span>
         </div>
 
-        <div className="text-center text-xl font-medium text-[#13377c]">
-          Enter Your Date Of Birth
-        </div>
 
-        <div className="w-full relative">
-          <Input
-            value={dob}
-            onChange={(e) => setDob(e.target.value)}
-            placeholder="DD/MM/YY"
-            className="w-full h-[55px] rounded-3xl border border-[#e2e2ea] px-4 text-sm text-[#7f7f7f]"
-          />
-          <Label className="absolute -top-2 left-4 bg-white px-1 text-xs text-[#7f7f7f]">
-            Date of Birth
-          </Label>
-        </div>
+<div className="text-center text-xl font-medium text-[#13377c]">
+  Enter Your Date Of Birth
+</div>
+
+<div className="w-full relative">
+  <input
+    type="date"
+    value={dob}
+    onChange={(e) => setDob(e.target.value)}
+    className="w-full h-[55px] rounded-3xl border border-[#e2e2ea] px-4 text-sm text-[#7f7f7f] focus:outline-none"
+  />
+  <Label className="absolute -top-2 left-4 bg-white px-1 text-xs text-[#7f7f7f]">
+    Date of Birth
+  </Label>
+</div>
+
 
         <Button
           disabled={!dob.trim()}

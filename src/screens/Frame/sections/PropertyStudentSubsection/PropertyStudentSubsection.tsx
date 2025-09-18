@@ -225,17 +225,17 @@ export const PropertyStudentSubsection = (): JSX.Element => {
                             </div>
                           </div>
 
-                          <div className="flex flex-col gap-1">
-                            <Label className="font-bold text-[#083a50] tracking-[0] leading-[19.6px] [font-family:'Nunito',Helvetica] text-base">
-                              Date of birth
-                            </Label>
-                            <div className="flex h-11 items-center justify-between px-3 bg-white rounded-3xl border border-[#3479ff] shadow-[2px_2px_4px_#26b8931a,-1px_-1px_4px_#26b89333]">
-                              <span className="font-normal text-[#caced8] tracking-[0] leading-[19.6px] [font-family:'Nunito',Helvetica] text-base">
-                                DD/MM/YY
-                              </span>
-                              <CalendarIcon className="w-[12.18px] h-[12.09px]" />
-                            </div>
-                          </div>
+                            <div className="flex flex-col gap-1">
+  <Label className="font-bold text-[#083a50] tracking-[0] leading-[19.6px] [font-family:'Nunito',Helvetica] text-base">
+    Date of birth
+  </Label>
+  <input
+    type="date"
+    
+    className="flex h-11 w-full px-3 bg-white rounded-3xl border border-[#3479ff] shadow-[2px_2px_4px_#26b8931a,-1px_-1px_4px_#26b89333] text-[#083a50] text-base font-normal [font-family:'Nunito',Helvetica]"
+  />
+</div>
+
                         </div>
 
                         <div className="flex flex-col gap-1">

@@ -88,27 +88,28 @@ useEffect(() => {
       }
 
       setUser(user);
-      const name = user.email?.split("@")[0] || user.user_metadata?.full_name || "User";
+      const name = user.user_metadata?.full_name || "User";
       setUserName(name);
       console.log("✅ Dashboard loaded for user:", name);
 
-      // 🔹 Fetch profile here to check role
-      const { data: profile, error: profileError } = await supabase
-        .from("user_profiles")
-        .select("user_type")
-        .eq("id", user.id)
-        .single();
+ const { data: profile, error: profileError } = await supabase
+  .from("user_profiles")
+  .select("full_name, user_type")
+  .eq("id", user.id)
+  .single();
 
-      if (profileError || !profile) {
-        console.error("❌ Profile fetch error:", profileError);
-        navigate("/login"); // fallback
-        return;
-      }
+if (profileError || !profile) {
+  console.error("❌ Profile fetch error:", profileError);
+  navigate("/login");
+  return;
+}
 
-      if (profile.user_type?.toLowerCase() !== "student") {
-        navigate("/login");
-        return;
-      }
+setUserName(profile.full_name || "User");
+
+if (profile.user_type?.toLowerCase() !== "student") {
+  navigate("/login");
+  return;
+}
 
       await fetchExams();
       await fetchUserPurchases(user.id);
