@@ -173,15 +173,14 @@ const handleForgotPassword = async () => {
                 {/* Email */}
                 <div className="relative">
                   <Input
-                    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-24 font-roboto text-sm"
-                    placeholder="Mail Address"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    type="email"
-                  />
-                  <div className="absolute top-[15px] right-4 text-gray-500 text-sm">
-                    @gmail.com
-                  </div>
+                    className="h-[53px] rounded-3xl border border-gray-300 pl-4 font-roboto text-sm"
+  placeholder="Enter your mail ID"
+  value={formData.email}
+  onChange={(e) => handleInputChange("email", e.target.value)}
+  type="email"
+/>
+
+                  
                 </div>
 
                 {/* Password */}

@@ -23,6 +23,28 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
 
+ 
+
+// Run interval whenever timer resets
+useEffect(() => {
+  if (timer <= 0) return;
+
+  const interval = setInterval(() => {
+    setTimer((prev) => {
+      if (prev <= 1) {
+        clearInterval(interval);
+        setCanResend(true);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [timer]); // 👈 rerun when timer is reset
+
+
+
   // Load user data + start timer
   useEffect(() => {
     const pendingUser = localStorage.getItem("pendingUser");
