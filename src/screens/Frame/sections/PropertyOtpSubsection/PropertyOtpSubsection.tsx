@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "../../../../components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "../../../../components/ui/input-otp";
 import { authHelpers } from "../../../../lib/supabase";
 
 export const PropertyOtpSubsection = (): JSX.Element => {
@@ -23,29 +19,28 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
 
- 
+  // Timer countdown effect
+  useEffect(() => {
+    if (timer <= 0) {
+      setCanResend(true);
+      return;
+    }
 
-// Run interval whenever timer resets
-useEffect(() => {
-  if (timer <= 0) return;
+    const interval = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-  const interval = setInterval(() => {
-    setTimer((prev) => {
-      if (prev <= 1) {
-        clearInterval(interval);
-        setCanResend(true);
-        return 0;
-      }
-      return prev - 1;
-    });
-  }, 1000);
+    return () => clearInterval(interval);
+  }, [timer]);
 
-  return () => clearInterval(interval);
-}, [timer]); // 👈 rerun when timer is reset
-
-
-
-  // Load user data + start timer
+  // Load pending user from localStorage
   useEffect(() => {
     const pendingUser = localStorage.getItem("pendingUser");
     if (pendingUser) {
@@ -55,91 +50,76 @@ useEffect(() => {
     } else {
       navigate("/login");
     }
-
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          setCanResend(true);
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
   }, [navigate]);
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
   const handleSubmit = async () => {
-  if (otp.length !== 6) {
-    setError("Please enter a valid 6-digit OTP");
-    return;
-  }
-
-  setLoading(true);
-  setError("");
-  setSuccessMessage("");
-
-  try {
-    const pendingUser = localStorage.getItem("pendingUser");
-    const userData = pendingUser ? JSON.parse(pendingUser) : null;
-
-    if (!userData) {
-      setError("Session expired. Please start over.");
-      navigate("/login");
+    if (otp.length !== 6) {
+      setError("Please enter a valid 6-digit OTP");
       return;
     }
 
-    // 👇 choose type dynamically
-    const flowType = userData.isPasswordReset ? "recovery" : "signup";
+    setLoading(true);
+    setError("");
+    setSuccessMessage("");
 
-    const { data, error } = await authHelpers.verifyOTP(userEmail, otp, flowType);
+    try {
+      const pendingUser = localStorage.getItem("pendingUser");
+      const userData = pendingUser ? JSON.parse(pendingUser) : null;
 
-    if (error) {
-      setError("Invalid or expired OTP. Please try again.");
-      return;
-    }
-
-    if (data?.user) {
-      if (userData.isPasswordReset) {
-        // ✅ redirect to reset-password page
-        navigate("/reset-password");
+      if (!userData) {
+        setError("Session expired. Please start over.");
+        navigate("/login");
         return;
       }
 
-      // ✅ Normal login/signup flow
-      const user_type = data.user.user_metadata?.user_type;
+      const flowType = userData.isPasswordReset ? "recovery" : "signup";
+      const { data, error } = await authHelpers.verifyOTP(userEmail, otp, flowType);
 
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify({
-          id: data.user.id,
-          email: data.user.email,
-          user_metadata: data.user.user_metadata,
-        })
-      );
+      if (error) {
+        setError("Invalid or expired OTP. Please try again.");
+        return;
+      }
 
-      if (isLoginFlow) {
-        navigate("/login");
-      } else {
-        if (user_type === "student") {
-          navigate("/component/dashboard");
-        } else if (user_type === "teacher") {
-          navigate("/teacher/dashboard");
-        } else if (user_type === "parent") {
-          navigate("/parent/dashboard");
+      if (data?.user) {
+        if (userData.isPasswordReset) {
+          navigate("/reset-password");
+          return;
+        }
+
+        // Save user in localStorage
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            id: data.user.id,
+            email: data.user.email,
+            user_metadata: data.user.user_metadata
+          })
+        );
+
+        // Navigate based on user type
+        const user_type = data.user.user_metadata?.user_type;
+        if (isLoginFlow) {
+          navigate("/login");
         } else {
-          navigate("/component/dashboard"); // fallback
+          if (user_type === "student") navigate("/component/dashboard");
+          else if (user_type === "teacher") navigate("/teacher/dashboard");
+          else if (user_type === "parent") navigate("/parent/dashboard");
+          else navigate("/component/dashboard");
         }
       }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to verify OTP. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError("Failed to verify OTP. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const handleResend = async () => {
     if (!canResend) return;
@@ -154,30 +134,32 @@ useEffect(() => {
         setError("Session expired. Please start over.");
         return;
       }
-      const userData = JSON.parse(pendingUser);
 
-      const { error } = await authHelpers.resendConfirmation(userData.email);
-      if (error) {
-        setError("Failed to resend email. Try again.");
+      const userData = JSON.parse(pendingUser);
+let result;
+if (userData.isPasswordReset) {
+  result = await authHelpers.resetPassword(userData.email);
+} else if (userData.isLogin) {
+  result = await authHelpers.signInWithOtp(userData.email);
+} else {
+  result = await authHelpers.sendMagicLink(userData.email);
+}
+
+      if (result.error) {
+        console.error("Resend failed:", result.error);
+        setError("Failed to resend OTP. Try again.");
         return;
       }
 
-      setSuccessMessage("OTP resent successfully!");
+      setSuccessMessage("OTP sent successfully! Check spam if you dont see it!");
       setTimer(120);
       setCanResend(false);
     } catch (err) {
+      console.error(err);
       setError("Error resending OTP");
     } finally {
       setResendLoading(false);
     }
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
   };
 
   const maskedEmail = userEmail
@@ -186,36 +168,25 @@ useEffect(() => {
 
   return (
     <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
-      {/* Background Blur Circles */}
+      {/* Background Circles */}
       <div className="absolute w-[900px] h-[900px] top-[-200px] left-[-200px] bg-[#007fff59] rounded-full blur-[200px]" />
       <div className="absolute w-[900px] h-[900px] bottom-[-200px] right-[-200px] bg-[#0011ff59] rounded-full blur-[200px]" />
 
-      {/* Main Wrapper */}
       <div className="relative w-full max-w-8xl rounded-[30px] overflow-hidden flex flex-col lg:flex-row z-10">
-        {/* Left Section - OTP Form */}
+        {/* OTP Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-12">
           <Card className="w-full max-w-md h-[604px] shadow-md rounded-3xl bg-white">
             <CardContent className="p-8 text-center">
-              {/* Logo */}
-              <img
-                src="/simplifying_skills_logo.png"
-                alt="Simplifying SKILLS"
-                className="w-full mx-auto"
-              />
-
-              <h1 className="mt-6 text-3xl font-bold text-[#0062ff]">
-                OTP VERIFICATION
-              </h1>
+              <img src="/simplifying_skills_logo.png" alt="Logo" className="w-full mx-auto" />
+              <h1 className="mt-6 text-3xl font-bold text-[#0062ff]">OTP VERIFICATION</h1>
               <p className="mt-2 text-gray-600 text-sm">
-                Enter the OTP sent to{" "}
-                <span className="text-[#007fff]">{maskedEmail}</span>
+                Enter the OTP sent to <span className="text-[#007fff]">{maskedEmail}</span>
               </p>
 
-              {/* OTP Inputs */}
               <div className="mt-6 flex justify-center">
                 <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                   <InputOTPGroup className="gap-3.5">
-                    {otpSlots.map((slot) => (
+                    {otpSlots.map(slot => (
                       <InputOTPSlot
                         key={slot.id}
                         index={slot.id}
@@ -226,12 +197,8 @@ useEffect(() => {
                 </InputOTP>
               </div>
 
-              {/* Timer */}
-              <div className="mt-4 text-gray-700 font-medium">
-                {formatTime(timer)} Sec
-              </div>
+              <div className="mt-4 text-gray-700 font-medium">{formatTime(timer)} Sec</div>
 
-              {/* Resend */}
               <p className="mt-2 text-sm text-gray-600">
                 Didn’t Receive code?{" "}
                 <button
@@ -239,23 +206,13 @@ useEffect(() => {
                   disabled={!canResend || resendLoading}
                   className="text-[#007fff] hover:underline disabled:opacity-50"
                 >
-                  {resendLoading
-                    ? "Resending..."
-                    : canResend
-                    ? "Re-send"
-                    : `Resend in ${formatTime(timer)}`}
+                  {resendLoading ? "Resending..." : canResend ? "Re-send" : `Resend in ${formatTime(timer)}`}
                 </button>
               </p>
 
-              {/* Error/Success */}
               {error && <div className="mt-3 text-red-500 text-sm">{error}</div>}
-              {successMessage && (
-                <div className="mt-3 text-green-500 text-sm">
-                  {successMessage}
-                </div>
-              )}
+              {successMessage && <div className="mt-3 text-green-500 text-sm">{successMessage}</div>}
 
-              {/* Submit */}
               <Button
                 onClick={handleSubmit}
                 disabled={loading || otp.length !== 6}
@@ -263,39 +220,26 @@ useEffect(() => {
               >
                 {loading ? "Verifying..." : "Submit"}
               </Button>
+
+              <p className="mt-2 text-sm text-gray-600">
+                Remembered your password?{" "}
+                <button onClick={() => navigate("/login")} className="text-[#007fff] hover:underline">
+                  Login
+                </button>
+              </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Section - Illustration */}
+        {/* Illustration */}
         <div className="w-full lg:w-1/2 relative hidden lg:block">
-          <img
-            src="/Mask group.png"
-            alt="Illustration"
-            className="w-full h-full object-cover rounded-br-[30px] rounded-tr-[30px]"
-          />
-          <img
-            src="/bot.png"
-            alt="bot"
-            className="absolute top-[35%] right-[70%]"
-          />
-          <img
-            src="/code.png"
-            alt="code"
-            className="absolute top-[45%] right-[48%]"
-          />
-          <img
-            src="/messenger.png"
-            alt="messenger"
-            className="absolute top-[35%] right-[25%]"
-          />
-          <img
-            src="/money.png"
-            alt="money"
-            className="absolute top-[15%] right-[47%]"
-          />
+          <img src="/Mask group.png" alt="Illustration" className="w-full h-full object-cover rounded-br-[30px] rounded-tr-[30px]" />
+          <img src="/bot.png" alt="bot" className="absolute top-[35%] right-[70%]" />
+          <img src="/code.png" alt="code" className="absolute top-[45%] right-[48%]" />
+          <img src="/messenger.png" alt="messenger" className="absolute top-[35%] right-[25%]" />
+          <img src="/money.png" alt="money" className="absolute top-[15%] right-[47%]" />
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

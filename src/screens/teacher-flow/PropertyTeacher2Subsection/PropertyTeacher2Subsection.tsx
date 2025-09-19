@@ -100,6 +100,13 @@ const goalOptions = [
             >
               Next
             </Button>
+                      <Button
+              variant="outline"
+              className="w-full h-[50px] lg:h-[55px] rounded-3xl text-[#007fff] border-[#007fff] text-xl lg:text-2xl font-semibold hover:bg-[#f0f8ff]"
+              onClick={onBack}
+            >
+              Back
+            </Button>
           </div>
         </div>
       </div>
