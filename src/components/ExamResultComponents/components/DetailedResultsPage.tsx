@@ -193,483 +193,221 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
     setSubSectionStats(stats);
   };
 
-  const handleGenerateHTML = () => {
-    if (!detailedResults || !userInfo || !user) return;
-
-    // Aptitude descriptions and templates (same as in PDF)
-    const aptitudeDescriptions = {
-      verbal: 'Verbal Reasoning: This test measures the ability to reason with words, to understand and use concepts expressed in words. This skill is important in academic courses, in jobs requiring written or oral communication and in jobs involving high levels of authority and responsibility.',
-      numerical: 'Numerical Reasoning: This test measures the ability to perform mathematical reasoning tasks. This strength is generally important in schoolwork especially for fields such as math, chemistry, physics and engineering.',
-      abstract: 'Abstract Reasoning: This test is a non-verbal, non-numerical measure of reasoning power. It tests the ability to see relationships among objects, patterns, diagrams or designs. This skill is useful in careers requiring the person to see relationships between objects in terms of their size, shape, position and quantity.',
-      speedAndAccuracy: 'Perceptual Speed & Accuracy: This test measures perceptual speed and accuracy in perceiving and marking simple letter and number combinations. Important in paperwork in school, offices, laboratories, stores, warehouses and wherever records are made or filed or checked. Sometimes a low score on this test may indicate a great emphasis on accuracy rather than genuine lack of ability to work rapidly.',
-      mechanical: 'Mechanical Reasoning: This test measures the ability to understand the basic mechanical principles of machinery, tools and motion and the laws of everyday physics. Students who do well in this test tend to find it easy to learn how to repair and operate complex devices.',
-      spaceRelations: 'Space Relations: This test measures the ability to visualise, to think in three dimensions or to picture mentally the size, shape, and position of objects when shown only two-dimensional pictures or pattern. This skill is vital to understand technical drawings.',
-      languageUsageAndGrammar: 'Language Usage (Grammar): This test measures how well one can distinguish between correct and improper grammar, punctuation, and wording of sentences. This is an excellent predictor of high grades in most school and college courses.',
-    };
-
-    const aptitudeWhatTemplates = {
-      verbal: {
-        High: 'You have scored a natural strength in understanding and expressing ideas clearly. You can easily make sense of what you read or hear and explain it in a way that makes sense to others. This skill helps you in school, team work, and even leadership roles. Whether you\'re sharing your thoughts, debating, or telling stories, you have a gift for making things interesting and easy to understand. This ability will help you in careers where you need to persuade, teach, create content. Continuing to read, discuss ideas, and practice creative writing will make you even stronger in this area!',
-        Moderate: 'You have a good understanding of words and can communicate effectively in most situations. You may occasionally find complex texts or ideas a bit challenging, but with practice, you can improve. This skill is useful in school, team work, and leadership roles. To strengthen it, try reading more, discussing ideas, or practicing writing. It will help in careers involving communication, teaching, or content creation.',
-        Low: 'You may find it challenging to understand or explain complex ideas in words. This skill can be developed with practice. Start with simple reading and discussions to build confidence. It\'s important for school and jobs involving communication. With effort, you can improve and open doors to careers in teaching, writing, or leadership.',
-      },
-      mechanical: {
-        High: 'You have a strong ability to understand how machines, tools, and systems work. You can easily visualize how different parts of a machine fit together and understand the principles behind forces and motion. This skill helps you solve complex mechanical problems. With this ability, you could excel in fields like engineering, construction, automotive, or manufacturing. You might enjoy designing, repairing, or improving mechanical systems, which is a great foundation for hands-on, technical careers.',
-        Moderate: 'You have a solid understanding of mechanical principles and can handle basic tasks involving machinery and tools. You may need some practice with more complex systems. This skill is valuable in technical fields. Try hands-on projects or workshops to build confidence. It can lead to careers in engineering, maintenance, or manufacturing.',
-        Low: 'You may find it difficult to understand mechanical principles or visualize how machines work. This skill can be built with practice and exposure to simple mechanical tasks. Start with basic tools and projects. With time, you can improve and explore technical careers.',
-      },
-      numerical: {
-        High: 'You have an excellent grasp of numbers and can handle complex mathematical problems with ease. This strength is important in fields like science, finance, and engineering. Continue challenging yourself with advanced problems to maintain and grow this skill.',
-        Moderate: 'You have a good understanding of numbers and can handle basic math problems confidently. You may need a little extra practice with more complex number patterns and data analysis. The good news is that numerical skills can be improved with regular exposure to problem-solving activities, real-world applications like calculating discounts or understanding statistics in sports, and fun exercises. Building confidence in this area can open doors to many exciting career options in business, technology, research, and management. Practice with games, real-life scenarios, and interactive learning to strengthen your skills further!',
-        Low: 'You may struggle with numerical concepts and calculations. This skill can be improved with consistent practice starting from basics. Use fun apps or games to make learning enjoyable. It\'s key for many careers, and with effort, you can progress.',
-      },
-      languageUsageAndGrammar: {
-        High: 'You have exceptional command over language, grammar, and expression. This skill helps in academic success and careers requiring strong communication. Keep honing it through writing and reading.',
-        Moderate: 'You have a good grasp of language and can communicate well in most situations. Sometimes, you might struggle with complex words or sentence structures, but with a little more practice, you can improve significantly. Simple activities like reading books, writing short stories, or having discussions at home can boost your confidence. Strengthening your language skills will help you in careers like marketing, customer relations, and corporate communication, where clear and precise language is important. With regular practice, you can become even better at expressing your thoughts!',
-        Low: 'You may find it challenging to use correct grammar and structure sentences properly. Practice with simple writing exercises and reading to improve. This skill is crucial for effective communication in any career.',
-      },
-      speedAndAccuracy: {
-        High: 'You excel at quick and accurate processing of information. This skill is valuable in fast-paced environments. Maintain it with timed exercises.',
-        Moderate: 'You can manage tasks that require accuracy but might take a little more time with complex or fast-moving tasks. With practice, you can improve your speed while maintaining accuracy. Doing brain games, memory challenges, or hands-on activities can help you build confidence. You have the potential to do well in roles that require a balance between speed and precision, such as organizing projects, managing events, or planning activities. With a little support, you can sharpen your focus and grow these skills further!',
-        Low: 'You may need more time for tasks requiring speed and accuracy. Practice with timed activities to improve. This skill is important for efficiency in work and studies.',
-      },
-      abstract: {
-        High: 'You are excellent at recognizing patterns and solving abstract problems. This skill opens doors to careers in science, technology, and analysis. Keep challenging yourself with puzzles.',
-        Moderate: 'You have a reasonable ability to handle abstract concepts. With practice, you can improve in recognizing patterns. Try puzzles and brainteasers to strengthen this skill.',
-        Low: 'It\'s ok if you struggle with abstract reasoning or finding patterns—it\'s a skill that you can improve with time and practice. The key here is patience and consistent effort. You can try fun activities like puzzles, brainteasers, or exploring new concepts that require obstinate thought. These activities will help you improve your skills in recognizing patterns and solving problems. With continued practice, you can open doors to many careers that rely on analytical thinking and problem-solving, including in fields like science, technology, and even business. With time, you can definitely improve and excel!',
-      },
-      spaceRelations: {
-        High: 'You have strong spatial visualization skills, useful in design, architecture, and engineering. Continue with 3D modeling or drawing to enhance.',
-        Moderate: 'You have moderate ability in visualizing spatial relations. Practice with drawings and models to improve.',
-        Low: 'You might find it challenging to visualize objects in space or how they move relative to one another. This skill can be developed through activities like solving puzzles, working with 3D models, or engaging in hands-on tasks. While it may take some time, consistent practice will help you improve. With time, you can enhance these skills and pursue exciting careers in creative and technical fields like architecture, engineering, or design.',
-      },
-    };
-
-    // Interest descriptions
-    const interestDescriptions = {
-      realistic: 'Realistic (Doers): Realistic types generally like to work with things and are often good at mechanical or athletic jobs. They are described as genuine, sensible, practical, natural, thrift, modest, persistent, and honest.',
-      investigative: 'Investigative (Thinkers): Investigative types typically like to work with ideas. They like to learn, analyze and solve problems. They are usually described as curious, exact, intellectual, cautious, independent, quiet, and modest.',
-      artistic: 'Artistic (Creators): These people like to work in unstructured situations where they can use their creativity. They are usually described as open, creative, independent, emotional, impulsive, and original.',
-      social: 'Social (Helpers): These people like to work with other people rather than things. They are often described as helpful, understanding, responsible, warm, cooperative, convincing, friendly, kind, generous, and patient.',
-      enterprising: 'Enterprising (Persuaders): These people like to work with others and enjoy persuading and performing. They are usually described as outgoing, adventurous, energetic, optimistic, sociable, and self-confident.',
-      conventional: 'Conventional (Organizers): These people are very detail-oriented and organized and like to work with data. They are typically described as practical, careful, thrifty, efficient, orderly, and persistent.',
-    };
-
-    const interestWhatTemplates = {
-      realistic: 'You are a Doer! You love to get things done with your hands. Whether it\'s fixing a broken item, building something new, or solving a practical challenge, you feel most fulfilled when you can work physically. You\'re not afraid to get your hands dirty and love working outdoors, whether it\'s in nature or on a construction site. This hands-on approach makes you well-suited for careers in fields like construction, engineering, mechanics, agriculture, or forestry. In these roles, you\'ll have the opportunity to build, design, repair, create things that have a real impact on the world. Your problem-solving mindset, combined with your love for working with your hands, will help you succeed in jobs that require physical work and practical thinking.',
-      investigative: 'You are a Thinker! You have a natural curiosity and love to explore ideas, solve problems, and discover how things work. You enjoy research, analysis, and using logic to find answers. Careers in science, medicine, technology, or research would suit you well, where you can investigate complex issues and make meaningful discoveries.',
-      artistic: 'You are a Creator! You thrive in environments that allow for self-expression and creativity. You enjoy art, music, writing, or design, and find fulfillment in producing original work. Careers in the arts, media, or design fields would be ideal, where you can use your imagination to create and innovate.',
-      social: 'You are a Helper! You enjoy working with people, helping them grow, and making a positive impact on their lives. You\'re empathetic, patient, and good at communication. Careers in teaching, counseling, healthcare, or social work would be fulfilling, where you can support and guide others.',
-      enterprising: 'You are a Persuader! You have the ability to inspire and motivate others to take action, whether it\'s convincing them of your vision or leading them in a shared goal. You\'re not afraid to take charge and lead the way, and your ability to persuade others is one of your strongest skills. Careers in business, marketing, public relations, or entrepreneurship are a great fit for you. In these roles, you\'ll be able to use your leadership abilities to turn ideas into reality, motivate others, and drive success. Your energy and confidence will help you thrive in dynamic, fast-paced environments, where you can set goals, lead teams, and make an impact. Whether it\'s starting your own business, leading a marketing campaign, or building relationships with clients, your ability to persuade and inspire others will be key to your success.',
-      conventional: 'You are an Organizer! You\'re someone who loves structure and order. You thrive in environments where things are planned out, organized, and clearly defined. You pay attention to the smallest details, and you can take pride in keeping things running smoothly. Whether it\'s managing data, following rules, or handling paperwork, you enjoy tasks that require precision and consistency. This makes you perfect for careers in administration, finance, accounting, or any field where organization is key. Your ability to organize and manage is a skill that will help you succeed in any career that requires planning, coordination, and structure.',
-    };
-
-    // SEI templates
-    // Removed unused SEI templates
-
-    // Adversity templates
-    // Removed unused Adversity templates
-
-    // Psychometric descriptions
-    // Removed unused Psychometric descriptions
-
-    // Get aptitude data
-    const aptitude = detailedResults.aptitudeScore.categoryWiseScore;
-    const aptitudeKeyMap: Record<string, string> = {
-      verbal: "verbal",
-      mechanical: "mechanical",
-      numerical: "numerical",
-      languageUsageAndGrammar: "language usage and grammar",
-      speedAndAccuracy: "speed and accuracy",
-      abstract: "abstract",
-      spaceRelations: "space relations",
-    };
-
-    const aptitudeBars = Object.keys(aptitudeKeyMap)
-      .map((key) => {
-        const realKey = aptitudeKeyMap[key];
-        const data = aptitude[realKey];
-
-        return {
-          name: data?.categoryDisplayText ?? realKey,   
-          percentage: data?.categoryPercentage ?? 0,
-          level: data?.categoryScoreLevel ?? "N/A",
-        };
-      })
-      .sort((a, b) => b.percentage - a.percentage);
-
-    // Get interest data
-    const interests = detailedResults.interestAndPreferenceScore.categoryWiseScore;
-    const sortedInterests = Object.entries(interests).sort(([, a], [, b]) => b.categoryScore - a.categoryScore).slice(0, 3);
-    const interestCode = sortedInterests.map(([, data]) => data.categoryLetter ?? '').join('');
-
-    // Removed unused derived data declarations
-
-    // Compute sorted scores outside the template
-    const aptiCategoryWiseScores = Object.entries(detailedResults.aptitudeScore.categoryWiseScore)
-      .map(([category, scoreObject]) => ({ category, scoreObject }))
-      .sort((a, b) => b.scoreObject.categoryPercentage - a.scoreObject.categoryPercentage);
-
-    const interestAndPreferenceScore = Object.entries(detailedResults.interestAndPreferenceScore.categoryWiseScore)
-      .map(([category, scoreObject]) => ({ category, scoreObject }))
-      .sort((a, b) => b.scoreObject.categoryScore - a.scoreObject.categoryScore);
-
-    const seiScore = Object.entries(detailedResults.seiScore.categoryWiseScore)
-      .map(([category, scoreObject]) => ({ category, scoreObject }))
-      .sort((a, b) => b.scoreObject.categoryScore - a.scoreObject.categoryScore);
-
-    const psychometricScore = Object.entries(detailedResults.detailedPsychometricScore.categoryWiseScore)
-      .map(([category, scoreObject]) => ({ category, scoreObject }))
-      .sort((a, b) => b.scoreObject.categoryScore - a.scoreObject.categoryScore);
-
-    // Build HTML content
-    let html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillSphere Assessment Report</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; }
-        .page { background-color: white; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1, h2, h3 { color: #333; }
-        .cover { text-align: center; }
-        .section-header { background-color: #0000ff; color: white; padding: 10px; }
-        .bubble { background-color: #fff; border: 1px solid #000; border-radius: 5px; padding: 5px; display: inline-block; }
-        .bar { height: 20px; background-color: #00aaff; color: white; text-align: right; padding-right: 5px; }
-        .funnel-bar { margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        ul { list-style-type: disc; padding-left: 20px; }
-        .svg-container {
-            position: relative;
+  
+  function getInterpretation(categoryName: string, categoryPercentage: number): { level: string, text: string } {
+    switch (categoryName.toLowerCase()) {
+      case "verbal":
+        if (categoryPercentage >= 77) {
+          return {
+            level: "High",
+            text: "You have a natural strength in understanding and expressing ideas clearly. You can easily make sense of what you read or hear and explain it in a way that makes sense to others. This skill helps you in school, teamwork, and even leadership roles. Whether you’re sharing your thoughts, debating, or telling stories, you have a gift for making things interesting and easy to understand. This ability will help you in careers where you need to persuade, teach, or create content. Continuing to read, discuss ideas, and practice creative writing will make you even stronger in this area!"
+          };
+        } else if (categoryPercentage >= 24) {
+          return {
+            level: "Moderate",
+            text: "You have a good understanding of language and logical thinking. You can communicate well but may sometimes need a little more time or practice to make your points clearer and more convincing. With some focused effort—like reading more books, expanding your vocabulary, and practicing speaking or writing—you can sharpen these skills even more. You already do well in group discussions and teamwork, and with a little encouragement, you can become even more confident in speaking and thinking. Simple activities like family discussions, storytelling, or debating fun topics can help you grow in this area!"
+          };
+        } else {
+          return {
+            level: "Low",
+            text: "You might sometimes find it tricky to express your thoughts clearly or understand complex information, but you know this is just an opportunity for growth! With practice, you can build your confidence in reading, writing, and speaking. Encouraging you to read engaging books, have daily conversations, and play word games can make a big difference. You learn at your own pace, and with the right support, you can develop strong communication skills over time. The key is to make learning fun and stress-free—celebrating small improvements will help you feel more confident in expressing your ideas!"
+          };
         }
-        svg {
-            max-width: 100%;
-            height: auto;
+
+      case "speedandaccuracy":
+        if (categoryPercentage >= 77) {
+          return {
+            level: "High",
+            text: "You have a great ability to notice details quickly and accurately. You can process information fast and spot mistakes easily. This means you can handle tasks efficiently, make quick decisions, and work well under pressure. These skills are useful in careers that require accuracy, such as science, engineering, designing, or even gaming and coding. Your sharp eye for detail makes you an excellent problem solver, and you will likely enjoy activities that challenge your observation skills. You should explore puzzles, coding games, or even organizing tasks to make the most of your abilities!"
+          };
+        } else if (categoryPercentage >= 24) {
+          return {
+            level: "Moderate",
+            text: "You are quite good at paying attention to details and work at a steady pace. You can manage tasks that require accuracy but might take a little more time with complex or fast-moving tasks. With practice, you can improve your speed while maintaining accuracy. Doing fun brain games, memory challenges, or hands-on activities can help you build confidence. You have the potential to do well in roles that require a balance between speed and precision, such as organizing projects, managing events, or planning activities. With a little support, you can sharpen your focus and grow these skills further!"
+          };
+        } else {
+          return {
+            level: "Low",
+            text: "You may take a little longer to process information and might sometimes miss small details, but you know this is something you can improve with regular practice! You can develop your attention skills through fun activities like spotting differences in pictures, playing memory games, or doing simple logic puzzles. With encouragement and patience, you can strengthen your ability to notice details and work more efficiently. These skills will help you in problem-solving and creative fields where thinking carefully is just as important as thinking quickly. The key is to build your confidence and make learning fun!"
+          };
         }
-        text {
-            white-space: pre;
+
+      case "languageusageandgrammar":
+        if (categoryPercentage >= 77) {
+          return {
+            level: "High",
+            text: "You have a strong ability to express your thoughts and ideas clearly! Whether in writing or speaking, you can explain things well. This skill is a great asset in many careers, especially in fields like teaching, law, media, and leadership roles. Strong language skills also help you with writing essays, giving presentations, and even debating confidently. Continuing to read, write, and engage in discussions will further sharpen this talent. Your ability to communicate effectively will help you succeed in academics and beyond!"
+          };
+        } else if (categoryPercentage >= 24) {
+          return {
+            level: "Moderate",
+            text: "You have a good grasp of language and can communicate well in most situations. Sometimes, you might struggle with complex words or sentence structures, but with a little more practice, you can improve significantly. Simple activities like reading books, writing short stories, or having discussions at home can boost your confidence. Strengthening your language skills will help you in careers like marketing, customer relations, and corporate communication, where clear and precise language is important. With regular practice, you can become even better at expressing your thoughts!"
+          };
+        } else {
+          return {
+            level: "Low",
+            text: "You might find it challenging to express your ideas clearly in writing or speaking, but the good news is that language skills can always improve with practice! Encouraging you to read, write short paragraphs, and participate in conversations will make a big difference. Small steps, like learning new words daily and practicing sentence formation, will help you gain confidence. Good communication is useful in all professions, from sales and administration to customer service and leadership roles. With support and regular practice, you can become a clear and confident communicator!"
+          };
         }
-        .absolute-text {
-            position: absolute;
-            top: 0;
-            left: 0;
-            padding: 10px;
+
+      case "numerical":
+        if (categoryPercentage >= 77) {
+          return {
+            level: "High",
+            text: "You have a strong ability to work with numbers and make sense of data. You can quickly understand charts, graphs, and patterns, making you great at problem-solving and logical thinking. These skills are especially useful in areas like finance, science, technology, and business. A strong numerical ability helps you in everyday life too—like managing money, planning expenses, and making smart decisions based on facts. This skill will give you an advantage in many careers and help you think critically about the world around you. Keep challenging yourself with puzzles, logic games, and real-world math activities to keep sharpening your skills!"
+          };
+        } else if (categoryPercentage >= 24) {
+          return {
+            level: "Moderate",
+            text: "You have a good understanding of numbers and can handle basic math problems confidently. You may need a little extra practice with more complex number patterns and data analysis. The good news is that numerical skills can be improved with regular exposure to problem-solving activities, real-world applications (like calculating discounts or understanding statistics in sports), and fun exercises. Building confidence in this area can open doors to many exciting career options in business, technology, research, and management. Practice with games, real-life scenarios, and interactive learning to strengthen your skills further!"
+          };
+        } else {
+          return {
+            level: "Low",
+            text: "You may find working with numbers a bit challenging, but that’s completely okay—this is a skill that you can develop over time! You may need extra support in understanding math concepts, interpreting data, or solving numerical problems. The key is to make learning fun and practical. Simple activities like playing number-based games, involving yourself in grocery budgeting, or using creative learning tools can make a big difference. With regular practice and the right approach, your confidence in numbers will grow, helping you in future careers that involve problem-solving and logical thinking. Encouragement and a positive mindset can make all the difference!"
+          };
         }
-    </style>
-</head>
-<body>
-    <div class="page">
-        <div class="svg-container">
-            <svg viewBox="0 0 595 842">
-                <text x="0" y="20">
- 
-     
-         
-         
-             
-        
-    
-     
-         
-         
-             
-                 
-            
-        
-         
-             
-                 
-                     
-                
-            
-        
-         “When we think we know, we cease to
-            learn.”
-         Dr
-         Sarvepalli
-         Radhakrishnan
-         
-             
-                 
-                     
-                
-            
-        
-         
-             
-                 
-                     
-                
-            
-        
-         SkillSphere
-         Assessment
-         
-         A 360
-         °
-         MEASURE OF PERSONALITY,
-         RESILIENCE, APTITUDE, AND
-            INTERESTS
-         —
-         EMPOWERING EVERY STUDENT’S
-            JOURNEY
-         This report provides a comprehensive
-            analysis of the
-         student's personality traits, interests,
-            aptitude, strengths, and
-         growth areas, utilizing multiple industry
-         -
-         standard
-         assessment frameworks. The insights gained
-            are designed to
-         guide the student's learning journey,
-            enabling them to unlock
-         their full potential and ultimately
-            pursue successful and
-         fulfilling careers.
-    
-                </text>
-            </svg>
-        </div>
-    </div>
 
-    <div class="page">
-        <div class="svg-container">
-            <svg viewBox="0 0 595 842">
-                
-            
-                
-                
-            
-                
-                
-            
-                
-                
-            
-            
-                
-            
-            
-            
-            
-                
-                
-                    
-                        
-                        
-                    
-                
-            
-            
-                
-                    
-                        
-                            
-                        
-                    
-                
-            
-            </svg>
-            <div class="absolute-text">
-                <pre>
-Congratulations on
-                successfully completing the SkillSphere Assessment!
-Your results highlight key
-                strengths such as brilliance, resilience, and a
-            strong mindset, all of
-                which position you for continued success. Each
-            score reflects your
-                dedication, intelligence, and boundless potential to
-            conquer challenges and
-                achieve extraordinary success.
-            THIS ASSESSMENT MARKS THE
-                BEGINNING OF YOUR
-            PROFESSIONAL DEVELOPMENT
-                JOURNEY
-            With your demonstrated talent and
-                determination, there is
-            significant potential for you to reach new
-                heights in your career
-            and personal growth. Keep striving toward
-                excellence, as your
-            future holds limitless possibilities.
-            STUDENT ID : ${attemptId ?? 'N/A'}
-            NAME: ${userInfo.name ?? 'N/A'}
-            ASSESSMENT DATE : ${detailedResults.assessmentDate ? new Date(detailedResults.assessmentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'September 16, 2025'}
-            EMAIL: ${user.email ?? 'N/A'}
-            PHONE
-            :
-            ${userInfo.phone ?? 'N/A'}
-            EVALUATOR :
-            SKILLSPHERE ASSESSMENT SYSTEM
-            
-                
-                    
-                        
-                    
-                
-            
-        
-                </pre>
-            </div>
-        </div>
-    </div>
+      case "abstract":
+        if (categoryPercentage >= 77) {
+          return {
+            level: "High",
+            text: "You have a natural talent for thinking through problems and spotting patterns. You can easily analyze things from different perspectives and solve tricky problems with ease. Your ability to think creatively and adapt quickly will help you in fields that require innovative solutions, such as technology, engineering, design, and research. People with high abstract reasoning skills are known for being able to think outside the box and make smart decisions. Continue exploring challenges that allow you to use these skills—it will help you further develop your strengths and make a big impact in your future career!"
+          };
+        } else if (categoryPercentage >= 24) {
+          return {
+            level: "Moderate",
+            text: "You’re good at logical thinking and problem-solving, but you might find more complex situations a little tricky. However, you’re well on your way to improving! With more practice, you’ll get better at recognizing patterns and thinking creatively. These skills are valuable in fields like business, architecture, software development, and data science. Simple things like solving puzzles, tackling everyday challenges, or engaging in creative exercises will help strengthen your abilities. With consistent effort, you’ll develop a sharp mind capable of tackling even the toughest problems in any career you choose."
+          };
+        } else {
+          return {
+            level: "Low",
+            text: "It’s okay if you struggle with abstract reasoning or finding patterns—it’s a skill that you can improve with time and practice. The key here is patience and consistent effort. You can try fun activities like puzzles, creative thinking exercises, or exploring new concepts that require abstract thought. These activities will help you improve your skills in recognizing patterns and solving problems. With continued practice, you can open doors to many careers that rely on analytical thinking and problem-solving, including in fields like science, technology, and even business. With time, you can definitely improve and excel!"
+          };
+        }
 
-    <div class="page">
-        <div class="svg-container">
-            <svg viewBox="0 0 595 842">
-                
-                
-            
-            
-                
-                
-            
-            
-                
-                
-            
-            
-            
-            
-                
-                
-            
-            </svg>
-            <div class="absolute-text">
-                <pre>
+      case "mechanical":
+        if (categoryPercentage >= 77) {
+          return {
+            level: "High",
+            text: "You have a strong ability to understand how machines, tools, and systems work. You can easily visualize how different parts of a machine fit together and understand the principles behind forces and motion. This skill helps you solve complex mechanical problems. With this ability, you could excel in fields like engineering, construction, automotive, or manufacturing. You might enjoy designing, repairing, or improving mechanical systems, which is an excellent foundation for hands-on, technical careers."
+          };
+        } else if (categoryPercentage >= 24) {
+          return {
+            level: "Moderate",
+            text: "You have a solid understanding of how mechanical systems work, but you might need more practice to fully grasp the concepts. You can apply logic to solve mechanical problems, but you may need extra experience to feel confident. With time and continued practice, you can improve your understanding of how different systems function and work more effectively with machinery. This ability is important for careers in engineering or manufacturing, and with focus, you’ll become more comfortable with these systems and tasks."
+          };
+        } else {
+          return {
+            level: "Low",
+            text: "You might find it challenging to understand how machines or tools function and may need extra support to grasp these concepts. While this can seem difficult at first, it’s completely normal and can be improved with practice. By working on this skill through hands-on learning, guided activities, and understanding how parts fit together and interact, you can develop the ability to solve mechanical problems more effectively. Over time, you’ll grow more comfortable with mechanical systems and even pursue careers in engineering or other technical fields."
+          };
+        }
 
-    
-        
-            
-        
-        
-            
-        
-        
-            
-        
-        
-    
-    
-        
-        
-            
-                
-            
-        Assessment RESULT
-        
-        
-        
-        SkillSphereAssessmentResult
-        Aptitude•${aptiCategoryWiseScores[0]?.scoreObject.categoryDisplayText ?? ''}: ${aptiCategoryWiseScores[0]?.scoreObject.categoryPercentage ?? ''}•${aptiCategoryWiseScores[1]?.scoreObject.categoryDisplayText ?? ''}: ${aptiCategoryWiseScores[1]?.scoreObject.categoryPercentage ?? ''}•${aptiCategoryWiseScores[2]?.scoreObject.categoryDisplayText ?? ''}: ${aptiCategoryWiseScores[2]?.scoreObject.categoryPercentage ?? ''}
-        Interest and
-            Preferences•${interestAndPreferenceScore[0]?.scoreObject.categoryDisplayText ?? ''}•${interestAndPreferenceScore[1]?.scoreObject.categoryDisplayText ?? ''}•${interestAndPreferenceScore[2]?.scoreObject.categoryDisplayText ?? ''}
-        Psychometric
-            Traits•${psychometricScore[0]?.scoreObject.categoryDisplayText ?? psychometricScore[0]?.category ?? ''}•${psychometricScore[1]?.scoreObject.categoryDisplayText ?? psychometricScore[1]?.category ?? ''}•${psychometricScore[2]?.scoreObject.categoryDisplayText ?? psychometricScore[2]?.category ?? ''}
-        Socio
-            EconomicIntelligence•${seiScore[0]?.scoreObject.categoryDisplayText ?? ''}: ${seiScore[0]?.scoreObject.categoryScore ?? ''}•${seiScore[1]?.scoreObject.categoryDisplayText ?? ''}: ${seiScore[1]?.scoreObject.categoryScore ?? ''}•${seiScore[2]?.scoreObject.categoryDisplayText ?? ''}: ${seiScore[2]?.scoreObject.categoryScore ?? ''}•${seiScore[3]?.scoreObject.categoryDisplayText ?? ''}: ${seiScore[3]?.scoreObject.categoryScore ?? ''}
-        Adversity Quotient
-            score•Adversity Response Profile(ARP) : ${detailedResults.adversityScore.aqScore ?? ''}
-        Measure skills, abilities, and
-            potentialto succeed in a particular role orenvironment.It is based on DifferentialAptitude Test (DAT), which evaluateson 8 different aptitude components.
-        Provides
-            professionalaspirations, values, andmotivations.It is measured on 6personality types based onHolland’s model.
-        Helps identify
-            personalitytype leveragingBig FiveModel with 5 broaddimensions.
-        Measures the individual’s
-            mental abilityto succeed in any environmentalcircumstance.Leverages Bar-On Model of Emotional-Social Intelligence.
-        Measures a person's
-            abilityto deal with challenges inlife.Higher score indicatesbetter resilience toadversity. Highest possiblescore: 200
-    
-                </pre>
-            </div>
-        </div>
-    </div>
+      case "spacerelations":
+        if (categoryPercentage >= 77) {
+          return {
+            level: "High",
+            text: "You are excellent at thinking in 3D and can easily visualize how objects fit together or move in space. You can mentally manipulate shapes and objects, which is especially useful in careers like architecture, engineering, design, or aviation. This skill helps you understand technical drawings, blueprints, and maps with ease. You’re also good at hands-on tasks like building or taking apart complex objects. This ability is a significant advantage in fields that require creativity and technical expertise, allowing you to thrive in careers that demand spatial awareness and problem-solving skills."
+          };
+        } else if (categoryPercentage >= 24) {
+          return {
+            level: "Moderate",
+            text: "You have a solid understanding of space and how objects relate to each other, but you may struggle with more complex spatial tasks. You are on the right track, but you may need more practice visualizing 3D objects and their relationships. With more experience, such as working with 3D models or solving spatial puzzles, you can sharpen this skill. Over time, this will help you in fields like design, engineering, or architecture, where spatial awareness plays a key role. With consistent practice, your skills will continue to improve."
+          };
+        } else {
+          return {
+            level: "Low",
+            text: "You might find it challenging to understand how objects fit together in space or how they move relative to one another. This skill can be developed through activities like solving puzzles, working with 3D models, or engaging in hands-on tasks. While it may be a bit more difficult to grasp at first, consistent practice and exposure will help you improve. With time, you can enhance these skills and pursue exciting careers in creative and technical fields like architecture, engineering, or design."
+          };
+        }
 
-    <div class="page">
-        <div class="section-header">DETAILED ASSESSMENT REPORT</div>
-        <h2>1. Aptitude (IQ)</h2>
-        <p>Aptitude tests measure skills, abilities, and potential to succeed in a particular role or environment. This assessment framework is modeled after the widely recognized Differential Aptitude Test (DAT) and evaluates individuals across eight key aptitude components: Verbal Reasoning, Numerical Ability, Abstract Reasoning, Perceptual Speed and Accuracy, Mechanical Reasoning, Spatial Relations, Spelling, and Language Usage.</p>
-        <ul>
-            ${Object.values(aptitudeDescriptions).map(desc => `<li>${desc}</li>`).join('')}
+      default:
+        return { level: "Unknown", text: "No interpretation available for this category." };
+    }
+  }
+
+
+  function buildAptitudeHtml(aptitudeScore: any): string {
+    const categories = Object.values(aptitudeScore.categoryWiseScore);
+
+    const bullets = categories.map((cat: any) => {
+      const { level, text } = getInterpretation(cat.categoryName, cat.categoryPercentage);
+      return `
+        <li>
+          <strong>You have scored ${cat.categoryPercentage}% in ${cat.categoryDisplayText} which is a ${level} score</strong>
+          <p>${text}</p>
+        </li>
+      `;
+    }).join("");
+
+    return `
+      <div class="report-container">
+        <style>
+          .report-container {
+            max-width: 800px;
+            margin: 20px auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            border: 2px solid #1E3A8A; /* dark blue border like screenshot */
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+          }
+
+          .report-container h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1E3A8A; /* dark blue heading */
+            text-align: left;
+          }
+
+          .score-list {
+            list-style-type: disc;
+            padding-left: 25px;
+          }
+
+          .score-list li {
+            margin-bottom: 20px;
+            color: #333;
+          }
+
+          .score-list strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #111;
+            font-size: 16px;
+          }
+
+          .score-list p {
+            margin: 0;
+            color: #555;
+            font-size: 14px;
+          }
+
+          /* Optional: speech bubble for heading */
+          .report-container h2::before {
+            content: " ";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #1E3A8A;
+            border-radius: 50%;
+            margin-right: 10px;
+            vertical-align: middle;
+          }
+        </style>
+        <h2>What it means</h2>
+        <ul class="score-list">
+          ${bullets}
         </ul>
-    </div>
-
-    <div class="page">
-        <div class="bubble">Your Score</div>
-        <div>
-            ${aptitudeBars.map((bar, index) => `
-                <div class="funnel-bar" style="width: ${100 - index * 10}%; background-color: cyan; color: white; padding: 5px;">
-                    ${bar.name} ${bar.percentage.toFixed(2)}%
-                </div>
-            `).join('')}
-        </div>
-    </div>
-
-    <div class="page">
-        <div class="bubble">What it means</div>
-        <ul>
-            ${(() => {
-              const getTemplate = (catDisplayName: string, level: string): string => {
-                const categoryKey = (Object.keys(aptitudeKeyMap) as Array<keyof typeof aptitudeKeyMap>)
-                  .find(c => aptitude[aptitudeKeyMap[c]]?.categoryDisplayText === catDisplayName);
-                if (!categoryKey) return '';
-                if (level === 'High' || level === 'Moderate' || level === 'Low') {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  return (aptitudeWhatTemplates as any)[categoryKey]?.[level] ?? '';
-                }
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return (aptitudeWhatTemplates as any)[categoryKey]?.['Low'] ?? '';
-              };
-              return aptitudeBars.map(bar => `<li>You have scored ${bar.percentage.toFixed(2)}% in ${bar.name} which is a ${bar.level} score. ${getTemplate(bar.name, bar.level)}</li>`).join('');
-            })()}
-        </ul>
-    </div>
-
-    <!-- Add similar div.page for other sections: Interest, SEI, Adversity, Psychometric -->
-
-    <div class="page">
-        <h2>2. Interest & Preferences</h2>
-        <p>Interest & Preferences test results provide an objective basis for engaging in meaningful discussions about professional aspirations, values and motivations. This assessment framework is modeled after Holland's theory which defines personality types as: Realistic, Investigative, Artistic, Social, Enterprising, and Conventional (RIASEC).</p>
-        <ul>
-            ${Object.values(interestDescriptions).map(desc => `<li>${desc}</li>`).join('')}
-        </ul>
-    </div>
-
-    <div class="page">
-        <div class="bubble">Your Score</div>
-        <!-- Hexagon representation can be approximated with CSS or text -->
-        <p>Your Interest Code: ${interestCode}</p>
-        <p>Your results reflect the alignment of your skills and interests with specific areas within the RIASEC model...</p>
-        <div class="bubble">What it means</div>
-        <ul>
-            ${sortedInterests.map(([key, data]) => {
-              const template = interestWhatTemplates[key as keyof typeof interestWhatTemplates] ?? '';
-              return `<li>${data.categoryDisplayText ?? 'N/A'}: ${template}</li>`;
-            }).join('')}
-        </ul>
-    </div>
-
-    <!-- Continue for SEI, Adversity, Psychometric similarly, using tables or lists for scores, ul for descriptions -->
-
-</body>
-</html>
+      </div>
     `;
+  }
 
-    // Download HTML
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `SkillSphere_${(userInfo.name ?? 'User').toUpperCase().replace(' ', '_')}_${(attemptId ?? 'N/A').toUpperCase()}_Report.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+
+
+
 
   const handleDownloadPDF = async () => {
     if (!detailedResults || !userInfo || !user) return;
@@ -925,10 +663,17 @@ Your results highlight key
 
       for (const file of pageFiles) {
         try {
-          const res = await fetch(basePath + file);
-          if (!res.ok) continue;
-          const rawHtml = await res.text();
-          const filledHtml = applyReplacements(rawHtml);
+          let rawHtml: string;
+
+          if(file === "page6/page6.component.html") {
+            rawHtml = buildAptitudeHtml(detailedResults.aptitudeScore);
+          }
+          else {
+            const res = await fetch(basePath + file);
+            if (!res.ok) continue;
+            rawHtml = await res.text();
+          }
+          const filledHtml = file === "page6/page6.component.html" ? rawHtml : applyReplacements(rawHtml);
 
           const pageDiv = document.createElement('div');
           pageDiv.style.width = `${pageWidth}px`;
@@ -1029,13 +774,6 @@ Your results highlight key
               Back to Results
             </button>
             <div className="flex space-x-3">
-              <button 
-                onClick={handleGenerateHTML}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download HTML
-              </button>
               <button 
                 onClick={handleDownloadPDF}
                 className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
