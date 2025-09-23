@@ -329,13 +329,141 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
 
 
   function buildAptitudeHtml(aptitudeScore: any): string {
+    console.log('🔍 buildAptitudeHtml called with:', aptitudeScore);
+    
+    if (!aptitudeScore?.categoryWiseScore) {
+      console.error('❌ Invalid aptitudeScore structure:', aptitudeScore);
+      return `
+        <div class="report-container">
+          <h2>What it means</h2>
+          <p>Unable to load aptitude interpretation data</p>
+        </div>
+      `;
+    }
+    
     const categories = Object.values(aptitudeScore.categoryWiseScore);
+    console.log('📊 Processing aptitude categories:', categories.length);
 
-    const bullets = categories.map((cat: any) => {
+    const bullets = categories.map((cat: any, index: number) => {
+      console.log(`Processing category ${index + 1}:`, { 
+        name: cat.categoryName, 
+        percentage: cat.categoryPercentage, 
+        displayText: cat.categoryDisplayText 
+      });
+      
       const { level, text } = getInterpretation(cat.categoryName, cat.categoryPercentage);
       return `
         <li>
           <strong>You have scored ${cat.categoryPercentage}% in ${cat.categoryDisplayText} which is a ${level} score</strong>
+          <p>${text}</p>
+        </li>
+      `;
+    }).join("");
+    
+    console.log('✅ Generated aptitude HTML with', categories.length, 'categories');
+
+    return `
+      <div class="report-container">
+        <style>
+          .report-container {
+            max-width: 800px;
+            margin: 20px auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            border: 2px solid #1E3A8A; /* dark blue border like screenshot */
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+          }
+
+          .report-container h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1E3A8A; /* dark blue heading */
+            text-align: left;
+          }
+
+          .score-list {
+            list-style-type: disc;
+            padding-left: 25px;
+          }
+
+          .score-list li {
+            margin-bottom: 20px;
+            color: #333;
+          }
+
+          .score-list strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #111;
+            font-size: 16px;
+          }
+
+          .score-list p {
+            margin: 0;
+            color: #555;
+            font-size: 14px;
+          }
+
+          /* Optional: speech bubble for heading */
+          .report-container h2::before {
+            content: " ";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #1E3A8A;
+            border-radius: 50%;
+            margin-right: 10px;
+            vertical-align: middle;
+          }
+        </style>
+        <h2>What it means</h2>
+        <ul class="score-list">
+          ${bullets}
+        </ul>
+      </div>
+    `;
+  }
+
+  const RealisticText = "You are a Doer! You are someone who loves to get things done with your hands. Whether it's fixing a broken item, building something new, or solving a practical challenge, you feel most fulfilled when you can work physically. Your natural instinct is to figure out how things fit together, how tools and machinery work, and how to make them better. You’re not afraid to get your hands dirty and love working outdoors, whether it’s in nature or on a construction site. This hands-on approach makes you well-suited for careers in fields like construction, engineering, mechanics, agriculture, or forestry. In these roles, you'll have the opportunity to build, design, repair, and create things that have a real impact on the world. Your problem-solving mindset, combined with your love for working with your hands, will help you succeed in jobs that require physical work and practical thinking.";
+  const InvestigativeText = "You are a Thinker! You have a natural curiosity about the world around you. You enjoy diving deep into complex ideas, asking questions, and trying to figure out how things work. You love solving puzzles, whether they’re mathematical, logical, or conceptual. Your mind enjoys challenges that require deep thought and exploration. You’re not just interested in learning; you’re excited about discovering new things and understanding how the world operates. This intellectual curiosity can lead you to careers in science, research, technology, medicine, or data analysis, where you can use your analytical skills to make a difference. You’ll thrive in environments where you can explore new ideas, challenge existing theories, and contribute to innovative solutions. Whether it’s solving medical problems, discovering new technologies, or advancing knowledge, your ability to think deeply and logically will open doors to many exciting careers.";
+  const ArtisticText = "You are a Creator! Your imagination knows no bounds, and creativity flows through everything you do. Whether it’s through drawing, writing, music, or any other form of self-expression, you have a deep need to bring your ideas to life. You’re someone who doesn’t like being confined by rules or structures. Instead, you thrive when you’re given the freedom to explore your creative potential and think outside the box. Your mind is constantly coming up with new ideas, and you have the ability to turn those ideas into something tangible, whether it’s through art, storytelling, or design. Careers in fields like design, writing, performing arts, or advertising are ideal for you. These fields give you the freedom to express your creativity, share your vision with the world, and make an impact through your unique perspective. You’re not just creating for the sake of it – you’re creating to inspire and communicate with others. Your creativity can be a powerful tool in shaping the world around you.";
+  const SocialText = "You are a Helper! Your heart is always open to others, and you have a natural ability to understand and care for people. Whether it’s offering advice, lending a helping hand, or simply being there for someone, you have a strong desire to make a positive impact on others’ lives. You’re someone who thrives in environments where you can support and guide people, whether it’s in a personal or professional setting. You find joy in working with others and helping them overcome challenges. This makes you well-suited for careers in teaching, counseling, healthcare, or community service. These fields allow you to use your empathy and understanding to make a real difference in people’s lives. You’ll have the opportunity to share your knowledge, provide support, and bring people together in meaningful ways. Your ability to listen, care, and help others is a strength that will serve you well in careers that focus on improving the well-being of individuals and communities.";
+  const EnterprisingText = "You are a Persuader! You have a natural charisma and confidence that draws people in. You’re someone who loves to set big goals and works hard to achieve them. You have the ability to inspire and motivate others to take action, whether it's convincing them of your vision or leading them to a shared goal. You’re not afraid to take charge and lead the way, and your ability to persuade others is one of your strongest skills. Careers in business, marketing, public relations, or entrepreneurship are a great fit for you. In these roles, you’ll be able to use your leadership abilities to turn ideas into reality, motivate others, and drive success. Your energy and confidence will help you thrive in dynamic, fast-paced environments, where you can set goals, lead teams, and make an impact. Whether it’s starting your own business, leading a marketing campaign, or building relationships with clients, your ability to persuade and inspire others will be key to your success.";
+  const ConventionalText = "You are an Organizer! You’re someone who loves structure and order. You thrive in environments where things are planned out, organized, and clearly defined. You pay attention to the smallest details, and you take pride in keeping things in order. You’re someone who can manage multiple tasks efficiently and ensure that everything runs smoothly. Whether it’s organizing a schedule, managing a project, or making sure that systems are in place, you enjoy creating structure and helping things run efficiently. Careers in accounting, administration, logistics, or banking are perfect for you because they allow you to use your attention to detail and organizational skills to keep everything in check. In these roles, you can focus on making sure that processes are efficient, information is managed properly, and things stay on track. Your ability to stay organized and manage details is a skill that will help you succeed in any career that requires planning, coordination, and structure.";
+
+  function getInterestInterpretation(categoryName: string): string {
+    switch (categoryName.toLowerCase()) {
+      case "realistic":
+        return RealisticText;
+      case "investigative":
+        return InvestigativeText;
+      case "artistic":
+        return ArtisticText;
+      case "social":
+        return SocialText;
+      case "enterprising":
+        return EnterprisingText;
+      case "conventional":
+        return ConventionalText;
+      default:
+        return "No interpretation available for this category.";
+    }
+  }
+
+  function buildInterestHtml(interestAndPreferenceScore: any): string {
+    // Convert categoryWiseScore (object map) to an array and pick top 3 by score
+    const top3 = Object.entries(interestAndPreferenceScore?.categoryWiseScore || {})
+      .map(([categoryName, so]: any) => ({ ...so, categoryName }))
+      .sort((a: any, b: any) => (b?.categoryScore ?? 0) - (a?.categoryScore ?? 0))
+      .slice(0, 3);
+
+    const bullets = top3.map((cat: any) => {
+      const text = getInterestInterpretation(cat.categoryName);
+      return `
+        <li>
+          <strong>${cat.categoryLetter} - ${cat.categoryDisplayText}</strong>
           <p>${text}</p>
         </li>
       `;
@@ -405,9 +533,309 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
     `;
   }
 
+  function getSeiInterpretation(categoryName: string, categoryPercentage: number): { level: string, text: string } {
+    let level: string;
+    if (categoryPercentage >= 77) {
+        level = "High";
+    } else if (categoryPercentage >= 24) {
+        level = "Moderate";
+    } else {
+        level = "Low";
+    }
 
+    const lowerName = categoryName.toLowerCase();
 
+    if (lowerName === "self awareness") {
+        if (level === "High") {
+            return {
+                level,
+                text: "\"You truly understand yourself!\" You have a strong awareness of your emotions, strengths, and areas where you can grow. You know how your feelings affect your actions and use that knowledge to make smart choices. For example, if you're feeling nervous before a test, you recognize it and find ways to calm yourself down, like taking deep breaths or preparing better. This ability helps you build confidence and navigate challenges more easily. Since you understand yourself well, you can also explain your feelings to others, which makes your relationships stronger. Keep using your self-awareness to make thoughtful decisions and continue growing!"
+            };
+        } else if (level === "Moderate") {
+            return {
+                level,
+                text: "\"You're figuring things out!\" You have a good understanding of your emotions but sometimes struggle to see how they affect your actions. For example, you might feel frustrated after a bad grade but not immediately realize that it’s making you avoid studying. With a little practice, like reflecting on your feelings at the end of the day, you can sharpen your ability to understand yourself better. Learning more about your strengths and areas for improvement will help you gain more confidence and make smarter choices in different situations."
+            };
+        } else {
+            return {
+                level,
+                text: "\"Understanding yourself can be tricky!\" Sometimes, emotions can feel confusing, and you may not always notice how they impact your actions. For example, you might get upset with a friend without realizing that you're actually stressed about school. It can be tough to recognize feelings in the moment, but small steps like journaling or talking to a trusted person can help. Learning to notice and name your emotions will make it easier to understand yourself and handle situations in a way that benefits you. With time, you can grow stronger in this area and feel more in control of your thoughts and reactions."
+            };
+        }
+    } else if (lowerName === "self management") {
+        if (level === "High") {
+            return {
+                level,
+                text: "\"You stay in control!\" You do a great job of managing your emotions and behavior, even when things get tough. If something stressful happens, like a tough exam or a disagreement with a friend, you don’t let your emotions take over. Instead, you stay calm, think through the situation, and find a solution. This skill helps you stay focused on your goals and keep moving forward. Because of your self-control, people see you as responsible, dependable, and mature. Keep using this strength to handle challenges and achieve success in all areas of life!"
+            };
+        } else if (level === "Moderate") {
+            return {
+                level,
+                text: "\"You manage well but can improve!\" Most of the time, you handle your emotions and behavior well, but when things get really stressful, it can be harder to stay in control. For example, if a group project isn’t going well, you might feel frustrated and struggle to stay patient with your classmates. The good news is that small techniques, like taking deep breaths, pausing before reacting, or breaking tasks into smaller steps, can help you manage your emotions better. With practice, you’ll find it easier to stay calm and focused even in challenging situations."
+            };
+        } else {
+            return {
+                level,
+                text: "\"Big emotions can be tough to handle!\" You might find it difficult to control your emotions, especially when something upsetting or stressful happens. For example, if you get a low grade on an assignment, you might react by shutting down or getting angry instead of looking for ways to improve. This can sometimes lead to stress and make it harder to achieve your goals. The good news is that self-management is a skill that can be improved! Simple habits like deep breathing, writing down your feelings, or asking for help when you need it can make a big difference. The more you practice staying calm and focused, the more in control you'll feel in any situation."
+            };
+        }
+    } else if (lowerName === "social awareness") {
+        if (level === "High") {
+            return {
+                level,
+                text: "\"You understand people’s feelings!\" You are really good at recognizing how others feel, even when they don’t say it out loud. If a friend is upset, you notice right away and know how to support them. This makes you a great listener and a caring friend. Because of your strong social awareness, people feel comfortable talking to you, and you build deep, meaningful relationships. This skill also helps in group activities, where you can sense what others need and make sure everyone is included. Keep using your ability to understand others—it’s a great strength that will help you in friendships, school, and beyond!"
+            };
+        } else if (level === "Moderate") {
+            return {
+                level,
+                text: "\"You’re aware but can sharpen your skills!\" You generally understand people’s feelings and social situations, but sometimes you might miss small clues. For example, a classmate might seem upset, but you’re not entirely sure why or how to respond. That’s okay! By paying more attention to body language, tone of voice, and facial expressions, you can get even better at understanding others. Asking simple questions like “Are you okay?” can also help strengthen your ability to connect with people. With a little effort, you’ll become even better at reading emotions and responding in a way that makes people feel understood and supported."
+            };
+        } else {
+            return {
+                level,
+                text: "\"Social cues can be tricky!\" Understanding other people’s feelings might not always come easily. Sometimes, you may not realize when a friend is feeling sad or when someone needs support. This can make it harder to connect with others. But don’t worry—social awareness is something you can improve! Try observing how people express emotions through their words and actions. If you’re unsure how someone feels, asking them directly or listening carefully to their tone can help. The more you practice, the easier it will be to understand emotions and make stronger connections with others."
+            };
+        }
+    } else if (lowerName === "social skills") {
+        if (level === "High") {
+            return {
+                level,
+                text: "\"You’re a great communicator!\" You have strong social skills and easily make friends, communicate clearly, and resolve conflicts. You’re confident when expressing yourself, whether you’re working in a group, giving a presentation, or having a conversation with a teacher or friend. If problems arise, you know how to talk them through and find solutions. This makes you a great team player and a leader in social situations. Keep using your communication skills to build positive relationships and inspire those around you!"
+            };
+        } else if (level === "Moderate") {
+            return {
+                level,
+                text: "\"You communicate well but can improve!\" You have decent communication skills and can work well with others, but there’s room to grow. For example, you might sometimes struggle to clearly express your thoughts or influence a group decision. You might also find it difficult to step in and solve conflicts when they happen. Practicing active listening, speaking with confidence, and being open to feedback can help you become a stronger communicator. Small improvements can make a big difference in how well you connect with others."
+            };
+        } else {
+            return {
+                level,
+                text: "\"Making connections can be tough!\" Expressing yourself and building relationships may sometimes feel difficult. You might struggle to join conversations, explain your ideas, or handle conflicts. This can sometimes lead to misunderstandings or feeling left out. The good news is that social skills can be improved with practice! Try joining group activities, making eye contact when speaking, or practicing small talk with classmates. The more you put yourself in social situations, the more confident you’ll become. With time and effort, you’ll find it easier to communicate, make friends, and handle different social interactions."
+            };
+        }
+    }
 
+    return { level: "Unknown", text: "No interpretation available for this category." };
+}
+
+function buildSeiHtml(seiScore: any): string {
+    console.log('🔍 buildSeiHtml called with:', seiScore);
+    
+    if (!seiScore?.categoryWiseScore) {
+        console.error('❌ Invalid seiScore structure:', seiScore);
+        return `
+            <div class="report-container">
+                <h2>What it means</h2>
+                <p>Unable to load SEI interpretation data</p>
+            </div>
+        `;
+    }
+    
+    const categories = Object.values(seiScore.categoryWiseScore);
+    console.log('📊 Processing SEI categories:', categories.length);
+
+    const bullets = categories.map((cat: any, index: number) => {
+        console.log(`Processing category ${index + 1}:`, { 
+            name: cat.categoryName, 
+            percentage: cat.categoryPercentage, 
+            displayText: cat.categoryDisplayText 
+        });
+        
+        const { level, text } = getSeiInterpretation(cat.categoryName, cat.categoryPercentage);
+        return `
+            <li>
+                <strong>You have scored ${cat.categoryPercentage}% in ${cat.categoryDisplayText} which is a ${level} score</strong>
+                <p>${text}</p>
+            </li>
+        `;
+    }).join("");
+    
+    console.log('✅ Generated SEI HTML with', categories.length, 'categories');
+
+    return `
+        <div class="report-container">
+            <style>
+                .report-container {
+                    max-width: 800px;
+                    margin: 20px auto;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    line-height: 1.6;
+                    border: 2px solid #1E3A8A; /* dark blue border like screenshot */
+                    padding: 20px;
+                    border-radius: 8px;
+                    background-color: #fff;
+                }
+
+                .report-container h2 {
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                    color: #1E3A8A; /* dark blue heading */
+                    text-align: left;
+                }
+
+                .score-list {
+                    list-style-type: disc;
+                    padding-left: 25px;
+                }
+
+                .score-list li {
+                    margin-bottom: 20px;
+                    color: #333;
+                }
+
+                .score-list strong {
+                    display: block;
+                    margin-bottom: 8px;
+                    color: #111;
+                    font-size: 16px;
+                }
+
+                .score-list p {
+                    margin: 0;
+                    color: #555;
+                    font-size: 14px;
+                }
+
+                /* Optional: speech bubble for heading */
+                .report-container h2::before {
+                    content: " ";
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                    border: 2px solid #1E3A8A;
+                    border-radius: 50%;
+                    margin-right: 10px;
+                    vertical-align: middle;
+                }
+            </style>
+            <h2>What it means</h2>
+            <ul class="score-list">
+                ${bullets}
+            </ul>
+        </div>
+    `;
+}
+
+function getAqInterpretation(aqScore: number): { level: string, text: string } {
+    if (aqScore >= 178 && aqScore <= 200) {
+        return {
+            level: "High",
+            text: "\"You are a master of challenges!\" You have an amazing ability to handle difficulties and find solutions quickly. Whether it's a tough exam, a failed attempt at something, or an unexpected problem, you don’t let setbacks hold you back for long. You take responsibility for your actions, stay optimistic, and inspire others with your resilience. People likely admire your problem-solving skills and come to you for advice. However, even the best can grow! Try mentoring others or taking on new challenges outside your comfort zone to push yourself even further. Keep up the great work!"
+        };
+    } else if (aqScore >= 161 && aqScore <= 177) {
+        return {
+            level: "Moderately High",
+            text: "\"You’re strong, however there’s room to grow!\" You’re already great at handling setbacks and staying resilient. When things get tough, you push through and keep moving forward. For example, if you struggle in a subject, you don’t give up—you find ways to improve, like practicing more or asking for help. However, there may be times when challenges feel overwhelming, and that’s okay! The key is to keep strengthening your resilience. Try new strategies like problem-solving exercises or mindfulness to stay even more agile in tough situations. You’re on the right track!"
+        };
+    } else if (aqScore >= 135 && aqScore <= 160) {
+        return {
+            level: "Moderate",
+            text: "\"You’re doing well, just keep building!\" You handle most of life’s ups and downs well, but when faced with bigger challenges, you might feel stuck or overwhelmed. Maybe a big project or a conflict with a friend makes you feel like giving up. That’s totally normal! Instead of avoiding tough situations, focus on building resilience—break problems into smaller steps, talk to someone for advice, and remind yourself of past successes. You already have a solid foundation, and with a little extra effort, you can become even stronger at facing obstacles. You’ve got this!"
+        };
+    } else if (aqScore >= 118 && aqScore <= 134) {
+        return {
+            level: "Moderately Low",
+            text: "\"Keep going! You’re growing!\" You manage some setbacks well, but when life throws bigger challenges your way, it can feel harder to bounce back. Maybe you struggle with staying motivated after failure or feel like giving up when things don’t go as planned. The good news? AQ is like a muscle—you can strengthen it with practice! Start by setting small, achievable goals, learning from mistakes, and staying patient with yourself. Every step forward, no matter how small, builds resilience. Keep pushing yourself, and you’ll become more confident in facing life’s challenges!"
+        };
+    } else if (aqScore <= 117) {
+        return {
+            level: "Low",
+            text: "\"This is just the beginning of your growth!\" Right now, challenges might feel overwhelming, and setbacks can seem like the end of the road. Maybe failing a test or facing rejection makes you want to stop trying. But remember—everyone starts somewhere! Building resilience takes time and effort. Start with small steps: ask for help, reflect on what you can learn from mistakes, and celebrate small wins. Over time, you’ll see a huge change in how you handle difficulties. Believe in yourself—you have so much potential, and this is just the start of your journey!"
+        };
+    }
+
+    return { level: "Unknown", text: "No interpretation available for this score." };
+}
+
+function buildAqHtml(aqDetails: any): string {
+    console.log('🔍 buildAqHtml called with:', aqDetails);
+    
+    if (aqDetails?.aqScore == null) {
+        console.error('❌ Invalid aqDetails structure:', aqDetails);
+        return `
+            <div class="report-container">
+                <h2>What it means</h2>
+                <p>Unable to load AQ interpretation data</p>
+            </div>
+        `;
+    }
+    
+    const aqScore = aqDetails.aqScore;
+    console.log('📊 Processing AQ score:', aqScore);
+
+    const { level, text } = getAqInterpretation(aqScore);
+    const bullet = `
+        <li>
+            <strong>You have scored ${aqScore} in Adversity Quotient which is a ${level} score</strong>
+            <p>${text}</p>
+        </li>
+    `;
+    
+    console.log('✅ Generated AQ HTML');
+
+    return `
+        <div class="report-container">
+            <style>
+                .report-container {
+                    max-width: 800px;
+                    margin: 20px auto;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    line-height: 1.6;
+                    border: 2px solid #1E3A8A; /* dark blue border like screenshot */
+                    padding: 20px;
+                    border-radius: 8px;
+                    background-color: #fff;
+                }
+
+                .report-container h2 {
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                    color: #1E3A8A; /* dark blue heading */
+                    text-align: left;
+                }
+
+                .score-list {
+                    list-style-type: disc;
+                    padding-left: 25px;
+                }
+
+                .score-list li {
+                    margin-bottom: 20px;
+                    color: #333;
+                }
+
+                .score-list strong {
+                    display: block;
+                    margin-bottom: 8px;
+                    color: #111;
+                    font-size: 16px;
+                }
+
+                .score-list p {
+                    margin: 0;
+                    color: #555;
+                    font-size: 14px;
+                }
+
+                /* Optional: speech bubble for heading */
+                .report-container h2::before {
+                    content: " ";
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                    border: 2px solid #1E3A8A;
+                    border-radius: 50%;
+                    margin-right: 10px;
+                    vertical-align: middle;
+                }
+            </style>
+            <h2>What it means</h2>
+            <ul class="score-list">
+                ${bullet}
+            </ul>
+        </div>
+    `;
+}
 
   const handleDownloadPDF = async () => {
     if (!detailedResults || !userInfo || !user) return;
@@ -434,8 +862,10 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
       'page8/page8.component.html',
       'page9/page9.component.html',
       'page10/page10.component.html',
+      'page10.5/page10.5.component.html',
       'page11/page11.component.html',
       'page12/page12.component.html',
+      'page12.5/page12.5.component.html',
       'page13/page13.component.html',
       'page14/page14.component.html',
       'page15/page15.component.html',
@@ -477,6 +907,11 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
       '{{careerMapping.idealCareer}}': String(detailedResults.careerMapping?.idealCareer ?? ''),
       '{{careerMapping.idealFor}}': String(detailedResults.careerMapping?.idealFor ?? ''),
     };
+
+    // Debug flag to reduce noisy logs in production
+    const DEBUG_PDF = false; // Disabled for cleaner logs
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dbg = (...args: any[]) => { if (DEBUG_PDF) console.log(...args); };
 
     // Top Aptitude (first three)
     for (let i = 0; i < 3; i++) {
@@ -534,111 +969,302 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
     replacements['$BCB'] = topPsychometric[1] ?? '';
     replacements['$BCC'] = topPsychometric[2] ?? '';
 
-    const applyReplacements = (html: string): string => {
+    const applyReplacements = (html: string, fileName?: string): string => {
       let out = html;
       for (const [key, value] of Object.entries(replacements)) {
         out = out.split(key).join(value);
       }
 
-      // Expand aptitude interpretation loop (@for ...)
-      const aptiLoopMatch = out.match(/@for \(item of aptiCategoryWiseScores[\s\S]*?\{([\s\S]*?)\}/);
-      if (aptiLoopMatch) {
-        const listHtml = aptiCategoryWiseScores.map((entry: any) => {
-          const so = entry.scoreObject;
-          return `<ul><li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;">You have scored ${so.categoryPercentage} in ${so.categoryDisplayText} which is a ${so.categoryScoreLevel} score</span><p>${so.categoryInterpretation ?? ''}</p></li></ul>`;
-        }).join('');
-        out = out.replace(/@for \(item of aptiCategoryWiseScores[\s\S]*?\{[\s\S]*?\}/, listHtml);
-      }
-
-      // Expand SEI list (*ngFor over seiScore)
-      out = out.replace(/<li\s+\*ngFor="let item of seiScore;[\s\S]*?<\/li>/g, () => {
-        return seiScore.map((entry: any) => {
-          const so = entry.scoreObject;
-          return `<li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;">${so.categoryScoreLevel} score in ${so.categoryDisplayText}</span><p>${so.categoryInterpretation ?? ''}</p></li>`;
-        }).join('');
-      });
-
-      // Replace interest top-3 *ngFor block
-      out = out.replace(/<li\s+\*ngFor="let item of interestAndPreferenceScore\.slice\(0,3\);[\s\S]*?<\/li>/g,
-        () => {
-          const items = interestAndPreferenceScore.slice(0, 3).map((entry: any) => {
+        // Expand aptitude interpretation loop (@for ...)
+        const aptiLoopMatch = out.match(/@for \(item of aptiCategoryWiseScores[\s\S]*?\{([\s\S]*?)\}/);
+        if (aptiLoopMatch) {
+          const listHtml = aptiCategoryWiseScores.map((entry: any) => {
             const so = entry.scoreObject;
-            return `<li><span style=\"font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;\">${so.categoryLetter} - ${so.categoryDisplayText}</span><p>${so.categoryInterpretation ?? ''}</p></li>`;
+            return `<ul><li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;">You have scored ${so.categoryPercentage}% in ${so.categoryDisplayText} which is a ${so.categoryScoreLevel} score</span><p>${so.categoryInterpretation ?? ''}</p></li></ul>`;
           }).join('');
-          return items;
+          out = out.replace(/@for \(item of aptiCategoryWiseScores[\s\S]*?\{[\s\S]*?\}/, listHtml);
+        }
+
+        // Expand SEI list (*ngFor over seiScore)
+        out = out.replace(/<li\s+\*ngFor="let item of seiScore;[\s\S]*?<\/li>/g, () => {
+          return seiScore.map((entry: any) => {
+            const so = entry.scoreObject;
+            return `<li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;">${so.categoryScoreLevel} score in ${so.categoryDisplayText}</span><p>${so.categoryInterpretation ?? ''}</p></li>`;
+          }).join('');
         });
 
-      // Inject aptitude "Your Score" dynamic bar graph for page 5 if absolute-text is empty
-      if (/<text[^>]*>Your Score<\/text>[\s\S]*?Spelling:/i.test(out) && /<div class="absolute-text">\s*<\/div>/.test(out)) {
-        const maxPct = Math.max(1, ...aptiCategoryWiseScores.map((e: any) => Number(e.scoreObject.categoryPercentage) || 0));
-        const colors = ['#22D3EE','#34AFC5','#1F76A8','#2F5B8F','#343C6E','#5A3B63','#7A4A63'];
-        const graph = `
-          <style>
-            .apti-graph{font-family:Arial, sans-serif; max-width:640px;}
-            .apti-row{display:flex; align-items:center; gap:12px; margin:8px 0;}
-            .apti-label{width:200px; color:#1F2937; font-size:12px}
-            .apti-bar-wrap{flex:1; background:#E5E7EB; height:18px; border-radius:4px; overflow:hidden}
-            .apti-bar{height:100%; border-radius:4px}
-            .apti-pct{width:60px; text-align:right; font-size:12px; color:#111827}
-          </style>
-          <div class="apti-graph">
-            ${aptiCategoryWiseScores.map((e: any, idx: number) => {
-              const pct = Math.max(0, Math.min(100, Number(e.scoreObject.categoryPercentage) || 0));
-              const width = (pct / maxPct) * 100;
-              const color = colors[idx % colors.length];
-              const label = e.scoreObject.categoryDisplayText || e.category;
-              return `<div class=\"apti-row\"><div class=\"apti-label\">${label}</div><div class=\"apti-bar-wrap\"><div class=\"apti-bar\" style=\"width:${width}%;background:${color}\"></div></div><div class=\"apti-pct\">${pct.toFixed(2)}%</div></div>`;
-            }).join('')}
-          </div>`;
-        out = out.replace(/<div class="absolute-text">\s*<\/div>/, `<div class="absolute-text">${graph}</div>`);
-      }
+        // Replace interest top-3 *ngFor block
+        out = out.replace(/<li\s+\*ngFor="let item of interestAndPreferenceScore\.slice\(0,3\);[\s\S]*?<\/li>/g,
+          () => {
+            const items = interestAndPreferenceScore.slice(0, 3).map((entry: any) => {
+              const so = entry.scoreObject;
+              return `<li><span style=\"font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;\">${so.categoryLetter} - ${so.categoryDisplayText}</span><p>${so.categoryInterpretation ?? ''}</p></li>`;
+            }).join('');
+            return items;
+          });
 
-      // Inject psychometric "Your Score" summary for page 13 if absolute-text is empty
-      if (/Psychometric traits/i.test(out) && /<text[^>]*>Your Score<\/text>/.test(out) && /<div class="absolute-text">\s*<\/div>/.test(out)) {
-        const psyItems = Object.entries(detailedResults.detailedPsychometricScore.categoryWiseScore)
-          .map(([category, so]: any) => ({ category, scoreObject: so }))
-          .sort((a: any, b: any) => a.scoreObject.categoryOrder - b.scoreObject.categoryOrder || b.scoreObject.categoryScore - a.scoreObject.categoryScore);
-        const summary = `<ul>${psyItems.map((e: any) => `<li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight:600;">${e.scoreObject.categoryDisplayText ?? e.category}</span> - ${e.scoreObject.categoryScore} (${e.scoreObject.categoryScoreLevel})</li>`).join('')}</ul>`;
-        out = out.replace(/<div class="absolute-text">\s*<\/div>/, `<div class="absolute-text">${summary}</div>`);
-      }
+        if (fileName?.includes('page5/page5.component.html')) {
+        // Handle page 5 aptitude "Your Score" dynamic content - Enhanced debugging
+        dbg('🔍 Checking for page 5 patterns in HTML...');
+        
+        // Look for Page 5 specific characteristics
+        const hasSvgContainer = /<svg[\s\S]*?preserveAspectRatio/.test(out);
+        const hasYourScoreText = /<text[\s\S]*?>Your Score<\/text>/.test(out);
+        const hasSpellingText = /<text[\s\S]*?>Spelling:<\/text>/.test(out) || out.includes('Language Usage (Grammar)');
+        const hasAbsoluteText = /<div class="absolute-text">/.test(out);
+        const hasEmptyAbsoluteText = /<div class="absolute-text">\s*<\/div>/.test(out);
+        const hasRect373 = /rect.*y="373\.768"/.test(out); // The chart area rectangle
+        const hasViewBox793 = /viewBox="0 0 793 1123"/.test(out); // Specific viewBox dimensions
+        
+        // Page 5 detection - must have SVG, viewBox, "Your Score" text, spelling/grammar content, and empty absolute-text
+        const isPage5 = hasSvgContainer && hasViewBox793 && hasYourScoreText && hasSpellingText && hasEmptyAbsoluteText;
+        
+        dbg('🎯 Page 5 detection result:', isPage5);
+        dbg('  - hasSvgContainer:', hasSvgContainer);
+        dbg('  - hasViewBox793:', hasViewBox793);
+        dbg('  - hasYourScoreText:', hasYourScoreText);
+        dbg('  - hasSpellingText:', hasSpellingText);
+        dbg('  - hasEmptyAbsoluteText:', hasEmptyAbsoluteText);
+        
+        if (isPage5) {
+          dbg('✅ Page 5 detected! Injecting aptitude scores...');
+          dbg('Available aptitude data:', aptiCategoryWiseScores?.length || 0, 'categories');
+          
+          if (!aptiCategoryWiseScores || aptiCategoryWiseScores.length === 0) {
+            console.error('❌ No aptitude data available!');
+            out = out.replace(/<div class="absolute-text">\s*<\/div>/, '<div class="absolute-text"><p>No aptitude data available</p></div>');
+          } else {
+            // Colors from the screenshot - gradient from cyan to dark purple
+            const colors = ['#40E0D0', '#36C5C5', '#2FA8BA', '#278BAF', '#1F6EA4', '#175199', '#0F348E'];
+            
+            dbg('📊 Generating chart with data:', aptiCategoryWiseScores.map(e => ({
+              label: e.scoreObject?.categoryDisplayText || e.category,
+              pct: e.scoreObject?.categoryPercentage || 0
+            })));
+            
+            const graph = `
+              <div style="
+                width: 520px;
+                height: 300px;
+                margin: 10px;
+                padding: 15px;
+                background: white;
+                border: 2px solid #333;
+                font-family: Arial, sans-serif;
+                box-sizing: border-box;
+              ">
+                <h3 style="
+                  font-size: 16px;
+                  font-weight: bold;
+                  margin-bottom: 15px;
+                  text-align: center;
+                  color: #333;
+                ">Aptitude Test Results</h3>
+                ${aptiCategoryWiseScores.map((e: any, idx: number) => {
+                  const pct = Math.max(0, Math.min(100, Number(e.scoreObject?.categoryPercentage) || 0));
+                  const width = Math.max(20, pct * 3); // Minimum 20px for visibility
+                  const color = colors[idx % colors.length];
+                  const label = e.scoreObject?.categoryDisplayText || e.category || `Category ${idx + 1}`;
+                  return `
+                    <div style="
+                      display: table;
+                      width: 100%;
+                      margin: 6px 0;
+                      height: 25px;
+                      line-height: 25px;
+                    ">
+                      <div style="
+                        display: table-cell;
+                        width: 170px;
+                        font-size: 11px;
+                        color: #333;
+                        vertical-align: middle;
+                        padding-right: 8px;
+                        text-align: left;
+                      ">${label}</div>
+                      <div style="
+                        display: table-cell;
+                        vertical-align: middle;
+                        width: 250px;
+                      ">
+                        <div style="
+                          height: 18px;
+                          width: ${width}px;
+                          background-color: ${color};
+                          border-radius: 2px;
+                          display: inline-block;
+                        "></div>
+                      </div>
+                      <div style="
+                        display: table-cell;
+                        width: 50px;
+                        font-size: 11px;
+                        color: #333;
+                        font-weight: 600;
+                        text-align: right;
+                        vertical-align: middle;
+                      ">${pct.toFixed(1)}%</div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+            
+            // Try multiple replacement patterns
+            let replacedHtml = out;
+            
+            // Pattern 1: Empty absolute-text div
+            if (/<div class="absolute-text">\s*<\/div>/.test(replacedHtml)) {
+              replacedHtml = replacedHtml.replace(/<div class="absolute-text">\s*<\/div>/, `<div class="absolute-text">${graph}</div>`);
+              dbg('✅ Replaced empty absolute-text div');
+            }
+            // Pattern 2: Absolute-text with whitespace
+            else if (/<div class="absolute-text">[\s\n\r]*<\/div>/.test(replacedHtml)) {
+              replacedHtml = replacedHtml.replace(/<div class="absolute-text">[\s\n\r]*<\/div>/, `<div class="absolute-text">${graph}</div>`);
+              dbg('✅ Replaced absolute-text with whitespace');
+            }
+            // Pattern 3: Just add after absolute-text opening
+            else if (replacedHtml.includes('<div class="absolute-text">')) {
+              replacedHtml = replacedHtml.replace('<div class="absolute-text">', `<div class="absolute-text">${graph}`);
+              dbg('✅ Added content after absolute-text opening');
+            }
+            
+            const wasReplaced = replacedHtml !== out;
+            dbg('🎯 Page 5 replacement successful:', wasReplaced);
+            
+            if (!wasReplaced) {
+              dbg('❌ Replacement failed! HTML structure:');
+              dbg(out.substring(out.indexOf('absolute-text') - 50, out.indexOf('absolute-text') + 150));
+            }
+            
+            out = replacedHtml;
+          }
+        } else {
+          dbg('❌ Page 5 not detected in this HTML');
+        }
+        }
 
-      // Inject career recommendations list if "$CAREER_LIST" token exists
-      if (out.includes('$CAREER_LIST') && detailedResults.careerMapping?.idealCareer) {
-        const careers = String(detailedResults.careerMapping.idealCareer)
-          .split(',')
-          .map(c => c.trim())
-          .filter(Boolean)
-          .map(c => `<li>${c}</li>`) 
-          .join('');
-        out = out.replace(/\$CAREER_LIST/g, `<ul>${careers}</ul>`);
-      }
+        // Handle page 10 SEI score placeholders and *ngFor replacement
+        if (fileName?.includes('page10/page10.component.html') && (out.includes('{{seiScore[0].scoreObject.categoryScore}}') || out.includes('*ngFor=\"let item of seiScore'))) {
+          // Replace individual SEI score placeholders
+          for (let i = 0; i < 4 && i < seiScore.length; i++) {
+            const item = seiScore[i]?.scoreObject;
+            if (item) {
+              out = out.replace(new RegExp(`\\{\\{seiScore\\[${i}\\]\\.scoreObject\\.categoryScore\\}\\}`, 'g'), String(item.categoryScore ?? ''));
+              out = out.replace(new RegExp(`\\{\\{seiScore\\[${i}\\]\\.scoreObject\\.categoryScoreLevel\\}\\}`, 'g'), String(item.categoryScoreLevel ?? ''));
+              out = out.replace(new RegExp(`\\{\\{seiScore\\[${i}\\]\\.scoreObject\\.categoryDisplayText\\}\\}`, 'g'), String(item.categoryDisplayText ?? ''));
+            }
+          }
+        }
 
-      // If it's the Career Recommendations page, inject career block even if *ngIf exists
-      if (/(Career Recommendation|Career recommendations|Recommended Career Paths|Potential Career Roles)/i.test(out)) {
-        const careers = String(detailedResults.careerMapping?.idealCareer || '')
-          .split(',')
-          .map(c => c.trim())
-          .filter(Boolean)
-          .map(c => `<li>${c}</li>`) 
-          .join('');
-        const club = String(detailedResults.careerMapping?.clubToJoin || '');
-        const tag = String(detailedResults.careerMapping?.tagLine || '');
-        const topLine = String(detailedResults.careerMapping?.topLine || '');
-        const idealFor = String(detailedResults.careerMapping?.idealFor || '');
-        const careerHtml = `
-          <div>
-            ${topLine ? `<p style="margin-bottom:8px;">${topLine}</p>` : ''}
-            ${club ? `<h3 style="font-weight:700; color:#1f2937;">${club}</h3>` : ''}
-            ${tag ? `<p style="color:#4b5563;">${tag}</p>` : ''}
-            ${idealFor ? `<p style="margin:8px 0;"><strong>Ideal for:</strong> ${idealFor}</p>` : ''}
-            ${careers ? `<h4 style="margin-top:8px;">Recommended Careers</h4><ul>${careers}</ul>` : ''}
-          </div>
-        `;
-        // Replace Angular *ngIf block
-        out = out.replace(/<div\s+\*ngIf=\"careerMapping\"\s+class=\"absolute-text\">[\s\S]*?<\/div>/, `<div class=\"absolute-text\">${careerHtml}</div>`);
-        // Or fill empty absolute-text
-        out = out.replace(/<div class=\"absolute-text\">\s*<\/div>/, `<div class=\"absolute-text\">${careerHtml}</div>`);
-      }
+        // Handle Page 12 - Adversity "What it means" section with result interpretation
+        if (fileName?.includes('page12/page12.component.html') && /{{detailedReport\.adversityScore\.resultInterpretation}}/.test(out) && /<div class="absolute-text">/.test(out)) {
+          dbg('🎯 Page 12 (Adversity) detected - injecting resultInterpretation');
+          const adversityInterpretation = String(detailedResults.adversityScore?.resultInterpretation ?? 'No interpretation available');
+          out = out.replace(
+            /{{detailedReport\.adversityScore\.resultInterpretation}}/g,
+            adversityInterpretation
+          );
+          dbg('✅ Page 12 adversity interpretation injected');
+        }
+        
+        // Handle page 10 SEI container and *ngFor replacement  
+        if (fileName?.includes('page10/page10.component.html') && /<div class=\"container\">\s*<div class=\"absolute-text\">/.test(out) && out.includes('*ngFor=\"let item of seiScore')) {
+          dbg('🎯 Page 10 (SEI) detected - generating SEI list');
+          const seiListHtml = seiScore.map((entry: any) => {
+            const so = entry.scoreObject;
+            return `<li><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight: 600;">${so.categoryScoreLevel} score in ${so.categoryDisplayText}</span><p>${so.categoryInterpretation ?? ''}</p></li>`;
+          }).join('');
+          
+          // Replace the entire container div with proper content
+          out = out.replace(
+            /<div class="container">\s*<div class="absolute-text">\s*<ul>[\s\S]*?<\/ul>\s*<\/div>\s*<\/div>/,
+            `<div class="container"><div class="absolute-text"><ul>${seiListHtml}</ul></div></div>`
+          );
+          dbg('✅ Page 10 SEI list injected with', seiScore.length, 'items');
+        }
+
+        // Handle other "What it means" pages with empty absolute-text containers
+        // Check for various page patterns and fill with appropriate content
+        
+        // Page 13 - Psychometric traits "Your Score" summary
+        if (fileName?.includes('page13/page13.component.html') && /Psychometric traits/i.test(out) && /<text[^>]*>Your Score<\/text>/.test(out) && /<div class=\"absolute-text\">\s*<\/div>/.test(out)) {
+          dbg('🎯 Page 13 (Psychometric) detected');
+          const psyItems = Object.entries(detailedResults.detailedPsychometricScore.categoryWiseScore)
+            .map(([category, so]: any) => ({ category, scoreObject: so }))
+            .sort((a: any, b: any) => a.scoreObject.categoryOrder - b.scoreObject.categoryOrder || b.scoreObject.categoryScore - a.scoreObject.categoryScore);
+          const summary = `<ul style="list-style:disc; padding-left:20px;">${psyItems.map((e: any) => `<li style="margin:8px 0;"><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight:600;">${e.scoreObject.categoryDisplayText ?? e.category}</span> - ${e.scoreObject.categoryScore} (${e.scoreObject.categoryScoreLevel})</li>`).join('')}</ul>`;
+          out = out.replace(/<div class="absolute-text">\s*<\/div>/, `<div class="absolute-text">${summary}</div>`);
+          dbg('✅ Page 13 psychometric summary injected');
+        }
+        
+        // Handle other "What it means" pages that might have empty absolute-text divs
+        // Check for any remaining pages with "what it means" text and empty absolute-text
+        if (/what it means/i.test(out) && /<div class="absolute-text">\s*<\/div>/.test(out)) {
+          dbg('🎯 Generic \"What it means\" page detected with empty absolute-text');
+          
+          // Try to determine what type of content this page should have
+          let content = '';
+          
+          // Check if this is an aptitude-related page
+          if (/aptitude|verbal|numerical|abstract|mechanical|speed|accuracy|language|grammar/i.test(out)) {
+            content = buildAptitudeHtml(detailedResults.aptitudeScore);
+            dbg('📝 Using aptitude content for generic page');
+          }
+          // Check if this is an interest-related page
+          else if (/interest|realistic|investigative|artistic|social|enterprising|conventional/i.test(out)) {
+            content = buildInterestHtml(detailedResults.interestAndPreferenceScore);
+            dbg('📝 Using interest content for generic page');
+          }
+          // Default fallback content
+          else {
+            content = '<p style="font-family:Lora,Lora_MSFontService,sans-serif; color:#555;">Detailed interpretation content will be displayed here.</p>';
+            dbg('📝 Using fallback content for generic page');
+          }
+          
+          if (content) {
+            out = out.replace(/<div class="absolute-text">\s*<\/div>/, `<div class="absolute-text">${content}</div>`);
+            dbg('✅ Generic \"What it means\" content injected');
+          }
+        }
+
+        // Inject career recommendations list if "$CAREER_LIST" token exists
+        if (out.includes('$CAREER_LIST') && detailedResults.careerMapping?.idealCareer) {
+          const careers = String(detailedResults.careerMapping.idealCareer)
+            .split(',')
+            .map(c => c.trim())
+            .filter(Boolean)
+            .map(c => `<li>${c}</li>`) 
+            .join('');
+          out = out.replace(/\$CAREER_LIST/g, `<ul>${careers}</ul>`);
+        }
+
+        // If it's the Career Recommendations page, inject career block even if *ngIf exists
+        if (/(Career Recommendation|Career recommendations|Recommended Career Paths|Potential Career Roles)/i.test(out)) {
+          const careers = String(detailedResults.careerMapping?.idealCareer || '')
+            .split(',')
+            .map(c => c.trim())
+            .filter(Boolean)
+            .map(c => `<li>${c}</li>`) 
+            .join('');
+          const club = String(detailedResults.careerMapping?.clubToJoin || '');
+          const tag = String(detailedResults.careerMapping?.tagLine || '');
+          const topLine = String(detailedResults.careerMapping?.topLine || '');
+          const idealFor = String(detailedResults.careerMapping?.idealFor || '');
+          const careerHtml = `
+            <div>
+              ${topLine ? `<p style="margin-bottom:8px;">${topLine}</p>` : ''}
+              ${club ? `<h3 style="font-weight:700; color:#1f2937;">${club}</h3>` : ''}
+              ${tag ? `<p style="color:#4b5563;">${tag}</p>` : ''}
+              ${idealFor ? `<p style="margin:8px 0;"><strong>Ideal for:</strong> ${idealFor}</p>` : ''}
+              ${careers ? `<h4 style="margin-top:8px;">Recommended Careers</h4><ul>${careers}</ul>` : ''}
+            </div>
+          `;
+          // Replace Angular *ngIf block
+          out = out.replace(/<div\s+\*ngIf=\"careerMapping\"\s+class=\"absolute-text\">[\s\S]*?<\/div>/, `<div class=\"absolute-text\">${careerHtml}</div>`);
+          // Or fill empty absolute-text
+          out = out.replace(/<div class=\"absolute-text\">\s*<\/div>/, `<div class=\"absolute-text\">${careerHtml}</div>`);
+        }
 
       return out;
     };
@@ -668,12 +1294,21 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
           if(file === "page6/page6.component.html") {
             rawHtml = buildAptitudeHtml(detailedResults.aptitudeScore);
           }
+          else if (file === "page8/page8.component.html") {
+            rawHtml = buildInterestHtml(detailedResults.interestAndPreferenceScore);
+          }
+          else if (file === "page10.5/page10.5.component.html") {
+            rawHtml = buildSeiHtml(detailedResults.seiScore);
+          }
+          else if (file === "page12.5/page12.5.component.html") {
+            rawHtml = buildAqHtml(detailedResults.adversityScore);
+          }
           else {
             const res = await fetch(basePath + file);
             if (!res.ok) continue;
             rawHtml = await res.text();
           }
-          const filledHtml = file === "page6/page6.component.html" ? rawHtml : applyReplacements(rawHtml);
+          const filledHtml = file === "page6/page6.component.html" || file === "page8/page8.component.html" || file === "page10.5/page10.5.component.html" ? rawHtml : applyReplacements(rawHtml, file);
 
           const pageDiv = document.createElement('div');
           pageDiv.style.width = `${pageWidth}px`;
