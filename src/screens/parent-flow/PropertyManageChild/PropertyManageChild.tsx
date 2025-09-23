@@ -78,6 +78,7 @@ const [notification, setNotification] = useState<{ type: "success" | "error"; me
 const [otpSent, setOtpSent] = useState(false); // OTP sent flag
 const [tempUserId, setTempUserId] = useState<string | null>(null); // store ID until OTP verified
 
+
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -119,6 +120,8 @@ if (error) throw error;
           hobbies: form.hobbies ? [form.hobbies] : [],
           goals: form.goals,
           user_type: "student",
+           onboarded: true,
+          
         }, { onConflict: "id" });
       if (profileError) throw profileError;
 
