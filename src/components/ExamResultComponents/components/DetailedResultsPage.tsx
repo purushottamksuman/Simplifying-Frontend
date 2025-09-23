@@ -837,6 +837,257 @@ function buildAqHtml(aqDetails: any): string {
     `;
 }
 
+function buildAptitudeGraphHtml(aptitudeScore: any): string {
+    console.log('🔍 buildAptitudeGraphHtml called with:', aptitudeScore);
+    
+    if (!aptitudeScore?.categoryWiseScore) {
+        console.error('❌ Invalid aptitudeScore structure:', aptitudeScore);
+        return `
+            <div class="graph-container">
+                <h2>Your Score</h2>
+                <p>Unable to load aptitude score data</p>
+            </div>
+        `;
+    }
+    
+    const categories = Object.values(aptitudeScore.categoryWiseScore) as any[];
+    console.log('📊 Processing aptitude categories for graph:', categories.length);
+
+    // Sort by percentage descending
+    categories.sort((a: any, b: any) => b.categoryPercentage - a.categoryPercentage);
+
+    // Colors gradient from light cyan to purple
+    const colors = [
+        '#80F8F4',  // light cyan
+        '#4BD4E6',  // cyan blue
+        '#26B0D8',  // blue
+        '#018CCA',  // dark blue
+        '#0067BC',  // indigo
+        '#0043AE',  // purple indigo
+        '#001FA0'   // light purple (adjust as needed)
+    ];
+
+    const rows = categories.map((cat: any, index: number) => {
+        const color = colors[index % colors.length];
+        const percentage = cat.categoryPercentage.toFixed(2);
+        return `
+            <div class="bar-row">
+                <div class="label">${cat.categoryDisplayText}</div>
+                
+                <div class="bar-container">
+                    <div class="bar" style="width: ${percentage}%; background-color: ${color};"></div>
+                </div>
+                <div class="value">${percentage}%</div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="graph-container">
+            <style>
+                .graph-container {
+                    max-width: 800px;
+                    margin: 20px auto;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    position: relative;
+                }
+
+                .graph-container h2 {
+                    font-size: 18px;
+                    background: white;
+                    border: 2px solid black;
+                    border-radius: 20px;
+                    padding: 5px 15px;
+                    display: inline-block;
+                    position: absolute;
+                    top: -20px;
+                    left: 20px;
+                    z-index: 1;
+                }
+
+                .graph-container h2::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -10px;
+                    left: 30px;
+                    border-left: 10px solid transparent;
+                    border-right: 10px solid transparent;
+                    border-top: 10px solid black;
+                }
+
+                .graph-border {
+                    border-top: 1px solid black;
+                    padding-top: 20px;
+                }
+
+                .bar-row {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 10px;
+                }
+
+                .label {
+                    width: 200px;
+                    text-align: left;
+                    font-size: 14px;
+                    color: #333;
+                }
+
+                .bar-container {
+                    flex: 1;
+                    background-color: #f0f0f0; /* optional for empty bar */
+                    height: 20px;
+                }
+
+                .bar {
+                    height: 100%;
+                }
+
+                .value {
+                    width: 60px;
+                    text-align: right;
+                    font-size: 14px;
+                    color: #333;
+                }
+            </style>
+            <h2>Your Score</h2>
+            <div class="graph-border">
+                ${rows}
+            </div>
+        </div>
+    `;
+}
+
+function buildPsychometricGraphHtml(psychometricScore: any): string {
+    console.log('🔍 buildPsychometricGraphHtml called with:', psychometricScore);
+    
+    if (!psychometricScore?.categoryWiseScore) {
+        console.error('❌ Invalid psychometricScore structure:', psychometricScore);
+        return `
+            <div class="graph-container">
+                <h2>Your Score</h2>
+                <p>Unable to load psychometric score data</p>
+            </div>
+        `;
+    }
+    
+    // Fixed order: Extraversion, Openness, Agreeableness, Neuroticism, Conscientiousness
+    const order = ['extraversion', 'openness', 'agreeableness', 'neuroticism', 'conscientiousness'];
+    const colors = ['#FFB6C1', '#87CEEB', '#FFD700', '#20B2AA', '#9370DB']; // pink, blue, yellow, teal, purple
+    
+    const bars = order.map((key: string, index: number) => {
+        const cat = psychometricScore.categoryWiseScore[key];
+        if (!cat) return '';
+        
+        const percentage = Math.min(cat.categoryPercentage, 100); // Cap at 100 if erroneous data
+        const color = colors[index];
+        return `
+            <div class="bar-column">
+                <div class="bar" style="height: ${percentage}%; background-color: ${color};"></div>
+                <div class="label">${cat.categoryDisplayText}</div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="graph-container">
+            <style>
+                .graph-container {
+                    max-width: 800px;
+                    margin: 20px auto;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    position: relative;
+                    height: 300px; /* Adjust as needed */
+                }
+
+                .graph-container h2 {
+                    font-size: 18px;
+                    background: white;
+                    border: 2px solid black;
+                    border-radius: 20px;
+                    padding: 5px 15px;
+                    display: inline-block;
+                    position: absolute;
+                    top: -20px;
+                    left: 20px;
+                    z-index: 1;
+                }
+
+                .graph-container h2::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -10px;
+                    left: 30px;
+                    border-left: 10px solid transparent;
+                    border-right: 10px solid transparent;
+                    border-top: 10px solid black;
+                }
+
+                .y-axis {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    height: 100%;
+                    width: 40px;
+                    display: flex;
+                    flex-direction: column-reverse;
+                    justify-content: space-between;
+                    font-size: 12px;
+                    color: #333;
+                }
+
+                .y-label {
+                    text-align: right;
+                    padding-right: 5px;
+                }
+
+                .bars-container {
+                    display: flex;
+                    justify-content: space-around;
+                    align-items: flex-end;
+                    height: 250px; /* Bar area height */
+                    position: relative;
+                    top: 20px;
+                    border-bottom: 1px solid black;
+                    padding-left: 40px; /* Space for y-axis */
+                }
+
+                .bar-column {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    width: 15%;
+                }
+
+                .bar {
+                    width: 100%;
+                    max-height: 100%;
+                }
+
+                .label {
+                    margin-top: 5px;
+                    font-size: 14px;
+                    color: #333;
+                    text-align: center;
+                    white-space: nowrap;
+                }
+            </style>
+            <h2>Your Score</h2>
+            <div class="y-axis">
+                <div class="y-label">0%</div>
+                <div class="y-label">20%</div>
+                <div class="y-label">40%</div>
+                <div class="y-label">60%</div>
+                <div class="y-label">80%</div>
+                <div class="y-label">100%</div>
+            </div>
+            <div class="bars-container">
+                ${bars}
+            </div>
+        </div>
+    `;
+}
+
   const handleDownloadPDF = async () => {
     if (!detailedResults || !userInfo || !user) return;
 
@@ -857,9 +1108,11 @@ function buildAqHtml(aqDetails: any): string {
       'page3/page3.component.html',
       'page4/page4.component.html',
       'page5/page5.component.html',
+      'page5.5/page5.5.component.html',
       'page6/page6.component.html',
       'page7/page7.component.html',
       'page8/page8.component.html',
+      'page8.5/page8.5.component.html',
       'page9/page9.component.html',
       'page10/page10.component.html',
       'page10.5/page10.5.component.html',
@@ -867,6 +1120,7 @@ function buildAqHtml(aqDetails: any): string {
       'page12/page12.component.html',
       'page12.5/page12.5.component.html',
       'page13/page13.component.html',
+      'page13.5/page13.5.component.html',
       'page14/page14.component.html',
       'page15/page15.component.html',
       'page16/page16.component.html',
@@ -1294,7 +1548,10 @@ function buildAqHtml(aqDetails: any): string {
           if(file === "page6/page6.component.html") {
             rawHtml = buildAptitudeHtml(detailedResults.aptitudeScore);
           }
-          else if (file === "page8/page8.component.html") {
+          else if (file === "page5.5/page5.5.component.html") {
+            rawHtml = buildAptitudeGraphHtml(detailedResults.aptitudeScore);
+          }
+          else if (file === "page8.5/page8.5.component.html") {
             rawHtml = buildInterestHtml(detailedResults.interestAndPreferenceScore);
           }
           else if (file === "page10.5/page10.5.component.html") {
@@ -1302,6 +1559,9 @@ function buildAqHtml(aqDetails: any): string {
           }
           else if (file === "page12.5/page12.5.component.html") {
             rawHtml = buildAqHtml(detailedResults.adversityScore);
+          }
+          else if (file === "page13.5/page13.5.component.html") {
+            rawHtml = buildPsychometricGraphHtml(detailedResults.detailedPsychometricScore)
           }
           else {
             const res = await fetch(basePath + file);
