@@ -1,5 +1,5 @@
 import { PlusIcon, X, Info } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -77,6 +77,8 @@ const [notification, setNotification] = useState<{ type: "success" | "error"; me
   const [otp, setOtp] = useState(""); // OTP input
 const [otpSent, setOtpSent] = useState(false); // OTP sent flag
 const [tempUserId, setTempUserId] = useState<string | null>(null); // store ID until OTP verified
+const [linkedStudents, setLinkedStudents] = useState<any[]>([]);
+  const [fetchingStudents, setFetchingStudents] = useState(false);
 
 
   const [form, setForm] = useState({
@@ -89,12 +91,44 @@ const [tempUserId, setTempUserId] = useState<string | null>(null); // store ID u
     goals: "",
   });
 
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
+const fetchLinkedStudents = async () => {
+  try {
+    setFetchingStudents(true);
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw userError || new Error("No logged-in user found");
+
+    console.log("Logged-in user ID:", user.id); // <-- Add this
+
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("linked_to", user.id);
+
+    if (error) throw error;
+
+    console.log("Fetched linked students:", data); // <-- Add this
+    setLinkedStudents(data || []);
+  } catch (err: any) {
+    console.error("Error fetching linked students:", err.message || err);
+  } finally {
+    setFetchingStudents(false);
+  }
+};
+
+
+  useEffect(() => {
+    fetchLinkedStudents();
+  }, []);
+
+ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
   setNotification(null);
@@ -102,10 +136,14 @@ const handleSubmit = async (e: React.FormEvent) => {
   try {
     const emailTrimmed = form.email.trim().toLowerCase();
 
+    // Get current logged-in user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw userError || new Error("No logged-in user found");
+
     // If OTP is already sent, verify it
     if (otpSent && tempUserId) {
-      const { data, error } = await authHelpers.verifyOTP(form.email, otp, 'signup');
-if (error) throw error;
+      const { data, error } = await authHelpers.verifyOTP(form.email, otp, "signup");
+      if (error) throw error;
 
       // ✅ OTP verified, insert profile
       const { error: profileError } = await supabase
@@ -120,9 +158,11 @@ if (error) throw error;
           hobbies: form.hobbies ? [form.hobbies] : [],
           goals: form.goals,
           user_type: "student",
-           onboarded: true,
-          
+          linked_to: user.id,          // Link child to parent
+          skillsphere_enabled: true,
+          onboarded: true,
         }, { onConflict: "id" });
+
       if (profileError) throw profileError;
 
       toast.success("Child account created successfully!");
@@ -176,12 +216,11 @@ if (error) throw error;
 };
 
 
-
   if (!isOpen) return null;
 
 
   return (
-    <div className="flex flex-col items-center gap-12 px-6 py-8">
+        <div className="flex flex-col items-center gap-12 px-6 py-8">
       {/* Instructions */}
       <Card className="w-full max-w-6xl rounded-xl overflow-hidden shadow-md bg-gradient-to-r from-blue-500 via-blue-400 to-purple-600 border-0">
         <CardContent className="p-8 relative">
@@ -192,21 +231,12 @@ if (error) throw error;
 
           <div className="flex justify-between gap-6">
             {instructionSteps.map((step, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center text-center gap-2"
-              >
-                <div
-                  className={`w-12 h-12 ${step.bgColor} rounded-full flex items-center justify-center`}
-                >
-                  <span className={`font-bold ${step.textColor} text-sm`}>
-                    {step.number}
-                  </span>
+              <div key={index} className="flex flex-col items-center text-center gap-2">
+                <div className={`w-12 h-12 ${step.bgColor} rounded-full flex items-center justify-center`}>
+                  <span className={`font-bold ${step.textColor} text-sm`}>{step.number}</span>
                 </div>
                 <h3 className="font-bold text-white text-sm">{step.title}</h3>
-                <p className="text-white text-xs whitespace-pre-line">
-                  {step.description}
-                </p>
+                <p className="text-white text-xs whitespace-pre-line">{step.description}</p>
               </div>
             ))}
           </div>
@@ -215,70 +245,71 @@ if (error) throw error;
 
       {/* Linked Children */}
       <section className="w-full max-w-6xl text-center">
-        <img
-          className="w-12 h-12 mx-auto mb-4"
-          alt="Background"
-          src="/background-31.svg"
-        />
-        <h2 className="text-[#13377c] text-3xl font-semibold mb-2">
-          My Linked Children
-        </h2>
-        <p className="text-[#13377c] text-base mb-8">
-          Manage and view all your linked students in one place.
-        </p>
+        <img className="w-12 h-12 mx-auto mb-4" alt="Background" src="/background-31.svg" />
+        <h2 className="text-[#13377c] text-3xl font-semibold mb-2">My Linked Children</h2>
+        <p className="text-[#13377c] text-base mb-8">Manage and view all your linked students in one place.</p>
 
         <div className="flex flex-wrap justify-center gap-6">
-          {linkedStudents.map((student, index) => (
-            <Card
-              key={index}
-              className="w-64 h-[345px] bg-white rounded-lg overflow-hidden shadow border-0"
-            >
-              <CardContent className="p-5 flex flex-col items-center gap-3">
-                <Avatar className="w-16 h-16 shadow">
-                  <AvatarImage src={student.avatar} />
-                  <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+            {fetchingStudents ? (
+    <p>Loading students...</p>
+  ) : linkedStudents.length === 0 ? (
+    <p>No linked students found.</p>
+  ) : (
+    linkedStudents.map((student, index) => (
+      <Card
+        key={index}
+        className="w-64 h-[345px] bg-white rounded-lg overflow-hidden shadow border-0"
+      >
+        <CardContent className="p-5 flex flex-col items-center gap-3">
+          {/* Avatar */}
+          <Avatar className="w-16 h-16 shadow">
+            <AvatarImage src={student.avatar_url || "/default-avatar.png"} />
+            <AvatarFallback>{student.full_name?.charAt(0) || "S"}</AvatarFallback>
+          </Avatar>
 
-                <h3 className="text-[#101727] text-lg font-medium">
-                  {student.name}
-                </h3>
-                <p className="text-[#495565] text-sm">{student.grade}</p>
+          {/* Name */}
+          <h3 className="text-[#101727] text-lg font-medium">
+            {student.full_name || "Unnamed Student"}
+          </h3>
 
-                <Badge
-                  className={`${student.statusBg} ${student.statusText} rounded-md px-3 py-1 text-xs border-0`}
-                >
-                  {student.status}
-                </Badge>
+          {/* Education Level */}
+          <p className="text-[#495565] text-sm">
+            {student.edu_level || "-"}
+          </p>
 
-                <p className="text-[#354152] text-sm">{student.activity}</p>
+          {/* User Type Badge */}
+          <Badge className="bg-gray-100 text-gray-800 rounded-md px-3 py-1 text-xs border-0">
+            {student.user_type === "student" ? "Student" : student.user_type || "User"}
+          </Badge>
 
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  {student.timeAgo}
-                  <img className="w-3 h-3" alt="Svg" src="/svg-4.svg" />
-                </div>
+          {/* Goals */}
+          <p className="text-[#354152] text-sm">
+            {student.goals || "-"}
+          </p>
 
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm">
-                  View Details
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {/* Date of Birth */}
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            {student.dob || "-"} 
+            <img className="w-3 h-3" alt="Svg" src="/svg-4.svg" />
+          </div>
+
+          {/* View Details Button */}
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm">
+            View Details
+          </Button>
+        </CardContent>
+      </Card>
+    ))
+  )}
 
           {/* Trigger Card */}
-          <Card
-            onClick={() => setStep("choice")}
-            className="w-64 h-[345px] bg-gray-50 border border-dashed border-gray-300 cursor-pointer hover:shadow-md transition"
-          >
+          <Card onClick={() => setStep("choice")} className="w-64 h-[345px] bg-gray-50 border border-dashed border-gray-300 cursor-pointer hover:shadow-md transition">
             <CardContent className="flex flex-col items-center justify-center h-full gap-3">
               <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300">
                 <PlusIcon className="w-6 h-6 text-gray-400" />
               </div>
-              <h3 className="text-[#101727] text-lg font-medium">
-                Add New Student
-              </h3>
-              <p className="text-[#495565] text-sm max-w-[160px]">
-                Link your child's account using their student ID
-              </p>
+              <h3 className="text-[#101727] text-lg font-medium">Add New Student</h3>
+              <p className="text-[#495565] text-sm max-w-[160px]">Link your child's account using their student ID</p>
             </CardContent>
           </Card>
         </div>
