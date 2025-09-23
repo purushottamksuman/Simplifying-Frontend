@@ -10,6 +10,9 @@ import TeacherLayout from "./layouts/TeacherLayout";
 // Import your components
 import { PropertyDasboardSubsection } from "./screens/Frame/sections/PropertyDasboardSubsection/PropertyDasboardSubsection";
 import { PropertyMycourseSubsection } from "./screens/Frame/sections/PropertyMycourseSubsection/PropertyMycourseSubsection";
+import { PropertyMycourseSubsection as TeacherCourse } from "./screens/teacher-flow/PropertyMycourseSubsection/PropertyMycourseSubsection";
+import { PropertyUploadContent as TeacherContent } from "./screens/teacher-flow/PropertyUploadContent/PropertyUploadContent";
+import { TeaacherLiveClassScheduler as TeacherLiveCLass } from "./screens/teacher-flow/TeacherLiveClassScheduler/TeacherLiveClassScheduler";
 import { PropertyLiveSubsection } from "./screens/Frame/sections/PropertyLiveSubsection/PropertyLiveSubsection";
 import  PropertyTestAndSubsection  from "./screens/Frame/sections/PropertyTestAndSubsection/PropertyTestAndSubsection";
 import { PropertyClubAndSubsection } from "./screens/Frame/sections/PropertyClubAndSubsection/PropertyClubAndSubsection";
@@ -38,6 +41,7 @@ import { DivWrapperSubsection } from "./screens/parent-flow/DivWrapperSubsection
 import { TeacherDoubtsSolve } from "./screens/teacher-flow/TeacherDoubtsSolve";
 import PropertyFeedback from "./screens/parent-flow/PropertyFeedback/PropertyFeedback";
 import ResetPassword from "./screens/Frame/sections/PropertyOtpSubsection/ResetPassword";
+import { PropertyManageChild } from "./screens/parent-flow/PropertyManageChild/PropertyManageChild";
 
 function RouteNormalizer() {
   const location = useLocation();
@@ -89,9 +93,10 @@ function App() {
           {/* Teacher Layout */}
 <Route path="/teacher" element={<TeacherLayout />}>
   <Route path="dashboard" element={<PropertyTeacherDashboard />} />
-          <Route path="courses" element={<PropertyMycourseSubsection />} />
-          <Route path="live" element={<PropertyLiveSubsection />} />
+          <Route path="course" element={<TeacherCourse />} />
+          <Route path="live" element={<TeacherLiveCLass />} />
           <Route path="tests" element={<PropertyTestAndSubsection />} />
+          <Route path="upload" element={<TeacherContent />} />
   <Route path="clubs" element={<PropertyClubAndSubsection />} />
   <Route path="profile" element={<TeacherProfile />} />
   <Route path="certificates" element={<PropertyWrapperSubsection />} />
@@ -108,6 +113,7 @@ function App() {
   <Route path="live" element={<PropertyLiveSubsection />} />
   <Route path="tests" element={<PropertyTestAndSubsection />} />
   <Route path="clubs" element={<PropertyFeedback />} />
+  <Route path="manage" element={<PropertyManageChild />} />
   <Route path="profile" element={<DivWrapperSubsection />} />
   <Route path="certificates" element={<PropertyWrapperSubsection />} />
   <Route path="leaderboard" element={<PropertySubsection />} />

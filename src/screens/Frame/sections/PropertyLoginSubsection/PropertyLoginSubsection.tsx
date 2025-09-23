@@ -4,6 +4,7 @@ import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { supabase, authHelpers } from "../../../../lib/supabase"; // 👈 include supabase
+import { toast } from "react-hot-toast";
 
 export const PropertyLoginSubsection = (): JSX.Element => {
   const navigate = useNavigate();
@@ -13,7 +14,24 @@ export const PropertyLoginSubsection = (): JSX.Element => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState(""); // ✅ success message for reset
 
-// 📌 Forgot Password (OTP Based)
+
+const handleOAuthLogin = async (provider: "google") => {
+  try {
+    const redirectUri = "https://simplifyingskills.com/auth/callback";
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: redirectUri },
+    });
+
+    if (error) throw error;
+    toast.success(`Redirecting to ${provider} login...`);
+  } catch (err: any) {
+    console.error("OAuth login error:", err);
+    toast.error(err.message || "Login failed");
+  }
+};
+
 const handleForgotPassword = async () => {
   if (!formData.email) {
     setError("Please enter your email first.");

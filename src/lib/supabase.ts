@@ -80,6 +80,20 @@ export const authHelpers = {
     return { user, error }
   },
 
+  getUserByEmail: async (email: string) => {
+  try {
+    // Make sure this runs server-side using the service role key
+    const { data, error } = await supabase.auth.admin.listUsers();
+
+    if (error) throw error;
+
+    const user = data.users.find((u) => u.email === email);
+    return { user };
+  } catch (err: any) {
+    console.error("getUserByEmail error:", err);
+    return { error: err.message || "Unknown error" };
+  }
+},
   // Listen to auth changes
   onAuthStateChange: (callback: (event: string, session: any) => void) => {
     return supabase.auth.onAuthStateChange(callback)
