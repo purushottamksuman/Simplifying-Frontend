@@ -1,19 +1,64 @@
 .svg-container {
-    position: relative;
+  position: relative;
+}
+
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+text {
+  white-space: pre;
+}
+
+.absolute-text {
+  text-transform: capitalize;
+  position: absolute;
+  top: 74%;
+  left: 0;
+  padding-left: 12%;
+  padding-right: 12%;
+  margin: 2%;
+  text-align: center;
+  fill: rgb(9, 30, 107);
+  font-weight: 700;
+  font-size: 1.5em;
+  font-size: calc(4.5vw - 0.3em);
+
+  @media (max-width: 400px) {
+    font-size: calc(0.8em + 0.275vw);
   }
-  
-  svg {
-    max-width: 100%;
-    height: auto;
+  @media (min-width: 400px) and (max-width: 500px) {
+    font-size: calc(1em + 0.3vw);
   }
-  
-  text {
-    white-space: pre;
+  @media (min-width: 500px) and (max-width: 600px) {
+    font-size: calc(1.2em + 0.3vw);
   }
-  
-  .absolute-text {
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 10px;
+  @media (min-width: 600px) and (max-width: 768px) {
+    font-size: calc(1.55em + 0.3vw);
   }
+
+  @media (min-width: 768px) and (max-width: 850px) {
+    font-size: calc(1.8em + 0.3vw);
+  }
+
+  @media (min-width: 850px) and (max-width: 1024px) {
+    font-size: calc(2.1em + 0.3vw);
+  }
+
+  @media (min-width: 1024px) and (max-width: 1280px) {
+    font-size: calc(2.5em + 0.2vw);
+  }
+
+  @media (min-width: 1280px) and (max-width: 1600px) {
+    font-size: calc(2.35em + 0.25vw);
+  }
+
+  @media (min-width: 1600px) and (max-width: 1900px) {
+    font-size: calc(2.5em + 0.2vw);
+  }
+
+  @media (min-width: 1900px) {
+    font-size: calc(2.5em + 0.2vw);
+  }
+}
