@@ -18,15 +18,18 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
 
-  // Load pending user from localStorage
+  // Load email for OTP verification (reset or signup)
   useEffect(() => {
+    const resetEmail = localStorage.getItem("resetEmail");
     const pendingUser = localStorage.getItem("pendingUser");
-    if (!pendingUser) {
-      navigate("/login");
-      return;
+    if (resetEmail) {
+      setUserEmail(resetEmail);
+    } else if (pendingUser) {
+      const userData = JSON.parse(pendingUser);
+      setUserEmail(userData.email);
+    } else {
+      navigate("/login"); // no context, send back
     }
-    const userData = JSON.parse(pendingUser);
-    setUserEmail(userData.email);
   }, [navigate]);
 
   // Timer countdown
@@ -55,10 +58,14 @@ export const PropertyOtpSubsection = (): JSX.Element => {
     setSuccessMessage("");
 
     try {
+      // Check if this is a reset password flow
+      const resetEmail = localStorage.getItem("resetEmail");
+      const email = resetEmail || userEmail;
+      const type = resetEmail ? "recovery" : "signup";
       const { data, error: otpError } = await supabase.auth.verifyOtp({
-        email: userEmail,
+        email,
         token: otp,
-        type: "signup", // must match signup flow
+        type,
       });
 
       if (otpError) {
@@ -67,8 +74,14 @@ export const PropertyOtpSubsection = (): JSX.Element => {
       }
 
       if (data?.user) {
-        localStorage.setItem("currentUser", JSON.stringify(data.user));
-        navigate("/component/dashboard");
+        if (resetEmail) {
+          // Go to reset-password page
+          localStorage.setItem("resetUserId", data.user.id);
+          navigate("/reset-password");
+        } else {
+          localStorage.setItem("currentUser", JSON.stringify(data.user));
+          navigate("/component/dashboard");
+        }
       }
     } catch (err: any) {
       console.error("OTP verification failed:", err);

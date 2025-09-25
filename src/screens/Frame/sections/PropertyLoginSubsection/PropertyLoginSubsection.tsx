@@ -32,13 +32,10 @@ export const PropertyLoginSubsection = (): JSX.Element => {
     setLoading(true);
     setError("");
 
-    // Auto-format to E.164
     let phone = formData.phone.trim();
     if (!phone.startsWith("+")) {
       phone = "+91" + phone.replace(/^0+/, "");
     }
-
-    console.log("Sending OTP to:", phone);
 
     try {
       const { error } = await supabase.auth.signInWithOtp({
@@ -49,14 +46,13 @@ export const PropertyLoginSubsection = (): JSX.Element => {
       if (error) {
         setError(error.message);
       } else {
-        // Save pending user in localStorage for OTP screen
         localStorage.setItem(
           "pendingUser",
           JSON.stringify({ phone, isPhoneLogin: true })
         );
 
         toast.success("OTP sent! Check your phone.");
-        navigate("/otp"); // Navigate to OTP verification page
+        navigate("/otp");
       }
     } catch (err) {
       console.error("Unexpected error:", err);
@@ -67,30 +63,27 @@ export const PropertyLoginSubsection = (): JSX.Element => {
   };
 
   // ---------------- OAuth Login ----------------
- const handleOAuthLogin = async (
-  provider: "google" | "apple" | "linkedin_oidc"
-) => {
-  try {
-    // Step 1 — Choose redirect URL based on environment
-    const redirectTo =
-      window.location.hostname === "localhost"
-        ? "http://localhost:5173/auth/callback"
-        : "https://simplifyingskills.com/auth/callback";
+  const handleOAuthLogin = async (
+    provider: "google" | "apple" | "linkedin_oidc"
+  ) => {
+    try {
+      const redirectTo =
+        window.location.hostname === "localhost"
+          ? "http://localhost:5173/auth/callback"
+          : "https://simplifyingskills.com/auth/callback";
 
-    // Step 2 — Call Supabase OAuth login
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo },
-    });
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo },
+      });
 
-    if (error) throw error;
-    toast.success(`Redirecting to ${provider} login...`);
-  } catch (err: any) {
-    console.error("OAuth login error:", err);
-    toast.error(err.message || "Login failed");
-  }
-};
-
+      if (error) throw error;
+      toast.success(`Redirecting to ${provider} login...`);
+    } catch (err: any) {
+      console.error("OAuth login error:", err);
+      toast.error(err.message || "Login failed");
+    }
+  };
 
   // ---------------- Standard Email Login ----------------
   const handleLogin = async () => {
@@ -133,7 +126,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
           if (profile.user_type === "teacher") navigate("/teacher/dashboard");
           else if (profile.user_type === "parent")
             navigate("/parent/dashboard");
-          else if(profile.user_type === "admin") navigate("/admin");
+          else if (profile.user_type === "admin") navigate("/admin");
           else navigate("/component/dashboard");
         } else {
           navigate("/component/dashboard");
@@ -146,8 +139,44 @@ export const PropertyLoginSubsection = (): JSX.Element => {
     }
   };
 
+  // ---------------- Reset Password ----------------
+const handleResetPassword = async () => {
+  if (!formData.email) {
+    setError("Please enter your email first");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+
+  try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) throw error;
+
+    // Save the email for OTP verification page
+    localStorage.setItem("resetEmail", formData.email);
+
+    toast.success("OTP sent to your email!");
+
+    // Give a tiny delay to ensure localStorage is written before navigating
+    setTimeout(() => {
+      navigate("/otp"); // Navigate to OTP verification page
+    }, 100);
+  } catch (err: any) {
+    console.error("Reset password error:", err);
+    setError(err.message || "Failed to send reset OTP");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   return (
     <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
+      {/* Background Blurs */}
       <div className="absolute w-[900px] h-[900px] top-[-200px] left-[-200px] bg-[#007fff59] rounded-full blur-[200px] z-0" />
       <div className="absolute w-[900px] h-[900px] bottom-[-200px] right-[-200px] bg-[#0011ff59] rounded-full blur-[200px] z-0" />
 
@@ -189,6 +218,14 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                   }
                 />
 
+                {/* Forgot Password */}
+                <p
+                  onClick={handleResetPassword}
+                  className="text-sm text-[#0062ff] text-right cursor-pointer hover:underline"
+                >
+                  Forgot Password?
+                </p>
+
                 <Input
                   className="h-[53px] rounded-3xl border border-gray-300 pl-4 font-roboto text-sm mt-4"
                   placeholder="Phone (+91...)"
@@ -210,6 +247,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
                 </Button>
               </div>
 
+              {/* OAuth + Phone Buttons */}
               <div className="flex items-center gap-4 mt-8">
                 <div className="flex-grow h-px bg-gray-300" />
                 <span className="text-sm text-gray-400">or</span>
@@ -267,7 +305,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
           </Card>
         </div>
 
-        {/* Right Section - Illustration */}
+        {/* Right Section */}
         <div className="w-full lg:w-1/2 relative">
           <img
             src="/Mask group.png"
