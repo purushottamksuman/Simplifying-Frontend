@@ -41,16 +41,21 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   }, [timer]);
 
   // Load pending user from localStorage
-  useEffect(() => {
-    const pendingUser = localStorage.getItem("pendingUser");
-    if (pendingUser) {
-      const userData = JSON.parse(pendingUser);
+ useEffect(() => {
+  const pendingUser = localStorage.getItem("pendingUser");
+  if (pendingUser) {
+    const userData = JSON.parse(pendingUser);
+    if (userData.phone) {
+      setUserEmail(userData.phone); // keep for display
+      setIsLoginFlow(true);
+    } else if (userData.email) {
       setUserEmail(userData.email);
       setIsLoginFlow(userData.isLogin || false);
-    } else {
-      navigate("/login");
     }
-  }, [navigate]);
+  } else {
+    navigate("/login");
+  }
+}, [navigate]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -59,67 +64,59 @@ export const PropertyOtpSubsection = (): JSX.Element => {
   };
 
   const handleSubmit = async () => {
-    if (otp.length !== 6) {
-      setError("Please enter a valid 6-digit OTP");
+  if (otp.length !== 6) {
+    setError("Please enter a valid 6-digit OTP");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+  setSuccessMessage("");
+
+  try {
+    const pendingUser = localStorage.getItem("pendingUser");
+    const userData = pendingUser ? JSON.parse(pendingUser) : null;
+
+    if (!userData) {
+      setError("Session expired. Please start over.");
+      navigate("/login");
       return;
     }
 
-    setLoading(true);
-    setError("");
-    setSuccessMessage("");
-
-    try {
-      const pendingUser = localStorage.getItem("pendingUser");
-      const userData = pendingUser ? JSON.parse(pendingUser) : null;
-
-      if (!userData) {
-        setError("Session expired. Please start over.");
-        navigate("/login");
-        return;
-      }
-
+    let response;
+    if (userData.phone) {
+      // 📱 Phone OTP verification
+      response = await supabase.auth.verifyOtp({
+        phone: userData.phone,
+        token: otp,
+        type: "sms",
+      });
+    } else {
+      // 📧 Email OTP verification
       const flowType = userData.isPasswordReset ? "recovery" : "signup";
-      const { data, error } = await authHelpers.verifyOTP(userEmail, otp, flowType);
-
-      if (error) {
-        setError("Invalid or expired OTP. Please try again.");
-        return;
-      }
-
-      if (data?.user) {
-        if (userData.isPasswordReset) {
-          navigate("/reset-password");
-          return;
-        }
-
-        // Save user in localStorage
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({
-            id: data.user.id,
-            email: data.user.email,
-            user_metadata: data.user.user_metadata
-          })
-        );
-
-        // Navigate based on user type
-        const user_type = data.user.user_metadata?.user_type;
-        if (isLoginFlow) {
-          navigate("/login");
-        } else {
-          if (user_type === "student") navigate("/component/dashboard");
-          else if (user_type === "teacher") navigate("/teacher/dashboard");
-          else if (user_type === "parent") navigate("/parent/dashboard");
-          else navigate("/component/dashboard");
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Failed to verify OTP. Please try again.");
-    } finally {
-      setLoading(false);
+      response = await supabase.auth.verifyOtp({
+        email: userData.email,
+        token: otp,
+        type: flowType,
+      });
     }
-  };
+
+    if (response.error) {
+      setError("Invalid or expired OTP. Please try again.");
+      return;
+    }
+
+    if (response.data?.user) {
+      localStorage.setItem("currentUser", JSON.stringify(response.data.user));
+      navigate("/component/dashboard");
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Failed to verify OTP. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleResend = async () => {
     if (!canResend) return;

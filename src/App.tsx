@@ -3,7 +3,7 @@ import { HomePage } from "./pages/HomePage";
 import { HomePg } from "./pages/HomePg";
 import { AdminExamManagement } from "./pages/AdminExamManagement";
 import { CreateAssessment } from "./pages/CreateAssessment";
-
+import AuthCallback from "./pages/AuthCallback"
 import DashboardLayout from "./layouts/DashboardLayout";
 import TeacherLayout from "./layouts/TeacherLayout";
 
@@ -68,6 +68,7 @@ function App() {
           <Route path="signup" element={<PropertyCommanSubsection />} />
         <Route path="/login" element={<PropertyLoginSubsection />} />
         <Route path="/otp" element={<PropertyOtpSubsection />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/error" element={<SomethingWentWrong />} />
 
