@@ -28,9 +28,11 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
     sub_section_id: '',
     question_text: '',
     marks: 1,
-    question_type: 'MCQ'
+    question_type: 'MCQ',
+    min_age: undefined as number | undefined,
+    max_age: undefined as number | undefined,
   });
-  const [options, setOptions] = useState<Array<{ option_text: string; marks: number }>>([]);
+  const [options, setOptions] = useState<Array<{ option_text: string; marks?: number; type?: string }>>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -40,11 +42,14 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
         sub_section_id: editingQuestion.sub_section_id,
         question_text: editingQuestion.question_text,
         marks: editingQuestion.marks,
-        question_type: editingQuestion.question_type
+        question_type: editingQuestion.question_type,
+        min_age: editingQuestion.min_age ?? undefined,
+        max_age: editingQuestion.max_age ?? undefined,
       });
       setOptions(editingQuestion.options.map(opt => ({
         option_text: opt.option_text,
-        marks: opt.marks
+        marks: opt.marks ?? undefined,
+        type: opt.type ?? undefined,
       })));
     } else {
       setFormData({
@@ -52,7 +57,9 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
         sub_section_id: '',
         question_text: '',
         marks: 1,
-        question_type: 'MCQ'
+        question_type: 'MCQ',
+        min_age: undefined,
+        max_age: undefined,
       });
       setOptions([]);
     }
@@ -64,7 +71,8 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
       if (selectedSubSection?.has_default_options && selectedSubSection.default_options.length > 0 && options.length === 0) {
         setOptions(selectedSubSection.default_options.map(defaultOpt => ({
           option_text: defaultOpt.option_text,
-          marks: defaultOpt.marks
+          marks: defaultOpt.marks ?? undefined,
+          type: defaultOpt.type ?? undefined,
         })));
       }
     }
@@ -107,10 +115,40 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
       return;
     }
 
+    if (formData.question_type === 'RIASEC') {
+      if (options.length !== 2) {
+        alert('RIASEC questions must have exactly 2 options');
+        return;
+      }
+      if (options.some(opt => !opt.type)) {
+        alert('Please select RIASEC type for all options');
+        return;
+      }
+      if (options[0].type === options[1].type) {
+        alert('Options must have different RIASEC types');
+        return;
+      }
+    } else {
+      if (options.some(opt => opt.marks == null)) {
+        alert('Please enter marks for all options');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
-      const { section_id, ...questionData } = formData;
-      await onSubmit(questionData, options);
+      const parsedFormData = {
+        ...formData,
+        min_age: formData.min_age !== undefined ? formData.min_age : null,
+        max_age: formData.max_age !== undefined ? formData.max_age : null,
+      };
+      const { section_id, ...questionData } = parsedFormData;
+      const preparedOptions = options.map(opt => ({
+        option_text: opt.option_text,
+        marks: formData.question_type === 'RIASEC' ? null : (opt.marks ?? null),
+        type: formData.question_type === 'RIASEC' ? opt.type ?? null : null,
+      }));
+      await onSubmit(questionData, preparedOptions);
       handleClose();
     } catch (error) {
       alert('Failed to save question');
@@ -126,17 +164,29 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
       sub_section_id: '',
       question_text: '',
       marks: 1,
-      question_type: 'MCQ'
+      question_type: 'MCQ',
+      min_age: undefined,
+      max_age: undefined,
     });
     setOptions([]);
     onClose();
   };
 
   const addOption = () => {
-    setOptions([...options, { option_text: '', marks: 1 }]);
+    if (formData.question_type === 'RIASEC' && options.length >= 2) {
+      alert('Only 2 options allowed for RIASEC questions');
+      return;
+    }
+    const newOption: { option_text: string; marks?: number; type?: string } = { option_text: '' };
+    if (formData.question_type === 'RIASEC') {
+      newOption.type = '';
+    } else {
+      newOption.marks = 1;
+    }
+    setOptions([...options, newOption]);
   };
 
-  const updateOption = (index: number, field: 'option_text' | 'marks', value: string | number) => {
+  const updateOption = (index: number, field: 'option_text' | 'marks' | 'type', value: string | number) => {
     const updatedOptions = [...options];
     updatedOptions[index] = { ...updatedOptions[index], [field]: value };
     setOptions(updatedOptions);
@@ -149,10 +199,15 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
   const loadDefaultOptions = () => {
     const selectedSubSection = subSections.find(ss => ss.id === formData.sub_section_id);
     if (selectedSubSection?.default_options) {
-      setOptions(selectedSubSection.default_options.map(defaultOpt => ({
+      let defaultOpts = selectedSubSection.default_options.map(defaultOpt => ({
         option_text: defaultOpt.option_text,
-        marks: defaultOpt.marks
-      })));
+        marks: defaultOpt.marks ?? undefined,
+        type: defaultOpt.type ?? undefined,
+      }));
+      if (formData.question_type === 'RIASEC' && defaultOpts.length > 2) {
+        defaultOpts = defaultOpts.slice(0, 2);
+      }
+      setOptions(defaultOpts);
     }
   };
 
@@ -311,13 +366,20 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
               </label>
               <select
                 value={formData.question_type}
-                onChange={(e) => setFormData({ ...formData, question_type: e.target.value })}
+                onChange={(e) => {
+                  const newType = e.target.value;
+                  setFormData({ ...formData, question_type: newType });
+                  if (newType === 'RIASEC' && options.length > 2) {
+                    setOptions(options.slice(0, 2));
+                  }
+                }}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="MCQ">Multiple Choice</option>
                 <option value="Likert">Likert Scale</option>
                 <option value="Agree_Disagree">Agree/Disagree</option>
                 <option value="Frequency">Frequency</option>
+                <option value="RIASEC">RIASEC</option>
               </select>
             </div>
           </div>
@@ -357,8 +419,8 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
               </label>
               <input
                 type="number"
-                value={formData.min_age}
-                onChange={(e) => setFormData({ ...formData, min_age: e.target.value })}
+                value={formData.min_age ?? ''}
+                onChange={(e) => setFormData({ ...formData, min_age: e.target.value ? parseInt(e.target.value) : undefined })}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 min="0"
                 max="100"
@@ -373,8 +435,8 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
               </label>
               <input
                 type="number"
-                value={formData.max_age}
-                onChange={(e) => setFormData({ ...formData, max_age: e.target.value })}
+                value={formData.max_age ?? ''}
+                onChange={(e) => setFormData({ ...formData, max_age: e.target.value ? parseInt(e.target.value) : undefined })}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 min="0"
                 max="100"
@@ -401,6 +463,7 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
                   type="button"
                   onClick={addOption}
                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={formData.question_type === 'RIASEC' && options.length >= 2}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Option
@@ -421,15 +484,34 @@ export const QuestionForm = ({ isOpen, onClose, onSubmit, editingQuestion }: Que
                       required
                     />
                   </div>
-                  <div className="w-24">
-                    <input
-                      type="number"
-                      value={option.marks}
-                      onChange={(e) => updateOption(index, 'marks', parseInt(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Marks"
-                    />
-                  </div>
+                  {formData.question_type === 'RIASEC' ? (
+                    <div className="w-48">
+                      <select
+                        value={option.type ?? ''}
+                        onChange={(e) => updateOption(index, 'type', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        <option value="">Select RIASEC type</option>
+                        <option value="R">Realistic (R)</option>
+                        <option value="I">Investigative (I)</option>
+                        <option value="A">Artistic (A)</option>
+                        <option value="S">Social (S)</option>
+                        <option value="E">Enterprising (E)</option>
+                        <option value="C">Conventional (C)</option>
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="w-24">
+                      <input
+                        type="number"
+                        value={option.marks ?? 0}
+                        onChange={(e) => updateOption(index, 'marks', parseInt(e.target.value) || 0)}
+                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Marks"
+                      />
+                    </div>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeOption(index)}
