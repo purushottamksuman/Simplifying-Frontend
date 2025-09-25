@@ -1088,6 +1088,130 @@ function buildPsychometricGraphHtml(psychometricScore: any): string {
     `;
 }
 
+function buildInterestGraphHtml(interestAndPreferenceScore: any): string {
+    console.log('🔍 buildInterestGraphHtml called with:', interestAndPreferenceScore);
+    
+    if (!interestAndPreferenceScore?.categoryWiseScore) {
+        console.error('❌ Invalid interestAndPreferenceScore structure:', interestAndPreferenceScore);
+        return `
+            <div class="graph-container">
+                <h2>Your Score</h2>
+                <p>Unable to load interest score data</p>
+            </div>
+        `;
+    }
+    
+    const categories = Object.values(interestAndPreferenceScore.categoryWiseScore) as any[];
+    console.log('📊 Processing interest categories for graph:', categories.length);
+
+    // Get top 3 categories by percentage
+    const sortedCategories = [...categories].sort((a, b) => b.categoryPercentage - a.categoryPercentage).slice(0, 3);
+
+    const order = ['realistic', 'investigative', 'artistic', 'social', 'enterprising', 'conventional'];
+    const letters = ['R', 'I', 'A', 'S', 'E', 'C'];
+    const cx = 150;
+    const cy = 150;
+    const r = 100;
+
+    // Calculate outline points
+    const outlinePoints = [];
+    for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 2 - i * (Math.PI / 3);
+        const ox = cx + r * Math.cos(angle);
+        const oy = cy - r * Math.sin(angle);
+        outlinePoints.push(`${ox},${oy}`);
+    }
+
+    const outline = `<polygon points="${outlinePoints.join(' ')}" fill="none" stroke="black" stroke-width="2" />`;
+
+    // Labels
+    const labelsHtml = [];
+    for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 2 - i * (Math.PI / 3);
+        const lx = cx + (r + 15) * Math.cos(angle);
+        const ly = cy - (r + 15) * Math.sin(angle) + 5; // adjust baseline
+        labelsHtml.push(`<text x="${lx}" y="${ly}" text-anchor="middle" font-size="16" fill="black">${letters[i]}</text>`);
+    }
+
+    // Shade for top 3
+    let fill = '';
+    if (sortedCategories.length >= 3 && sortedCategories[2].categoryPercentage > 0) {
+        const angleMap: { [key: string]: { angle: number, normAngle: number } } = {};
+        order.forEach((key, i) => {
+            const angle = Math.PI / 2 - i * (Math.PI / 3);
+            const normAngle = (angle + 2 * Math.PI) % (2 * Math.PI);
+            angleMap[key] = { angle, normAngle };
+        });
+
+        const selected = sortedCategories.map(cat => cat.categoryName);
+        const selectedWithAngles = selected.map(key => ({
+            key,
+            ...angleMap[key]
+        }));
+        selectedWithAngles.sort((a, b) => a.normAngle - b.normAngle);
+
+        const shadePoints = selectedWithAngles.map(({ angle }) => {
+            const x = cx + r * Math.cos(angle);
+            const y = cy - r * Math.sin(angle);
+            return `${x},${y}`;
+        });
+
+        fill = `
+            <defs>
+                <linearGradient id="purpleGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#800080;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#DDA0DD;stop-opacity:0.5" />
+                </linearGradient>
+            </defs>
+            <polygon points="${shadePoints.join(' ')}" fill="url(#purpleGradient)" stroke="none" />
+        `;
+    }
+
+    const svg = `<svg width="300" height="300" viewBox="0 0 300 300">
+        ${fill}
+        ${outline}
+        ${labelsHtml.join('')}
+    </svg>`;
+
+    return `
+        <div class="graph-container">
+            <style>
+                .graph-container {
+                    max-width: 800px;
+                    margin: 20px auto;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    position: relative;
+                }
+
+                .graph-container h2 {
+                    font-size: 18px;
+                    background: white;
+                    border: 2px solid black;
+                    border-radius: 20px;
+                    padding: 5px 15px;
+                    display: inline-block;
+                    position: absolute;
+                    top: -20px;
+                    left: 20px;
+                    z-index: 1;
+                }
+
+                .graph-container h2::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -10px;
+                    left: 30px;
+                    border-left: 10px solid transparent;
+                    border-right: 10px solid transparent;
+                    border-top: 10px solid black;
+                }
+            </style>
+            <h2>Your Score</h2>
+            ${svg}
+        </div>
+    `;
+}
+
   const handleDownloadPDF = async () => {
     if (!detailedResults || !userInfo || !user) return;
 
@@ -1111,6 +1235,7 @@ function buildPsychometricGraphHtml(psychometricScore: any): string {
       'page5.5/page5.5.component.html',
       'page6/page6.component.html',
       'page7/page7.component.html',
+      'page7.5/page7.5.component.html',
       'page8/page8.component.html',
       'page8.5/page8.5.component.html',
       'page9/page9.component.html',
@@ -1551,6 +1676,9 @@ function buildPsychometricGraphHtml(psychometricScore: any): string {
           else if (file === "page5.5/page5.5.component.html") {
             rawHtml = buildAptitudeGraphHtml(detailedResults.aptitudeScore);
           }
+          else if (file === "page7.5/page7.5.component.html") {
+            rawHtml = buildInterestGraphHtml(detailedResults.interestAndPreferenceScore);
+          }
           else if (file === "page8.5/page8.5.component.html") {
             rawHtml = buildInterestHtml(detailedResults.interestAndPreferenceScore);
           }
@@ -1568,7 +1696,7 @@ function buildPsychometricGraphHtml(psychometricScore: any): string {
             if (!res.ok) continue;
             rawHtml = await res.text();
           }
-          const filledHtml = file === "page6/page6.component.html" || file === "page8/page8.component.html" || file === "page10.5/page10.5.component.html" ? rawHtml : applyReplacements(rawHtml, file);
+          const filledHtml = file === "page6/page6.component.html" || file === "page8.5/page8.5.component.html" || file === "page10.5/page10.5.component.html" ? rawHtml : applyReplacements(rawHtml, file);
 
           const pageDiv = document.createElement('div');
           pageDiv.style.width = `${pageWidth}px`;
