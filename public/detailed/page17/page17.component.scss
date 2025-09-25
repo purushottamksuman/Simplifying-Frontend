@@ -1,19 +1,166 @@
 .svg-container {
-    position: relative;
-  }
-  
-  svg {
-    max-width: 100%;
-    height: auto;
-  }
-  
-  text {
-    white-space: pre;
-  }
-  
-  .absolute-text {
+  position: relative;
+}
+
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+text {
+  white-space: pre;
+}
+
+.absolute-text {
+  font-family: 'Lora, Lora_MSFontService, sans-serif;';
+  .career {
+    fill: rgb(9, 30, 107);
+    font-weight: 600;
+
+    @media (max-width: 400px) {
+      font-size: calc(1.65em + 0.275vw);
+    }
+    @media (min-width: 400px) and (max-width: 500px) {
+      font-size: calc(1.65em + 0.5vw);
+    }
+    @media (min-width: 500px) and (max-width: 600px) {
+      font-size: calc(1.95em + 0.5vw);
+    }
+    @media (min-width: 600px) and (max-width: 768px) {
+      font-size: calc(2.85em + 0.3vw);
+    }
+
+    @media (min-width: 768px) and (max-width: 850px) {
+      font-size: calc(3.45em + 0.3vw);
+    }
+
+    @media (min-width: 850px) and (max-width: 1024px) {
+      font-size: calc(4.5em + 0.3vw);
+    }
+
+    @media (min-width: 1024px) and (max-width: 1280px) {
+      font-size: calc(3.6em + 0.2vw);
+    }
+
+    @media (min-width: 1280px) and (max-width: 1600px) {
+      font-size: calc(4.8em + 0.25vw);
+    }
+
+    @media (min-width: 1600px) and (max-width: 1900px) {
+      font-size: calc(4.8em + 0.2vw);
+    }
+
+    @media (min-width: 1900px) {
+      font-size: calc(4.8em + 0.2vw);
+    }
     position: absolute;
-    top: 0;
-    left: 0;
-    padding: 10px;
+    top: 36%;
+    width: 100%;
+    text-align: center;
   }
+
+  .tagline {
+    fill: rgb(9, 30, 107);
+    font-weight: 900;
+    position: absolute;
+    top: 41%;
+    text-align: center;
+    width: -webkit-fill-available;
+    position: absolute;
+    top: 41%;
+    text-align: center;
+    /* padding: 6%; */
+    margin: 1%;
+    padding-left: 7%;
+    padding-right: 7%;
+    @media (max-width: 400px) {
+      font-size: calc(1.4 * 0.55em + 0.275vw);
+    }
+    @media (min-width: 400px) and (max-width: 500px) {
+      font-size: calc(1.4 * 0.55em + 0.275vw);
+    }
+    @media (min-width: 500px) and (max-width: 600px) {
+      font-size: calc(1.4 * 0.65em + 0.275vw);
+    }
+    @media (min-width: 600px) and (max-width: 768px) {
+      font-size: calc(1.4 * 0.95em + 0.275vw);
+    }
+    @media (min-width: 768px) and (max-width: 850px) {
+      font-size: calc(1.4 * 1.15em + 0.3vw);
+    }
+    @media (min-width: 850px) and (max-width: 1024px) {
+      font-size: calc(1.4 * 1.2em + 0.3vw);
+    }
+    @media (min-width: 1024px) and (max-width: 1280px) {
+      font-size: calc(1.4 * 1.2em + 0.2vw);
+    }
+    @media (min-width: 1280px) and (max-width: 1600px) {
+      font-size: calc(1.4 * 1.6em + 0.25vw);
+    }
+    @media (min-width: 1600px) and (max-width: 1900px) {
+      font-size: calc(1.4 * 1.6em + 0.2vw);
+    }
+    @media (min-width: 1900px) {
+      font-size: calc(1.4 * 1.6em + 0.2vw);
+    }
+  }
+
+  .idealFor {
+    fill: rgb(9, 30, 107);
+    font-weight: 400;
+    font-size: 1.5em;
+    font-size: calc(4.5vw - 0.3em);    
+    ul {
+      padding-inline-start: 5.5%;
+      li + li {
+        margin-top: 1em;
+      }
+    }
+    @media (max-width: 400px) {
+      font-size: calc(0.6em + 0.25vw);
+    }
+    @media (min-width: 400px) and (max-width: 500px) {
+      font-size: calc(0.70em + 0.25vw);
+    }
+    @media (min-width: 500px) and (max-width: 600px) {
+      font-size: calc(0.90em + 0.25vw);
+    }
+    @media (min-width: 600px) and (max-width: 768px) {
+      font-size: calc(1.05em + 0.275vw);
+    }
+
+    @media (min-width: 768px) and (max-width: 850px) {
+      font-size: calc(1.4em + 0.2vw);
+    }
+
+    @media (min-width: 850px) and (max-width: 1024px) {
+      font-size: calc(1.65em + 0.25vw);
+    }
+
+    @media (min-width: 1024px) and (max-width: 1280px) {
+      font-size: calc(1.95em + 0.225vw);
+    }
+
+    @media (min-width: 1280px) and (max-width: 1600px) {
+      font-size: calc(2.10em + 0.25vw);
+    }
+
+    @media (min-width: 1600px) and (max-width: 1900px) {
+      font-size: calc(2.10em + 0.2vw);
+    }
+
+    @media (min-width: 1900px) {
+      font-size: calc(2.05em + 0.2vw);
+    }
+    position: absolute;
+    top: 46%;
+    /* width: 100%; */
+    text-align: left;
+    padding: 2%;
+    padding-right: 3%;
+    /* white-space: pre-wrap; */
+    margin: 2%;
+    left: 7%;
+    padding-right: 7%;
+  }
+}
