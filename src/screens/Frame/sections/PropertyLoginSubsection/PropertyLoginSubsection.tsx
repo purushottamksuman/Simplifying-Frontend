@@ -133,6 +133,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
           if (profile.user_type === "teacher") navigate("/teacher/dashboard");
           else if (profile.user_type === "parent")
             navigate("/parent/dashboard");
+          else if(profile.user_type === "admin") navigate("/admin");
           else navigate("/component/dashboard");
         } else {
           navigate("/component/dashboard");
