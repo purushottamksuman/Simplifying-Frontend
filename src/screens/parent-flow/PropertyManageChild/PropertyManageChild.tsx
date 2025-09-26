@@ -98,6 +98,31 @@ const [linkedStudents, setLinkedStudents] = useState<any[]>([]);
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+
+  const handleRemoveStudent = async (studentId: string) => {
+  if (!confirm("Are you sure you want to remove this student?")) return;
+
+  setLoading(true);
+  try {
+    // Unlink the student by setting linked_to = null (or delete if you want)
+    const { error } = await supabase
+      .from("user_profiles")
+      .update({ linked_to: null })
+      .eq("id", studentId);
+
+    if (error) throw error;
+
+    // Remove from local state
+    setLinkedStudents(prev => prev.filter(s => s.id !== studentId));
+    toast.success("Student removed successfully!");
+  } catch (err: any) {
+    console.error("Error removing student:", err);
+    toast.error(err.message || "Failed to remove student.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 const fetchLinkedStudents = async () => {
   try {
     setFetchingStudents(true);
@@ -169,7 +194,7 @@ setLinkedStudents(linked || []);
           goals: form.goals,
           user_type: "student",
           linked_to: user.id,          // Link child to parent
-          skillsphere_enabled: true,
+          skillsphere_enabled: false,
           onboarded: true,
         }, { onConflict: "id" });
 
@@ -267,48 +292,53 @@ setLinkedStudents(linked || []);
   ) : (
     linkedStudents.map((student, index) => (
       <Card
-        key={index}
-        className="w-64 h-[345px] bg-white rounded-lg overflow-hidden shadow border-0"
-      >
-        <CardContent className="p-5 flex flex-col items-center gap-3">
-          {/* Avatar */}
-          <Avatar className="w-16 h-16 shadow">
-            <AvatarImage src={student.avatar_url || "/default-avatar.png"} />
-            <AvatarFallback>{student.full_name?.charAt(0) || "S"}</AvatarFallback>
-          </Avatar>
+  key={index}
+  className="w-64 h-[345px] bg-white rounded-lg overflow-hidden shadow border-0 relative"
+>
+  <CardContent className="p-5 flex flex-col items-center gap-3">
+    {/* Avatar */}
+    <Avatar className="w-16 h-16 shadow">
+      <AvatarImage src={student.avatar_url || "/default-avatar.png"} />
+      <AvatarFallback>{student.full_name?.charAt(0) || "S"}</AvatarFallback>
+    </Avatar>
 
-          {/* Name */}
-          <h3 className="text-[#101727] text-lg font-medium">
-            {student.full_name || "Unnamed Student"}
-          </h3>
+    {/* Name */}
+    <h3 className="text-[#101727] text-lg font-medium">
+      {student.full_name || "Unnamed Student"}
+    </h3>
 
-          {/* Education Level */}
-          <p className="text-[#495565] text-sm">
-            {student.edu_level || "-"}
-          </p>
+    {/* Education Level */}
+    <p className="text-[#495565] text-sm">{student.edu_level || "-"}</p>
 
-          {/* User Type Badge */}
-          <Badge className="bg-gray-100 text-gray-800 rounded-md px-3 py-1 text-xs border-0">
-            {student.user_type === "student" ? "Student" : student.user_type || "User"}
-          </Badge>
+    {/* User Type Badge */}
+    <Badge className="bg-gray-100 text-gray-800 rounded-md px-3 py-1 text-xs border-0">
+      {student.user_type === "student" ? "Student" : student.user_type || "User"}
+    </Badge>
 
-          {/* Goals */}
-          <p className="text-[#354152] text-sm">
-            {student.goals || "-"}
-          </p>
+    {/* Goals */}
+    <p className="text-[#354152] text-sm">{student.goals || "-"}</p>
 
-          {/* Date of Birth */}
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            {student.dob || "-"} 
-            <img className="w-3 h-3" alt="Svg" src="/svg-4.svg" />
-          </div>
+    {/* Date of Birth */}
+    <div className="flex items-center gap-2 text-xs text-gray-500">
+      {student.dob || "-"} 
+      <img className="w-3 h-3" alt="Svg" src="/svg-4.svg" />
+    </div>
 
-          {/* View Details Button */}
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm">
-            View Details
-          </Button>
-        </CardContent>
-      </Card>
+    {/* View Details Button */}
+    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm">
+      View Details
+    </Button>
+
+    {/* Remove Student Button */}
+    <Button
+      onClick={() => handleRemoveStudent(student.id)}
+      className="w-full bg-red-600 hover:bg-red-700 text-white text-sm mt-2"
+    >
+      Remove Student
+    </Button>
+  </CardContent>
+</Card>
+
     ))
   )}
 
