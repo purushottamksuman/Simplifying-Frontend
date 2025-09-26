@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "../../../../components/ui/select";
 import { authHelpers } from "../../../../lib/supabase";
+import { supabase } from "../../../../lib/supabase";
 
 type Country = {
   name: string;
@@ -71,70 +72,94 @@ export const PropertyCommanSubsection = (): JSX.Element => {
 }, []);
 
 
-  const handleSignUp = async () => {
-    console.log("🚀 Starting registration process...");
+const handleSignUp = async () => {
+  console.log("🚀 Starting registration process...");
 
-    // Validations
-    if (!formData.email.trim()) return setError("Please enter your email address");
-    if (!formData.phone.trim()) return setError("Please enter your phone number");
-    if (!formData.userType.trim())
-      return setError("Please select your user type (Student/Parent/Teacher)");
-    if (!formData.password.trim()) return setError("Please enter a password");
-    if (formData.password.length < 6)
-      return setError("Password must be at least 6 characters long");
-    if (formData.password !== formData.confirmPassword)
-      return setError("Passwords do not match");
+  // 🔹 Validations
+  if (!formData.email.trim()) return setError("Please enter your email address");
+  if (!formData.phone.trim()) return setError("Please enter your phone number");
+  if (!formData.userType.trim())
+    return setError("Please select your user type (Student/Parent/Teacher)");
+  if (!formData.password.trim()) return setError("Please enter a password");
+  if (formData.password.length < 6)
+    return setError("Password must be at least 6 characters long");
+  if (formData.password !== formData.confirmPassword)
+    return setError("Passwords do not match");
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email))
-      return setError("Please enter a valid email address");
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email))
+    return setError("Please enter a valid email address");
 
-    setLoading(true);
-    setError("");
+  setLoading(true);
+  setError("");
 
-    try {
-      const { data, error } = await authHelpers.signUp(
-        formData.email.trim(),
-        formData.password,
-        {
-          user_type: formData.userType,
-          phone: `${formData.countryCode}${formData.phone.trim()}`,
-          full_name: "",
-          country_code: formData.countryCode,
-        }
-      );
+  try {
+    // 🔹 1. Check in user_profiles table before signup
+    const { data: existingUser, error: fetchError } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("email", formData.email.trim())
+      .single();
 
-      if (!error) {
-        localStorage.setItem(
-          "pendingUser",
-          JSON.stringify({
-            email: formData.email,
-            phone: formData.phone,
-            user_type: formData.userType,
-            countryCode: formData.countryCode,
-            isRegistration: true,
-            userId: data.user?.id,
-          })
-        );
-        navigate("/otp");
-      } else {
-        setError(error.message || "Registration failed");
-      }
-    } catch (err: any) {
-      console.error("❌ Registration error:", err);
-      setError(`Registration failed: ${err.message || "Unknown error"}. Please try again.`);
-    } finally {
-      setLoading(false);
+    if (fetchError && fetchError.code !== "PGRST116") {
+      // PGRST116 = no rows found
+      throw fetchError;
     }
-  };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+    if (existingUser) {
+      setError("Email already exists");
+      setLoading(false);
+      return; // ❌ stop signup
+    }
 
+    // 🔹 2. Proceed with signup
+    const { data, error } = await authHelpers.signUp(
+      formData.email.trim(),
+      formData.password,
+      {
+        user_type: formData.userType,
+        phone: `${formData.countryCode}${formData.phone.trim()}`,
+        full_name: "",
+        country_code: formData.countryCode,
+      }
+    );
+
+    if (error) {
+      setError(error.message || "Registration failed");
+      return; // ❌ stop navigation
+    }
+
+    // 🔹 3. Redirect only if user created
+    if (data?.user) {
+      localStorage.setItem(
+        "pendingUser",
+        JSON.stringify({
+          email: formData.email,
+          phone: formData.phone,
+          user_type: formData.userType,
+          countryCode: formData.countryCode,
+          isRegistration: true,
+          userId: data.user?.id,
+        })
+      );
+      navigate("/otp");
+    }
+  } catch (err: any) {
+    console.error("❌ Registration error:", err);
+    setError(err.message || "Unknown error during signup");
+  } finally {
+    setLoading(false);
+  }
+};
+ // <-- ✅ closing brace added here
+
+// Separate helper
+const handleInputChange = (field: string, value: string) => {
+  setFormData((prev) => ({
+    ...prev,
+    [field]: value,
+  }));
+};
   return (
     <div className="relative min-h-screen w-full flex justify-center items-center bg-white overflow-hidden">
       {/* Background Blur Circles */}

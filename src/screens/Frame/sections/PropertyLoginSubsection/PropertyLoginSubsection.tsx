@@ -166,7 +166,6 @@ const handleResetPassword = async () => {
 
     toast.success("OTP sent to your email!");
 
-    // Give a tiny delay to ensure localStorage is written before navigating
     setTimeout(() => {
       navigate("/otp"); // Navigate to OTP verification page
     }, 100);

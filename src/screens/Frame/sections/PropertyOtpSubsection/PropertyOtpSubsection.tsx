@@ -72,6 +72,7 @@ export const PropertyOtpSubsection = (): JSX.Element => {
         setError(otpError.message || "Invalid or expired OTP");
         return;
       }
+      
 
       if (data?.user) {
         if (resetEmail) {
