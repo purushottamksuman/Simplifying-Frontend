@@ -1,5 +1,5 @@
 import { GraduationCapIcon, SchoolIcon, XIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Label } from "../../../../components/ui/label";
@@ -8,19 +8,25 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "../../../../components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../../components/ui/select";
+import { supabase } from "../../../../lib/supabase"; // 🔹 import supabase client
 
 const educationOptions = [
   {
     id: "school",
     label: "School",
     icon: SchoolIcon,
-    selected: true,
   },
   {
     id: "university",
     label: "University",
     icon: GraduationCapIcon,
-    selected: false,
   },
 ];
 
@@ -36,8 +42,43 @@ export const PropertyStudent1Subsection = ({
   onClose?: () => void;
 }) => {
   const [selectedEducation, setSelectedEducation] = useState(
-    initialValue || "school"
+    initialValue || ""
   );
+  const [selectedInstitute, setSelectedInstitute] = useState("");
+  const [institutes, setInstitutes] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleNext = () => {
+    if (!selectedInstitute) return alert("Please select a school/university");
+    onNext(`${selectedEducation}:${selectedInstitute}`);
+  };
+
+  // 🔹 Fetch institutes based on type (school/university)
+  useEffect(() => {
+    const fetchInstitutes = async () => {
+      if (!selectedEducation) return;
+
+      setLoading(true);
+      setInstitutes([]);
+
+      let type = selectedEducation === "school" ? "school" : "university";
+
+      const { data, error } = await supabase
+        .from("institutes")
+        .select("name") // assuming column is `name`
+        .eq("type", type); // 🔹 filter by type
+
+      if (error) {
+        console.error("❌ Error fetching institutes:", error.message);
+      } else {
+        setInstitutes(data.map((item: { name: string }) => item.name));
+      }
+
+      setLoading(false);
+    };
+
+    fetchInstitutes();
+  }, [selectedEducation]);
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen flex overflow-hidden shadow-lg z-[9999] bg-white">
@@ -45,7 +86,6 @@ export const PropertyStudent1Subsection = ({
       <div className="w-1/2 h-full bg-[#007fff] relative flex flex-col justify-center items-center p-8">
         <Card className="w-full h-full bg-transparent rounded-none overflow-hidden border-0 shadow-none">
           <CardContent className="relative w-full h-full p-0">
-            {/* Title and description */}
             <div className="absolute bottom-[90px] left-[50px] max-w-[400px] font-black text-white text-[32px] leading-snug">
               Learning Became Easy
             </div>
@@ -53,8 +93,6 @@ export const PropertyStudent1Subsection = ({
               Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Amet Ut
               Nec Vitae Gravida Ullamcorper.
             </div>
-
-            {/* Main illustration */}
             <img
               className="absolute w-[375px] h-[433px] top-[70px] left-[139px]"
               src="/sch_students.png"
@@ -62,8 +100,6 @@ export const PropertyStudent1Subsection = ({
             />
           </CardContent>
         </Card>
-
-        {/* Frame image */}
         <img
           className="absolute top-0 left-0 w-[742px] h-[627px]"
           src="/framestudent.png"
@@ -101,7 +137,10 @@ export const PropertyStudent1Subsection = ({
           <div className="flex flex-col w-full items-center gap-6">
             <RadioGroup
               value={selectedEducation}
-              onValueChange={setSelectedEducation}
+              onValueChange={(val) => {
+                setSelectedEducation(val);
+                setSelectedInstitute(""); // reset selection
+              }}
               className="flex flex-col gap-4 w-full"
             >
               {educationOptions.map((option) => {
@@ -137,14 +176,43 @@ export const PropertyStudent1Subsection = ({
               })}
             </RadioGroup>
 
+            {/* 🔹 Dynamic Dropdown */}
+            {selectedEducation && (
+              <Select
+                value={selectedInstitute}
+                onValueChange={setSelectedInstitute}
+              >
+                <SelectTrigger className="w-full h-[50px] rounded-3xl border border-gray-300">
+                  <SelectValue
+                    placeholder={
+                      loading
+                        ? "Loading..."
+                        : `Select your ${
+                            selectedEducation === "school"
+                              ? "School"
+                              : "University"
+                          }`
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {institutes.map((inst) => (
+                    <SelectItem key={inst} value={inst}>
+                      {inst}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
             <Button
               className="w-full h-[55px] bg-[#007fff] rounded-3xl text-white text-2xl font-semibold hover:bg-[#0066cc]"
-              onClick={() => onNext(selectedEducation)}
+              onClick={handleNext}
             >
               Next
             </Button>
 
-                      <Button
+            <Button
               variant="outline"
               className="w-full h-[50px] lg:h-[55px] rounded-3xl text-[#007fff] border-[#007fff] text-xl lg:text-2xl font-semibold hover:bg-[#f0f8ff]"
               onClick={onBack}
@@ -169,4 +237,3 @@ export const PropertyStudent1Subsection = ({
     </div>
   );
 };
-

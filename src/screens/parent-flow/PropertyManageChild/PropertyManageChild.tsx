@@ -107,15 +107,19 @@ const fetchLinkedStudents = async () => {
 
     console.log("Logged-in user ID:", user.id); // <-- Add this
 
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("linked_to", user.id);
+console.log("Fetching linked students for parent ID:", user.id);
 
-    if (error) throw error;
+const { data, error } = await supabase
+  .from("user_profiles")
+  .select("id, full_name, email, linked_to");
 
-    console.log("Fetched linked students:", data); // <-- Add this
-    setLinkedStudents(data || []);
+console.log("All students:", data);
+
+const linked = data?.filter(student => student.linked_to === user.id);
+console.log("Filtered linked students:", linked);
+
+setLinkedStudents(linked || []);
+
   } catch (err: any) {
     console.error("Error fetching linked students:", err.message || err);
   } finally {
@@ -129,6 +133,12 @@ const fetchLinkedStudents = async () => {
   }, []);
 
  const handleSubmit = async (e: React.FormEvent) => {
+  if (!form.full_name || !form.email || !form.edu_level || !form.dob) {
+  toast.error("Please fill all required fields.");
+  setLoading(false);
+  return;
+}
+
   e.preventDefault();
   setLoading(true);
   setNotification(null);

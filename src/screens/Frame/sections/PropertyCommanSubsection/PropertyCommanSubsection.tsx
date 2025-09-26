@@ -13,11 +13,6 @@ import {
 import { authHelpers } from "../../../../lib/supabase";
 import { supabase } from "../../../../lib/supabase";
 
-type Country = {
-  name: string;
-  code: string;
-};
-
 export const PropertyCommanSubsection = (): JSX.Element => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
