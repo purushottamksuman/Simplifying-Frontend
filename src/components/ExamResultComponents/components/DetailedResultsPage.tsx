@@ -99,7 +99,8 @@ export const DetailedResultsPage = ({ attemptId, onBack }: DetailedResultsPagePr
         options: q.options_vo?.map((opt: any) => ({
           id: opt.id,
           option_text: opt.option_text,
-          marks: opt.marks ?? 0
+          marks: opt.marks ?? 0,
+          type: opt.type || 'unknown'
         })) || []
       })).filter(q => q.sub_section.name && q.sub_section.section.name) || [];
 

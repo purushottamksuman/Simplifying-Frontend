@@ -33,6 +33,13 @@ export interface CategoryScore {
   categoryPercentage: number;
   categoryScoreLevel: string;
   categoryInterpretation: string;
+  // For interests_and_preferences only:
+  categoryScoreR?: number;
+  categoryScoreI?: number;
+  categoryScoreA?: number;
+  categoryScoreS?: number;
+  categoryScoreC?: number;
+  categoryScoreE?: number;
 }
 
 export interface ScoreCategory {
@@ -121,14 +128,23 @@ const CATEGORY_MAPPINGS = {
     }
   },
   interests: {
-    categories: ['investigative', 'artistic', 'social', 'conventional', 'realistic', 'enterprising'],
+    categories: ['r vs i', 'r vs a', 'r vs s', 'r vs c', 'r vs e', 'i vs a', 'i vs s', 'i vs c', 'i vs e', 'a vs s', 'a vs c', 'a vs e', 's vs c', 's vs e', 'c vs e',],
     displayNames: {
-      investigative: 'Investigative',
-      artistic: 'Artistic',
-      social: 'Social',
-      conventional: 'Conventional',
-      realistic: 'Realistic',
-      enterprising: 'Enterprising'
+      'r vs i': 'R vs I',
+      'r vs a': 'R vs A',
+      'r vs s': 'R vs S',
+      'r vs c': 'R vs C',
+      'r vs e': 'R vs E',
+      'i vs a': 'I vs A',
+      'i vs s': 'I vs S',
+      'i vs c': 'I vs C',
+      'i vs e': 'I vs E',
+      'a vs s': 'A vs S',
+      'a vs c': 'A vs C',
+      'a vs e': 'A vs E',
+      's vs c': 'S vs C',
+      's vs e': 'S vs E',
+      'c vs e': 'C vs E'
     },
     letters: {
       investigative: 'I',
@@ -649,10 +665,15 @@ function mapQuestionType(question: QuestionData): string {
                subSectionName.includes('self awareness') || subSectionName.includes('self management') ||
                subSectionName.includes('social skills') || subSectionName.includes('social awareness')) {
       return 'sei';
-    } else if (subSectionName.includes('interest') || subSectionName.includes('preference') ||
-               subSectionName.includes('investigative') || subSectionName.includes('artistic') ||
-               subSectionName.includes('social') || subSectionName.includes('conventional') ||
-               subSectionName.includes('realistic') || subSectionName.includes('enterprising')) {
+    } else if (subSectionName.includes('r vs i') || subSectionName.includes('r vs a') ||
+               subSectionName.includes('r vs a') || subSectionName.includes('r vs s') ||
+               subSectionName.includes('r vs e') || subSectionName.includes('r vs c') ||
+               subSectionName.includes('i vs a') ||
+               subSectionName.includes('i vs s') || subSectionName.includes('i vs e') ||
+               subSectionName.includes('i vs c') || subSectionName.includes('a vs s') ||
+               subSectionName.includes('a vs e') || subSectionName.includes('a vs c') ||
+               subSectionName.includes('s vs e') || subSectionName.includes('s vs c') ||
+               subSectionName.includes('e vs c')) {
       return 'interests_and_preferences';
     } else {
       return 'psychometric'; // Default for behavioral
@@ -972,66 +993,136 @@ function calculateSEIScore(submissions: QuestionSubmission[], questionMap: Map<s
   };
 }
 
-function calculateInterestScore(submissions: QuestionSubmission[], questionMap: Map<string, QuestionData>): ScoreCategory {
-  const categoryScores: Record<string, number> = {};
-  const categoryCounts: Record<string, number> = {};
-  
-  // Initialize categories
+function calculateInterestScore(
+  submissions: QuestionSubmission[],
+  questionMap: Map<string, QuestionData>
+): ScoreCategory {
+  // Initialize type scores (R, I, A, S, C, E)
+  const typeScores: Record<string, number> = {
+    r: 0, i: 0, a: 0, s: 0, c: 0, e: 0
+  };
+
+  // Initialize category scores
+  const categoryWiseScore: Record<string, CategoryScore> = {};
   CATEGORY_MAPPINGS.interests.categories.forEach(cat => {
-    categoryScores[cat] = 0;
-    categoryCounts[cat] = 0;
+    categoryWiseScore[cat] = {
+      categoryName: cat,
+      categoryDisplayText: CATEGORY_MAPPINGS.interests.displayNames[cat],
+      categoryLetter: "", // keeping consistent with earlier
+      categoryScore: 0,   // total attempts under this category
+      categoryPercentage: 0,
+      categoryScoreLevel: "",
+      categoryInterpretation: INTERPRETATIONS.interests[cat] || "",
+      // new detailed counts
+      categoryScoreR: 0,
+      categoryScoreI: 0,
+      categoryScoreA: 0,
+      categoryScoreS: 0,
+      categoryScoreC: 0,
+      categoryScoreE: 0,
+    };
   });
 
-  // Calculate scores
+  // Process submissions
   submissions.forEach(sub => {
     const question = questionMap.get(sub.questionId);
     if (!question) return;
 
-    const category = mapSubSectionToCategory(question.sub_section.name, 'interests_and_preferences');
-    
-    if (CATEGORY_MAPPINGS.interests.categories.includes(category)) {
-      const selectedOption = question.options.find(opt => opt.id === sub.selectedOptionId);
-      if (selectedOption) {
-        // Use database marks if available, otherwise use text scoring
-        if (selectedOption.marks && selectedOption.marks > 0) {
-          categoryScores[category] += selectedOption.marks;
-        } else {
-          categoryScores[category] += scoreInterests(selectedOption.option_text);
+    // Category is like "r vs i"
+    const category = mapSubSectionToCategory(
+      question.sub_section.name,
+      "interests_and_preferences"
+    );
+    if (!CATEGORY_MAPPINGS.interests.categories.includes(category)) return;
+
+    const selectedOption = question.options.find(
+      opt => opt.id === sub.selectedOptionId
+    );
+    if (!selectedOption) return;
+
+    const type = selectedOption.type?.toLowerCase(); // 'r' | 'i' | 'a' | 's' | 'c' | 'e'
+    if (!type || !(type in typeScores)) return;
+
+    // increment type score
+    typeScores[type]++;
+
+    // increment inside category
+    switch (type) {
+      case "r": categoryWiseScore[category].categoryScoreR++; break;
+      case "i": categoryWiseScore[category].categoryScoreI++; break;
+      case "a": categoryWiseScore[category].categoryScoreA++; break;
+      case "s": categoryWiseScore[category].categoryScoreS++; break;
+      case "c": categoryWiseScore[category].categoryScoreC++; break;
+      case "e": categoryWiseScore[category].categoryScoreE++; break;
+    }
+
+    // increment total attempts
+    categoryWiseScore[category].categoryScore++;
+  });
+
+  // --- Tie-breaking helper ---
+  function resolveTie(candidates: string[], needed: number): string[] {
+    if (candidates.length <= needed) return candidates;
+
+    // head-to-head wins count
+    const wins: Record<string, number> = {};
+    candidates.forEach(t => (wins[t] = 0));
+
+    for (let i = 0; i < candidates.length; i++) {
+      for (let j = i + 1; j < candidates.length; j++) {
+        const t1 = candidates[i], t2 = candidates[j];
+        const pair = [t1, t2].sort().join(" vs ");
+        const catScore = categoryWiseScore[pair];
+
+        if (catScore) {
+          const score1 = catScore[`categoryScore${t1.toUpperCase() as "R"}`];
+          const score2 = catScore[`categoryScore${t2.toUpperCase() as "R"}`];
+          if (score1 > score2) wins[t1]++; else if (score2 > score1) wins[t2]++;
         }
-        categoryCounts[category]++;
       }
     }
-  });
 
-  // Build category-wise scores
-  const categoryWiseScore: Record<string, CategoryScore> = {};
-  CATEGORY_MAPPINGS.interests.categories.forEach(cat => {
-    const score = categoryScores[cat];
-    const questionCount = categoryCounts[cat];
-    const maxScore = questionCount; // Max 1 per question for interests
-    const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
-    
-    categoryWiseScore[cat] = {
-      categoryName: cat,
-      categoryDisplayText: CATEGORY_MAPPINGS.interests.displayNames[cat],
-      categoryLetter: CATEGORY_MAPPINGS.interests.letters[cat],
-      categoryScore: score,
-      categoryPercentage: Math.round(percentage * 100) / 100,
-      categoryScoreLevel: "",
-      categoryInterpretation: INTERPRETATIONS.interests[cat] || ""
-    };
-  });
+    return candidates
+      .sort((a, b) => wins[b] - wins[a])
+      .slice(0, needed);
+  }
+
+  // --- Pick top 3 ---
+  const sortedTypes = Object.entries(typeScores).sort((a, b) => b[1] - a[1]);
+  const topThree: string[] = [];
+  let i = 0;
+  while (topThree.length < 3 && i < sortedTypes.length) {
+    const score = sortedTypes[i][1];
+    const tied = sortedTypes
+      .filter(entry => entry[1] === score)
+      .map(entry => entry[0]);
+
+    if (topThree.length + tied.length <= 3) {
+      topThree.push(...tied);
+    } else {
+      const resolved = resolveTie(tied, 3 - topThree.length);
+      topThree.push(...resolved);
+    }
+    i += tied.length;
+  }
+
+  // Build result interpretation (like earlier)
+  const resultInterpretation = CATEGORY_MAPPINGS.interests.categories
+    .map(cat => categoryWiseScore[cat].categoryInterpretation)
+    .join("\n");
 
   return {
-    resultInterpretation: CATEGORY_MAPPINGS.interests.categories
-      .map(cat => categoryWiseScore[cat].categoryInterpretation)
-      .join('\n'),
+    resultInterpretation,
     questionType: "interests_and_preferences",
     displayText: "Interest And Preference",
     description: "",
-    categoryWiseScore
+    categoryWiseScore,
+    // exposing extra info (safe to add, won’t break earlier pattern)
+    typeScores,
+    topThree
   };
 }
+
 
 function generateCareerMapping(
   aptitudeScore: ScoreCategory,
