@@ -19,6 +19,7 @@ import { useQuestions } from '../../hooks/useQuestions';
 import { QuestionWithOptions } from '../../types/database';
 import { supabase } from '../../lib/supabase';
 import { razorpayService } from '../../lib/razorpay';
+import { useNavigate } from 'react-router-dom';
 
 type ExtendedUser = {
   id: string;
@@ -48,11 +49,13 @@ function QuestionManagementSystem() {
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(!!user?.skillsphere_enabled); // <-- new state to track purchase
   const [editingQuestion, setEditingQuestion] = useState<QuestionWithOptions | undefined>();
   const [exams, setExams] = useState<Exam[]>([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
   const { createQuestion, updateQuestion } = useQuestions();
+  const navigate = useNavigate();
 
   // Fetch active exams on mount
   useEffect(() => {
@@ -74,44 +77,53 @@ function QuestionManagementSystem() {
     fetchExams();
   }, []);
 
-  const handleExamPayment = async (exam: Exam) => {
-    setPaymentLoading(true);
-    try {
-      const totalAmount = exam.discounted_price + exam.tax;
-      const paymentResult = await razorpayService.initiatePayment({
-        amount: totalAmount,
-        currency: 'INR',
-        description: `${exam.exam_name} - Exam Payment`,
-        notes: { exam_id: exam.exam_id, user_id: user?.id },
-      });
+ const handleExamPayment = async (exam: Exam) => {
+  setPaymentLoading(true);
+  try {
+    const totalAmount = exam.discounted_price + exam.tax;
+    const paymentResult = await razorpayService.initiatePayment({
+      amount: totalAmount,
+      currency: 'INR',
+      description: `${exam.exam_name} - Exam Payment`,
+      notes: { exam_id: exam.exam_id, user_id: user?.id },
+    });
 
-      if (paymentResult.success) {
-        // Record purchase
-        await supabase
-          .from('exam_purchases')
-          .upsert({
+    if (paymentResult.success) {
+      // Record purchase
+      await supabase
+        .from('exam_purchases')
+        .upsert(
+          {
             user_id: user?.id,
             exam_id: exam.exam_id,
             payment_id: paymentResult.payment.payment_id,
             purchase_type: 'paid',
             amount_paid: totalAmount,
-          }, { onConflict: 'user_id,exam_id' });
+          },
+          { onConflict: 'user_id,exam_id' }
+        );
 
-        // Enable SkillSphere
-        await supabase
-          .from('user_profiles')
-          .update({ skillsphere_enabled: true })
-          .eq('id', user?.id);
+      // Enable SkillSphere
+      await supabase
+        .from('user_profiles')
+        .update({ skillsphere_enabled: true })
+        .eq('id', user?.id);
 
-        alert(`🎉 Payment successful! You now have access to SkillSphere Assessment`);
-      }
-    } catch (err: any) {
-      console.error('Payment failed:', err);
-      alert(err.message || 'Payment failed. Please try again.');
-    } finally {
-      setPaymentLoading(false);
+      // Update parent state to reflect purchase
+      setIsPurchased(true); // <-- add this if using parent state
+
+      // alert(`🎉 Payment successful! You now have access to SkillSphere Assessment`);
+      return true; // <-- return success
     }
-  };
+    return false;
+  } catch (err: any) {
+    console.error('Payment failed:', err);
+    alert(err.message || 'Payment failed. Please try again.');
+    return false; // <-- return failure
+  } finally {
+    setPaymentLoading(false);
+  }
+};
 
   const handleEditQuestion = (question: QuestionWithOptions) => {
     setEditingQuestion(question);
@@ -155,9 +167,18 @@ function QuestionManagementSystem() {
   if (!user) return <PropertyLoginSubsection />;
 
   // Payment gating
-  if (!user.skillsphere_enabled) {
-    return <PaymentRequired examName="SkillSphere Assessment" exams={exams} handleExamPayment={handleExamPayment} paymentLoading={paymentLoading} />;
-  }
+if (!isPurchased) {
+  return (
+    <PaymentRequired
+      examName="SkillSphere Assessment"
+      exams={exams}
+      handleExamPayment={handleExamPayment}
+      paymentLoading={paymentLoading}
+      isPurchased={isPurchased} // updated dynamically
+      onViewExam={() => navigate('/exam')}
+    />
+  );
+}
 
   // Non-home views
   if (activeTab === 'home' && currentView !== 'home') {

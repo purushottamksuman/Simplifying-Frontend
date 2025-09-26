@@ -11,19 +11,19 @@ type Exam = {
 type PaymentRequiredProps = {
   examName: string;
   exams?: Exam[];
-  handleExamPayment?: (exam: Exam) => void;
+  handleExamPayment?: (exam: Exam) => Promise<boolean>; // Return true if payment succeeds
   paymentLoading?: boolean;
-  onViewExam?: () => void; // Callback to navigate to exam
-  isPurchased?: boolean; // Indicates if user already has access
+  onViewExam?: () => void;
+  isPurchased?: boolean;
 };
 
 export const PaymentRequired: React.FC<PaymentRequiredProps> = ({
   examName,
   exams = [],
-  handleExamPayment = () => {},
+  handleExamPayment = async () => false,
   paymentLoading = false,
   onViewExam = () => {},
-  isPurchased = false,
+  isPurchased = false, // now fully controlled by parent
 }) => {
   // Find first paid exam
   const paidExam = exams.find((e) => e.discounted_price + e.tax > 0);
