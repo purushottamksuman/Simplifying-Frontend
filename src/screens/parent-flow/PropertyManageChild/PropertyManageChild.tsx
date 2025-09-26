@@ -279,81 +279,101 @@ setLinkedStudents(linked || []);
       </Card>
 
       {/* Linked Children */}
-      <section className="w-full max-w-6xl text-center">
-        <img className="w-12 h-12 mx-auto mb-4" alt="Background" src="/background-31.svg" />
-        <h2 className="text-[#13377c] text-3xl font-semibold mb-2">My Linked Children</h2>
-        <p className="text-[#13377c] text-base mb-8">Manage and view all your linked students in one place.</p>
+     
+<section className="w-full max-w-6xl text-center">
+  <img
+    className="w-12 h-12 mx-auto mb-4"
+    alt="Background"
+    src="/background-31.svg"
+  />
+  <h2 className="text-[#13377c] text-3xl font-semibold mb-2">
+    My Linked Children
+  </h2>
+  <p className="text-[#13377c] text-base mb-8">
+    Manage and view all your linked students in one place.
+  </p>
 
-        <div className="flex flex-wrap justify-center gap-6">
-            {fetchingStudents ? (
-    <p>Loading students...</p>
-  ) : linkedStudents.length === 0 ? (
-    <p>No linked students found.</p>
-  ) : (
-    linkedStudents.map((student, index) => (
-      <Card
-  key={index}
-  className="w-64 h-[345px] bg-white rounded-lg overflow-hidden shadow border-0 relative"
->
-  <CardContent className="p-5 flex flex-col items-center gap-3">
-    {/* Avatar */}
-    <Avatar className="w-16 h-16 shadow">
-      <AvatarImage src={student.avatar_url || "/default-avatar.png"} />
-      <AvatarFallback>{student.full_name?.charAt(0) || "S"}</AvatarFallback>
-    </Avatar>
+  <div className="flex flex-wrap justify-center gap-6">
+    {fetchingStudents ? (
+      <p>Loading students...</p>
+    ) : linkedStudents.length === 0 ? (
+      <p>No linked students found.</p>
+    ) : (
+      linkedStudents.map((student, index) => {
+        console.log("Student object:", student); // Debug log
 
-    {/* Name */}
-    <h3 className="text-[#101727] text-lg font-medium">
-      {student.full_name || "Unnamed Student"}
-    </h3>
+        const studentId = student.id || student.user_id; // Ensure ID exists
 
-    {/* Education Level */}
-    <p className="text-[#495565] text-sm">{student.edu_level || "-"}</p>
+        return (
+          <Card
+            key={studentId || index}
+            className="w-64 h-[345px] bg-white rounded-lg overflow-visible shadow border-0 relative"
+          >
+            <CardContent className="p-5 flex flex-col items-center gap-3 overflow-visible">
+              {/* Avatar */}
+              <Avatar className="w-16 h-16 shadow">
+                <AvatarImage src={student.avatar_url || "/default-avatar.png"} />
+                <AvatarFallback>{student.full_name?.charAt(0) || "S"}</AvatarFallback>
+              </Avatar>
 
-    {/* User Type Badge */}
-    <Badge className="bg-gray-100 text-gray-800 rounded-md px-3 py-1 text-xs border-0">
-      {student.user_type === "student" ? "Student" : student.user_type || "User"}
-    </Badge>
+              {/* Name */}
+              <h3 className="text-[#101727] text-lg font-medium">
+                {student.full_name || "Unnamed Student"}
+              </h3>
 
-    {/* Goals */}
-    <p className="text-[#354152] text-sm">{student.goals || "-"}</p>
+              {/* Education Level */}
+              <p className="text-[#495565] text-sm">{student.edu_level || "-"}</p>
 
-    {/* Date of Birth */}
-    <div className="flex items-center gap-2 text-xs text-gray-500">
-      {student.dob || "-"} 
-      <img className="w-3 h-3" alt="Svg" src="/svg-4.svg" />
-    </div>
+              {/* User Type Badge */}
+              <Badge className="bg-gray-100 text-gray-800 rounded-md px-3 py-1 text-xs border-0">
+                {student.user_type === "student" ? "Student" : student.user_type || "User"}
+              </Badge>
 
-    {/* View Details Button */}
-    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm">
-      View Details
-    </Button>
+              {/* Goals */}
+              <p className="text-[#354152] text-sm">{student.goals || "-"}</p>
 
-    {/* Remove Student Button */}
-    <Button
-      onClick={() => handleRemoveStudent(student.id)}
-      className="w-full bg-red-600 hover:bg-red-700 text-white text-sm mt-2"
-    >
-      Remove Student
-    </Button>
-  </CardContent>
-</Card>
-
-    ))
-  )}
-
-          {/* Trigger Card */}
-          <Card onClick={() => setStep("choice")} className="w-64 h-[345px] bg-gray-50 border border-dashed border-gray-300 cursor-pointer hover:shadow-md transition">
-            <CardContent className="flex flex-col items-center justify-center h-full gap-3">
-              <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300">
-                <PlusIcon className="w-6 h-6 text-gray-400" />
+              {/* Date of Birth */}
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                {student.dob || "-"} 
+                <img className="w-3 h-3" alt="Svg" src="/svg-4.svg" />
               </div>
-              <h3 className="text-[#101727] text-lg font-medium">Add New Student</h3>
-              <p className="text-[#495565] text-sm max-w-[160px]">Link your child's account using their student ID</p>
+
+              {/* View Details Button */}
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                View Details
+              </Button>
+
+              {/* Remove Student Button */}
+              <Button
+  onClick={() => handleRemoveStudent(student.id || student.user_id)}
+  className="w-full bg-red-600 hover:bg-red-700 text-white text-sm mt-2"
+>
+  Remove Student
+</Button>
             </CardContent>
           </Card>
+        );
+      })
+    )}
+
+    {/* Trigger Card */}
+    <Card
+      onClick={() => setStep("choice")}
+      className="w-64 h-[345px] bg-gray-50 border border-dashed border-gray-300 cursor-pointer hover:shadow-md transition"
+    >
+      <CardContent className="flex flex-col items-center justify-center h-full gap-3">
+        <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300">
+          <PlusIcon className="w-6 h-6 text-gray-400" />
         </div>
-      </section>
+        <h3 className="text-[#101727] text-lg font-medium">Add New Student</h3>
+        <p className="text-[#495565] text-sm max-w-[160px]">
+          Link your child's account using their student ID
+        </p>
+      </CardContent>
+    </Card>
+  </div>
+</section>
+
 
       {/* Step 1: Choice Modal */}
       {step === "choice" && (
