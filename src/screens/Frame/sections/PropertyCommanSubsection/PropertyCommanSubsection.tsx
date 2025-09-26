@@ -24,6 +24,7 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     confirmPassword: "",
   });
   const [countries, setCountries] = useState<{ name: string; code: string }[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -236,14 +237,28 @@ const handleInputChange = (field: string, value: string) => {
           />
                 </div>
 
-                {/* Password */}
-                <Input
-                  type="password"
-                  className="h-[53px] rounded-3xl border border-gray-300 pl-4"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
-                />
+ <div className="relative">
+  <Input
+    className="h-[53px] rounded-3xl border border-gray-300 pl-4 pr-10 font-roboto text-sm"
+    placeholder="Password"
+    type={showPassword ? "text" : "password"}
+    value={formData.password}
+    onChange={(e) => handleInputChange("password", e.target.value)}
+  />
+
+  {/* Eye toggle button */}
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+  >
+    <img
+      src={showPassword ? "/eyes.png" : "/eyes.png"} // Use your new eye/eye-off icons
+      alt="Toggle visibility"
+      className="w-5 h-5 mr-1"
+    />
+  </button>
+</div>
 
                 {/* Confirm Password */}
                 <Input
