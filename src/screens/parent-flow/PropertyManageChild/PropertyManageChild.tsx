@@ -177,28 +177,50 @@ setLinkedStudents(linked || []);
 
     // If OTP is already sent, verify it
     if (otpSent && tempUserId) {
-      const { data, error } = await authHelpers.verifyOTP(form.email, otp, "signup");
-      if (error) throw error;
+      // Store parent session before verification
+      const { data: { session: parentSession } } = await supabase.auth.getSession();
+      if (!parentSession) {
+        throw new Error("Parent session not found");
+      }
 
-      // ✅ OTP verified, insert profile
-      const { error: profileError } = await supabase
-        .from("user_profiles")
-        .upsert({
-          id: tempUserId,
-          full_name: form.full_name,
-          email: emailTrimmed,
-          edu_level: form.edu_level,
-          dob: form.dob,
-          career_domain: form.career_domain,
-          hobbies: form.hobbies ? [form.hobbies] : [],
-          goals: form.goals,
-          user_type: "student",
-          linked_to: user.id,          // Link child to parent
-          skillsphere_enabled: false,
-          onboarded: true,
-        }, { onConflict: "id" });
+      try {
+        // Verify OTP
+        const { data, error } = await authHelpers.verifyOTP(form.email, otp, "signup");
+        if (error) throw error;
 
-      if (profileError) throw profileError;
+        // ✅ OTP verified, insert profile
+        const { error: profileError } = await supabase
+          .from("user_profiles")
+          .upsert({
+            id: tempUserId,
+            full_name: form.full_name,
+            email: emailTrimmed,
+            edu_level: form.edu_level,
+            dob: form.dob,
+            career_domain: form.career_domain,
+            hobbies: form.hobbies ? [form.hobbies] : [],
+            goals: form.goals,
+            user_type: "student",
+            linked_to: user.id,          // Link child to parent
+            skillsphere_enabled: false,
+            onboarded: false,
+          }, { onConflict: "id" });
+
+        if (profileError) throw profileError;
+
+        // Restore parent session
+        await supabase.auth.setSession({
+          access_token: parentSession.access_token,
+          refresh_token: parentSession.refresh_token
+        });
+      } catch (verifyError) {
+        // If verification fails, ensure parent stays logged in
+        await supabase.auth.setSession({
+          access_token: parentSession.access_token,
+          refresh_token: parentSession.refresh_token
+        });
+        throw verifyError;
+      }
 
       toast.success("Child account created successfully!");
       setStep(null);
@@ -231,6 +253,12 @@ setLinkedStudents(linked || []);
       return;
     }
 
+    // Store parent's session before student signup
+    const { data: { session: parentSession } } = await supabase.auth.getSession();
+    if (!parentSession) {
+      throw new Error("Parent session not found");
+    }
+
     // Sign up new user (triggers OTP email)
     const { data: signUpData, error: signUpError } = await authHelpers.signUp(
       emailTrimmed,
@@ -238,6 +266,12 @@ setLinkedStudents(linked || []);
       { user_type: "student", full_name: form.full_name }
     );
     if (signUpError) throw signUpError;
+
+    // Immediately restore parent's session
+    await supabase.auth.setSession({
+      access_token: parentSession.access_token,
+      refresh_token: parentSession.refresh_token
+    });
 
     setTempUserId(signUpData.user?.id || null);
     setOtpSent(true);

@@ -5,6 +5,7 @@ import { CreateAssessment } from "./pages/CreateAssessment";
 import AuthCallback from "./pages/AuthCallback";
 import DashboardLayout from "./layouts/DashboardLayout";
 import TeacherLayout from "./layouts/TeacherLayout";
+import ProtectedRoute from "./pages/ProtectedRoute";
 
 // Components
 import { PropertyDasboardSubsection } from "./screens/Frame/sections/PropertyDasboardSubsection/PropertyDasboardSubsection";
@@ -71,8 +72,12 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/error" element={<SomethingWentWrong />} />
 
-          {/* Dashboard Layout */}
-          <Route path="/component" element={<DashboardLayout />}>
+          {/* Student Protected Layout */}
+          <Route path="/component" element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }>
             <Route path="dashboard" element={<PropertyDasboardSubsection />} />
             <Route path="courses" element={<PropertyMycourseSubsection />} />
             <Route path="live" element={<PropertyLiveSubsection />} />
@@ -87,8 +92,12 @@ function App() {
             <Route path="questionManagementSystem" element={<QuestionManagementSystem />} />
           </Route>
 
-          {/* Teacher Layout */}
-          <Route path="/teacher" element={<TeacherLayout />}>
+          {/* Teacher Protected Layout */}
+          <Route path="/teacher" element={
+            <ProtectedRoute allowedRoles={["teacher"]}>
+              <TeacherLayout />
+            </ProtectedRoute>
+          }>
             <Route path="dashboard" element={<PropertyTeacherDashboard />} />
             <Route path="course" element={<TeacherCourse />} />
             <Route path="live" element={<TeacherLiveCLass />} />
@@ -103,8 +112,12 @@ function App() {
             <Route path="referrals" element={<PropertyReffrealSubsection />} />
           </Route>
 
-          {/* Parent Layout */}
-          <Route path="/parent" element={<ParentLayout />}>
+          {/* Parent Protected Layout */}
+          <Route path="/parent" element={
+            <ProtectedRoute allowedRoles={["parent"]}>
+              <ParentLayout />
+            </ProtectedRoute>
+          }>
             <Route path="dashboard" element={<PropertyParentDashboard />} />
             <Route path="courses" element={<PropertyMycourseSubsection />} />
             <Route path="live" element={<PropertyLiveSubsection />} />

@@ -32,12 +32,14 @@ export const authHelpers = {
     }
   },
   // Sign up with email and password
-  signUp: async (email: string, password: string, userData?: any) => {
+  signUp: async (email: string, password: string, userData?: any, options?: { shouldAutoLogin?: boolean }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: userData
+        data: userData,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        shouldAutoLogin: options?.shouldAutoLogin ?? true
       }
     })
     return { data, error }
