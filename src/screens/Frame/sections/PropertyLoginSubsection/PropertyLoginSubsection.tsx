@@ -1,3 +1,8 @@
+// Clear OTP context on login page load
+if (typeof window !== 'undefined') {
+  localStorage.removeItem('resetEmail');
+  localStorage.removeItem('pendingUser');
+}
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
