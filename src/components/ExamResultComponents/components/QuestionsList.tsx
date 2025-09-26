@@ -82,7 +82,7 @@ export const QuestionsList = ({ onEditQuestion, onAddQuestion, onBulkUpload }: Q
     <div className="bg-white rounded-lg shadow">
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Questions Management</h2>
+          <h2 className="text-lg font-semibold text-gray-900">SkillSphere Questions Management</h2>
           <div className="flex space-x-3">
             <button
               onClick={onBulkUpload}

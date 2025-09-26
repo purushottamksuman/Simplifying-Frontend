@@ -8,7 +8,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 // Handle auth state changes and clear stale tokens
 supabase.auth.onAuthStateChange((event, session) => {
   if ((event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') && !session) {
-    // Clear any stale auth data from localStorage
     const keys = Object.keys(localStorage)
     keys.forEach(key => {
       if (key.startsWith('sb-') && key.includes('-auth-token')) {
@@ -20,6 +19,18 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // Auth helper functions
 export const authHelpers = {
+
+    resetPassword: async (email: string) => {
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+      return { data, error };
+    } catch (err: any) {
+      console.error("resetPassword error:", err);
+      return { error: err.message || "Unknown error" };
+    }
+  },
   // Sign up with email and password
   signUp: async (email: string, password: string, userData?: any) => {
     const { data, error } = await supabase.auth.signUp({
@@ -47,12 +58,42 @@ export const authHelpers = {
     return { error }
   },
 
+  // Send magic link
+  sendMagicLink: async (email: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/magic-link-callback`
+        }
+      })
+      return { data, error }
+    } catch (err: any) {
+      console.error("sendMagicLink error:", err)
+      return { error: err.message || "Unknown error" }
+    }
+  },
+
   // Get current user
   getCurrentUser: async () => {
     const { data: { user }, error } = await supabase.auth.getUser()
     return { user, error }
   },
 
+  getUserByEmail: async (email: string) => {
+  try {
+    // Make sure this runs server-side using the service role key
+    const { data, error } = await supabase.auth.admin.listUsers();
+
+    if (error) throw error;
+
+    const user = data.users.find((u) => u.email === email);
+    return { user };
+  } catch (err: any) {
+    console.error("getUserByEmail error:", err);
+    return { error: err.message || "Unknown error" };
+  }
+},
   // Listen to auth changes
   onAuthStateChange: (callback: (event: string, session: any) => void) => {
     return supabase.auth.onAuthStateChange(callback)
@@ -62,12 +103,12 @@ export const authHelpers = {
   resendConfirmation: async (email: string) => {
     const { data, error } = await supabase.auth.resend({
       type: 'signup',
-      email: email
+      email
     })
     return { data, error }
   },
 
-  // Verify OTP using Supabase's native verification
+  // Verify OTP
   verifyOTP: async (email: string, token: string, type: 'signup' | 'email') => {
     const { data, error } = await supabase.auth.verifyOtp({
       email,

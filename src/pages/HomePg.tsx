@@ -15,14 +15,13 @@ import ParentLayout from "../layouts/ParentLayout";
 export const HomePg: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState<"student" | "teacher" | "parent" | null>(null);
+  const [role, setRole] = useState<"student" | "teacher" | "parent" | "admin" | null>(null);
 
   useEffect(() => {
     const checkUser = async () => {
       try {
         // Get user from Supabase auth
         const { data: { user }, error } = await supabase.auth.getUser();
-
         if (error || !user) {
           navigate("/login");
           return;
@@ -41,7 +40,14 @@ export const HomePg: React.FC = () => {
           return;
         }
 
-        setRole(profile.user_type?.toLowerCase());
+        const userRole = profile.user_type?.toLowerCase();
+        setRole(userRole);
+
+        // Redirect admin to /admin
+        if (userRole === "admin") {
+          navigate("/admin", { replace: true });
+        }
+
       } catch (err) {
         console.error("HomePage checkUser error:", err);
         navigate("/login");
@@ -57,6 +63,7 @@ export const HomePg: React.FC = () => {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
+  // Student dashboard
   if (role === "student") {
     return (
       <DashboardLayout>
@@ -65,6 +72,7 @@ export const HomePg: React.FC = () => {
     );
   }
 
+  // Teacher dashboard
   if (role === "teacher") {
     return (
       <TeacherLayout>
@@ -73,6 +81,7 @@ export const HomePg: React.FC = () => {
     );
   }
 
+  // Parent dashboard
   if (role === "parent") {
     return (
       <ParentLayout>
@@ -81,7 +90,7 @@ export const HomePg: React.FC = () => {
     );
   }
 
-  // fallback
+  // Fallback if no dashboard
   return (
     <div className="flex justify-center items-center h-screen">
       <p>No dashboard found for this role. Please contact support.</p>

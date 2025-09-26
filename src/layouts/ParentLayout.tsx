@@ -33,6 +33,7 @@ const parentNavigationItems = [
   { icon: ClipboardListIcon, label: "Test Reports", path: "tests" },
   { icon: AwardIcon, label: "Live Class Attendance", path: "certificates" },
   { icon: TrophyIcon, label: "Certificates", path: "leaderboard" },
+  { icon: LinkIcon, label: "Manage Child", path: "manage" },
   { icon: GiftIcon, label: "Cart & Purchases", path: "rewards" },
   { icon: UsersIcon, label: "Give Feedback", path: "clubs" },
   { icon: UserPlusIcon, label: "Referrals Program", path: "referrals" },

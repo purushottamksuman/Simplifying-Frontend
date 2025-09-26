@@ -1,21 +1,23 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import { HomePage } from "./pages/HomePage";
 import { HomePg } from "./pages/HomePg";
 import { AdminExamManagement } from "./pages/AdminExamManagement";
 import { CreateAssessment } from "./pages/CreateAssessment";
-
+import AuthCallback from "./pages/AuthCallback";
 import DashboardLayout from "./layouts/DashboardLayout";
 import TeacherLayout from "./layouts/TeacherLayout";
 
-// Import your components
+// Components
 import { PropertyDasboardSubsection } from "./screens/Frame/sections/PropertyDasboardSubsection/PropertyDasboardSubsection";
 import { PropertyMycourseSubsection } from "./screens/Frame/sections/PropertyMycourseSubsection/PropertyMycourseSubsection";
+import { PropertyMycourseSubsection as TeacherCourse } from "./screens/teacher-flow/PropertyMycourseSubsection/PropertyMycourseSubsection";
+import { PropertyUploadContent as TeacherContent } from "./screens/teacher-flow/PropertyUploadContent/PropertyUploadContent";
+import { TeaacherLiveClassScheduler as TeacherLiveCLass } from "./screens/teacher-flow/TeacherLiveClassScheduler/TeacherLiveClassScheduler";
 import { PropertyLiveSubsection } from "./screens/Frame/sections/PropertyLiveSubsection/PropertyLiveSubsection";
-import  PropertyTestAndSubsection  from "./screens/Frame/sections/PropertyTestAndSubsection/PropertyTestAndSubsection";
+import PropertyTestAndSubsection from "./screens/Frame/sections/PropertyTestAndSubsection/PropertyTestAndSubsection";
 import { PropertyClubAndSubsection } from "./screens/Frame/sections/PropertyClubAndSubsection/PropertyClubAndSubsection";
 import { DivWrapperSubsection as StudentProfile } from "./screens/Frame/sections/DivWrapperSubsection/DivWrapperSubsection";
 import { DivWrapperSubsection as TeacherProfile } from "./screens/teacher-flow/DivWrapperSubsection/DivWrapperSubsection";
-import { PropertyWrapperSubsection } from "./screens/Frame/sections/PropertyWrapperSubsection/PropertyWrapperSubsection"
+import { PropertyWrapperSubsection } from "./screens/Frame/sections/PropertyWrapperSubsection/PropertyWrapperSubsection";
 import PropertySubsection from "./screens/Frame/sections/PropertySubsection/PropertySubsection";
 import { PropertyRewardSubsection } from "./screens/Frame/sections/PropertyRewardSubsection/PropertyRewardSubsection";
 import { PropertyRaiseAndSubsection } from "./screens/Frame/sections/PropertyRaiseAndSubsection/PropertyRaiseAndSubsection";
@@ -30,14 +32,15 @@ import ParentLayout from "./layouts/ParentLayout";
 import PropertyParentDashboard from "./screens/parent-flow/PropertyParentDashboard/PropertyParentDashboard";
 import PropertyTeacherDashboard from "./screens/teacher-flow/PropertyTeacherDashboard/PropertyTeacherDashboard";
 import { useEffect } from "react";
-
+import AdminRoute from "./pages/AdminRoute";
 import QuestionManagementSystem from "./components/QuestionManagementSystem/QuestionManagementSystem";
-import { QuestionsList } from "./components/ExamResultComponents/components/QuestionsList";
 import { QuestionsListWrapper } from "./components/ExamResultComponents/components/QuestionsListWrapper";
 import { DivWrapperSubsection } from "./screens/parent-flow/DivWrapperSubsection/DivWrapperSubsection";
 import { TeacherDoubtsSolve } from "./screens/teacher-flow/TeacherDoubtsSolve";
 import PropertyFeedback from "./screens/parent-flow/PropertyFeedback/PropertyFeedback";
 import ResetPassword from "./screens/Frame/sections/PropertyOtpSubsection/ResetPassword";
+import { PropertyManageChild } from "./screens/parent-flow/PropertyManageChild/PropertyManageChild";
+import AdminDashboard from "./layouts/AdminDashboard";
 
 function RouteNormalizer() {
   const location = useLocation();
@@ -56,100 +59,109 @@ function RouteNormalizer() {
 function App() {
   return (
     <div>
-    <Router>
-      <RouteNormalizer />
-      <Routes>
-        <Route path="/" element={<HomePg />} />
-        <Route path="/admin" element={<HomePage />} />
-          <Route path="signup" element={<PropertyCommanSubsection />} />
-        <Route path="/login" element={<PropertyLoginSubsection />} />
-        <Route path="/otp" element={<PropertyOtpSubsection />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/error" element={<SomethingWentWrong />} />
+      <Router>
+        <RouteNormalizer />
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<HomePg />} />
+          <Route path="/signup" element={<PropertyCommanSubsection />} />
+          <Route path="/login" element={<PropertyLoginSubsection />} />
+          <Route path="/otp" element={<PropertyOtpSubsection />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/error" element={<SomethingWentWrong />} />
 
-
-        {/* Dashboard Layout ss */}
-        <Route path="/component" element={<DashboardLayout />}>
-          <Route path="dashboard" element={<PropertyDasboardSubsection />} />
-          <Route path="courses" element={<PropertyMycourseSubsection />} />
-          <Route path="live" element={<PropertyLiveSubsection />} />
-          <Route path="tests" element={<PropertyTestAndSubsection />} />
-          <Route path="clubs" element={<PropertyClubAndSubsection />} />
-          <Route path="profile" element={<StudentProfile />} />
-          <Route path="certificates" element={<PropertyWrapperSubsection />} />
-          <Route path="leaderboard" element={<PropertySubsection />} />
-          <Route path="rewards" element={<PropertyRewardSubsection />} />
-          <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
-          <Route path="referrals" element={<PropertyReffrealSubsection />} />
-          <Route path="questionManagementSystem" element={<QuestionManagementSystem />} />
-
-        </Route>
-
+          {/* Dashboard Layout */}
+          <Route path="/component" element={<DashboardLayout />}>
+            <Route path="dashboard" element={<PropertyDasboardSubsection />} />
+            <Route path="courses" element={<PropertyMycourseSubsection />} />
+            <Route path="live" element={<PropertyLiveSubsection />} />
+            <Route path="tests" element={<PropertyTestAndSubsection />} />
+            <Route path="clubs" element={<PropertyClubAndSubsection />} />
+            <Route path="profile" element={<StudentProfile />} />
+            <Route path="certificates" element={<PropertyWrapperSubsection />} />
+            <Route path="leaderboard" element={<PropertySubsection />} />
+            <Route path="rewards" element={<PropertyRewardSubsection />} />
+            <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
+            <Route path="referrals" element={<PropertyReffrealSubsection />} />
+            <Route path="questionManagementSystem" element={<QuestionManagementSystem />} />
+          </Route>
 
           {/* Teacher Layout */}
-<Route path="/teacher" element={<TeacherLayout />}>
-  <Route path="dashboard" element={<PropertyTeacherDashboard />} />
-          <Route path="courses" element={<PropertyMycourseSubsection />} />
-          <Route path="live" element={<PropertyLiveSubsection />} />
-          <Route path="tests" element={<PropertyTestAndSubsection />} />
-  <Route path="clubs" element={<PropertyClubAndSubsection />} />
-  <Route path="profile" element={<TeacherProfile />} />
-  <Route path="certificates" element={<PropertyWrapperSubsection />} />
-  <Route path="leaderboard" element={<PropertySubsection />} />
-  <Route path="rewards" element={<PropertyRewardSubsection />} />
-  <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
-  <Route path="referrals" element={<PropertyReffrealSubsection />} />
+          <Route path="/teacher" element={<TeacherLayout />}>
+            <Route path="dashboard" element={<PropertyTeacherDashboard />} />
+            <Route path="course" element={<TeacherCourse />} />
+            <Route path="live" element={<TeacherLiveCLass />} />
+            <Route path="tests" element={<PropertyTestAndSubsection />} />
+            <Route path="upload" element={<TeacherContent />} />
+            <Route path="clubs" element={<PropertyClubAndSubsection />} />
+            <Route path="profile" element={<TeacherProfile />} />
+            <Route path="certificates" element={<PropertyWrapperSubsection />} />
+            <Route path="leaderboard" element={<PropertySubsection />} />
+            <Route path="rewards" element={<PropertyRewardSubsection />} />
+            <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
+            <Route path="referrals" element={<PropertyReffrealSubsection />} />
+          </Route>
+
+          {/* Parent Layout */}
+          <Route path="/parent" element={<ParentLayout />}>
+            <Route path="dashboard" element={<PropertyParentDashboard />} />
+            <Route path="courses" element={<PropertyMycourseSubsection />} />
+            <Route path="live" element={<PropertyLiveSubsection />} />
+            <Route path="tests" element={<PropertyTestAndSubsection />} />
+            <Route path="clubs" element={<PropertyFeedback />} />
+            <Route path="manage" element={<PropertyManageChild />} />
+            <Route path="profile" element={<DivWrapperSubsection />} />
+            <Route path="certificates" element={<PropertyWrapperSubsection />} />
+            <Route path="leaderboard" element={<PropertySubsection />} />
+            <Route path="rewards" element={<PropertyRewardSubsection />} />
+            <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
+            <Route path="referrals" element={<PropertyReffrealSubsection />} />
+          </Route>
+
+          {/* Admin Routes - all protected */}
+         <Route path="/admin" element={<AdminRoute />}>
+  <Route index element={<AdminDashboard />} />
+  <Route path="exam-management" element={<AdminExamManagement />} />
+  <Route path="create-assessment" element={<CreateAssessment />} />
+  <Route path="questions-list" element={<QuestionsListWrapper />} />
+  <Route path="edit-assessment/:assessmentId" element={<CreateAssessment />} />
+  <Route path="doubt-solve" element={<TeacherDoubtsSolve />} />
 </Route>
 
-{/* Parent Layout  */}
-<Route path="/parent" element={<ParentLayout />}>
-  <Route path="dashboard" element={<PropertyParentDashboard />} />
-  <Route path="courses" element={<PropertyMycourseSubsection />} />
-  <Route path="live" element={<PropertyLiveSubsection />} />
-  <Route path="tests" element={<PropertyTestAndSubsection />} />
-  <Route path="clubs" element={<PropertyFeedback />} />
-  <Route path="profile" element={<DivWrapperSubsection />} />
-  <Route path="certificates" element={<PropertyWrapperSubsection />} />
-  <Route path="leaderboard" element={<PropertySubsection />} />
-  <Route path="rewards" element={<PropertyRewardSubsection />} />
-  <Route path="doubts" element={<PropertyRaiseAndSubsection />} />
-  <Route path="referrals" element={<PropertyReffrealSubsection />} />
-</Route>
+          {/* Exam Routes */}
+          <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
+          <Route path="/exam/:examId" element={<ExamEnvironment />} />
+        </Routes>
+      </Router>
 
-
-
-        {/* Admin Routes here*/}
-        <Route path="/admin/exam-management" element={<AdminExamManagement />} />
-        <Route path="/admin/create-assessment" element={<CreateAssessment />} />
-        <Route
-          path="/admin/questions-list"
-          element={
-            <QuestionsListWrapper />
-          }
-        />
-        <Route path="/admin/edit-assessment/:assessmentId" element={<CreateAssessment />} />
-        <Route path="/admin/doubt-solve" element={<TeacherDoubtsSolve />} />
-        <Route path="/exam-details/:examId" element={<ExamDetailsPage />} />
-        <Route path="/exam/:examId" element={<ExamEnvironment />} />
-
-      </Routes>
-    </Router> 
-    <style jsx>{`
+      <style jsx>{`
         /* Remove horizontal scrollbar */
         .sidebar-scrollbar {
           overflow-x: hidden;
         }
-        
         .sidebar-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
-        
         .sidebar-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
-        
         .sidebar-scrollbar::-webkit-scrollbar-thumb {
           background: rgba(255, 255, 255, 0.2);
+          border-radius: 10px;
+          transition: background 0.2s ease;
+        }
+        .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+        .main-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .main-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .main-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(52, 121, 255, 0.2);
           border-radius: 10px;
           transition: background 0.2s ease;
         }

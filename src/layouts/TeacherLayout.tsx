@@ -6,7 +6,6 @@ import {
   FileTextIcon,
   FolderIcon,
   HomeIcon,
-  LockIcon,
   UploadIcon,
   BarChartIcon,
   LogOutIcon,
@@ -16,7 +15,6 @@ import {
   SettingsIcon,
   TrophyIcon,
   UserIcon,
-  UserPlusIcon,
   UsersIcon,
   XIcon,
 } from "lucide-react";
@@ -29,7 +27,7 @@ import { authHelpers } from "../lib/supabase";
 const teacherNavigationItems = [
   { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
   { icon: UserIcon, label: "Profile Settings", path: "profile" },
-  { icon: FolderIcon, label: "My Students", path: "courses" },
+  { icon: FolderIcon, label: "My Courses", path: "course" },
   { icon: UploadIcon, label: "Upload Content", path: "upload" },
   { icon: PresentationIcon, label: "Live Classes Scheduler", path: "live" },
   { icon: FileTextIcon, label: "Test & Assessment Manager", path: "tests" },
