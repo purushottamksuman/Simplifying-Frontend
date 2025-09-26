@@ -40,10 +40,10 @@ export const ExamInterface = () => {
   };
 
   // Handle option selection
-  const handleOptionSelect = (optionId: string, optionText: string, marks: number) => {
+  const handleOptionSelect = (optionId: string, optionText: string, marks: number, type: string) => {
     setSelectedOption(optionId);
     if (currentQuestion) {
-      submitResponse(currentQuestion.id, optionId, optionText, marks);
+      submitResponse(currentQuestion.id, optionId, optionText, marks, type);
     }
   };
 
@@ -505,7 +505,7 @@ export const ExamInterface = () => {
                       name={`question-${currentQuestion.id}`}
                       value={option.id}
                       checked={selectedOption === option.id}
-                      onChange={() => handleOptionSelect(option.id, option.option_text, option.marks)}
+                      onChange={() => handleOptionSelect(option.id, option.option_text, option.marks, option.type)}
                       className="sr-only"
                     />
                     <div className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center ${

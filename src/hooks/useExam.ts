@@ -589,7 +589,7 @@ export const useExam = () => {
     }
   };
 
-  const submitResponse = async (questionId: string, optionId: string, optionText: string, marks: number) => {
+  const submitResponse = async (questionId: string, optionId: string, optionText: string, marks: number, type: string) => {
     if (!currentAttempt) return;
 
     try {
@@ -598,6 +598,7 @@ export const useExam = () => {
         selected_option_id: optionId,
         selected_option_text: optionText,
         option_marks: marks,
+        option_type: type,
         answered_at: new Date().toISOString()
       };
 
@@ -614,6 +615,7 @@ export const useExam = () => {
             selected_option_id: optionId,
             selected_option_text: optionText,
             option_marks: marks,
+            option_type: type,
             section_type: currentSection?.id === 'aptitude' ? 'aptitude' : 'behavioral',
             answered_at: new Date().toISOString()
           });
