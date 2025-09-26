@@ -75,7 +75,7 @@ export const PropertyLoginSubsection = (): JSX.Element => {
       const redirectTo =
         window.location.hostname === "localhost"
           ? "http://localhost:5173/auth/callback"
-          : "https://simplifyingskills.com/auth/callback";
+          : "https://simplifyingskills.live/auth/callback";
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
