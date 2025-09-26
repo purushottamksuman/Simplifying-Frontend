@@ -17,6 +17,8 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 })
 
+
+
 // Auth helper functions
 export const authHelpers = {
 
@@ -73,6 +75,33 @@ export const authHelpers = {
     } catch (err: any) {
       console.error("sendMagicLink error:", err)
       return { error: err.message || "Unknown error" }
+    }
+  },
+
+  // Inside authHelpers in supabase.ts
+
+  // ---------------- OAuth callback ----------------
+  handleOAuthCallback: async () => {
+    try {
+      // Use getSessionFromUrl (cast to any because TS types may not include it)
+      const { data, error } = await (supabase.auth as any).getSessionFromUrl({
+        storeSession: true, // automatically stores session in localStorage
+      });
+
+      if (error) throw error;
+
+      const session = data.session;
+      if (!session?.user) throw new Error("No user found in session");
+
+      // Optional: store user in localStorage for convenience
+      localStorage.setItem("currentUser", JSON.stringify(session.user));
+      localStorage.setItem("accessToken", session.access_token);
+      localStorage.setItem("refreshToken", session.refresh_token);
+
+      return session.user;
+    } catch (err: any) {
+      console.error("OAuth callback error:", err.message || err);
+      return null;
     }
   },
 
