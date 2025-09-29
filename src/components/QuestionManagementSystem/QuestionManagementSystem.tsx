@@ -49,7 +49,7 @@ function QuestionManagementSystem() {
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
-  const [isPurchased, setIsPurchased] = useState(!!user?.skillsphere_enabled); 
+  const [isPurchased, setIsPurchased] = useState(false); // will be fetched from Supabase
   const [editingQuestion, setEditingQuestion] = useState<QuestionWithOptions | undefined>();
   const [exams, setExams] = useState<Exam[]>([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -77,54 +77,77 @@ function QuestionManagementSystem() {
     fetchExams();
   }, []);
 
- const handleExamPayment = async (exam: Exam) => {
-  setPaymentLoading(true);
-  try {
-    const totalAmount = exam.discounted_price + exam.tax;
-    const paymentResult = await razorpayService.initiatePayment({
-      amount: totalAmount,
-      currency: 'INR',
-      description: `${exam.exam_name} - Exam Payment`,
-      notes: { exam_id: exam.exam_id, user_id: user?.id },
-    });
-
-    if (paymentResult.success) {
-      // Record purchase
-      await supabase
-        .from('exam_purchases')
-        .upsert(
-          {
-            user_id: user?.id,
-            exam_id: exam.exam_id,
-            payment_id: paymentResult.payment.payment_id,
-            purchase_type: 'paid',
-            amount_paid: totalAmount,
-          },
-          { onConflict: 'user_id,exam_id' }
-        );
-
-      // Enable SkillSphere
-      await supabase
+  // Fetch latest user profile to check purchase status
+  const refreshUserProfile = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
         .from('user_profiles')
-        .update({ skillsphere_enabled: true })
-        .eq('id', user?.id);
+        .select('skillsphere_enabled')
+        .eq('id', user.id)
+        .single();
 
-      // Update parent state to reflect purchase
-      setIsPurchased(true); // <-- add this if using parent state
-
-      // alert(`🎉 Payment successful! You now have access to SkillSphere Assessment`);
-      return true; // <-- return success
+      if (!error && data) {
+        setIsPurchased(!!data.skillsphere_enabled);
+      }
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
     }
-    return false;
-  } catch (err: any) {
-    console.error('Payment failed:', err);
-    alert(err.message || 'Payment failed. Please try again.');
-    return false; // <-- return failure
-  } finally {
-    setPaymentLoading(false);
-  }
-};
+  };
 
+  // Refresh on mount or when user changes
+  useEffect(() => {
+    if (user) refreshUserProfile();
+  }, [user?.id]);
+
+  const handleExamPayment = async (exam: Exam) => {
+    setPaymentLoading(true);
+    try {
+      const totalAmount = exam.discounted_price + exam.tax;
+      const paymentResult = await razorpayService.initiatePayment({
+        amount: totalAmount,
+        currency: 'INR',
+        description: `${exam.exam_name} - Exam Payment`,
+        notes: { exam_id: exam.exam_id, user_id: user?.id },
+      });
+
+      if (paymentResult.success) {
+        // Record purchase
+        await supabase
+          .from('exam_purchases')
+          .upsert(
+            {
+              user_id: user?.id,
+              exam_id: exam.exam_id,
+              payment_id: paymentResult.payment.payment_id,
+              purchase_type: 'paid',
+              amount_paid: totalAmount,
+            },
+            { onConflict: 'user_id,exam_id' }
+          );
+
+        // Enable SkillSphere
+        await supabase
+          .from('user_profiles')
+          .update({ skillsphere_enabled: true })
+          .eq('id', user?.id);
+
+        // Refresh purchase status
+        await refreshUserProfile();
+
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      console.error('Payment failed:', err);
+      alert(err.message || 'Payment failed. Please try again.');
+      return false;
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Question form handlers
   const handleEditQuestion = (question: QuestionWithOptions) => {
     setEditingQuestion(question);
     setShowQuestionForm(true);
@@ -142,7 +165,6 @@ function QuestionManagementSystem() {
   const handleBackToHome = () => { setCurrentView('home'); setSelectedAttemptId(null); };
 
   const renderContent = () => {
-    console.log(activeTab)    
     switch (activeTab) {
       case 'home':
         return <HomePage onStartExam={handleStartNewExam} onViewExamReview={handleViewExamReview} onViewAPIResponse={handleViewAPIResponse} />;
@@ -167,18 +189,18 @@ function QuestionManagementSystem() {
   if (!user) return <PropertyLoginSubsection />;
 
   // Payment gating
-if (!isPurchased) {
-  return (
-    <PaymentRequired
-      examName="SkillSphere Assessment"
-      exams={exams}
-      handleExamPayment={handleExamPayment}
-      paymentLoading={paymentLoading}
-      isPurchased={isPurchased} // updated dynamically
-      onViewExam={() => navigate('/exam')}
-    />
-  );
-}
+  if (!isPurchased) {
+    return (
+      <PaymentRequired
+        examName="SkillSphere Assessment"
+        exams={exams}
+        handleExamPayment={handleExamPayment}
+        paymentLoading={paymentLoading}
+        isPurchased={isPurchased}
+        onViewExam={() => navigate('/exam')}
+      />
+    );
+  }
 
   // Non-home views
   if (activeTab === 'home' && currentView !== 'home') {
