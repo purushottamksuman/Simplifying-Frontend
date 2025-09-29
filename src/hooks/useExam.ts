@@ -274,7 +274,7 @@ export const useExam = () => {
       }
 
       // Hardcode age to 15 for now to ensure questions are available
-      userAge = 12;
+      userAge = 15;
       console.log('User age for question filtering (hardcoded):', userAge);
 
       // Get questions only from aptitude sub-sections

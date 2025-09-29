@@ -688,6 +688,9 @@ function mapQuestionType(question: QuestionData): string {
 // Map sub-section to category
 function mapSubSectionToCategory(subSectionName: string, questionType: string): string {
   const normalized = subSectionName.toLowerCase().trim();
+
+  console.log(`Mapping sub-section "${subSectionName}" for question type "${questionType}"`);
+  console.log('Normalized sub-section:', normalized);
   
   switch (questionType) {
     case 'psychometric':
@@ -722,13 +725,14 @@ function mapSubSectionToCategory(subSectionName: string, questionType: string): 
       return 'self awareness'; // Default
       
     case 'interests_and_preferences':
-      if (normalized.includes('investigative')) return 'investigative';
-      if (normalized.includes('artistic')) return 'artistic';
-      if (normalized.includes('social')) return 'social';
-      if (normalized.includes('conventional')) return 'conventional';
-      if (normalized.includes('realistic')) return 'realistic';
-      if (normalized.includes('enterprising')) return 'enterprising';
-      return 'realistic'; // Default
+      // if (normalized.includes('investigative')) return 'investigative';
+      // if (normalized.includes('artistic')) return 'artistic';
+      // if (normalized.includes('social')) return 'social';
+      // if (normalized.includes('conventional')) return 'conventional';
+      // if (normalized.includes('realistic')) return 'realistic';
+      // if (normalized.includes('enterprising')) return 'enterprising';
+      // return 'realistic'; // Default
+      return normalized;
       
     default:
       return 'general';
@@ -1025,7 +1029,10 @@ function calculateInterestScore(
 
   // Process submissions
   submissions.forEach(sub => {
+
+    //console.log('Processing submission:', sub);
     const question = questionMap.get(sub.questionId);
+    //console.log('Mapped question:', question);
     if (!question) return;
 
     // Category is like "r vs i"
@@ -1033,6 +1040,7 @@ function calculateInterestScore(
       question.sub_section.name,
       "interests_and_preferences"
     );
+    // console.log("Mapped category:", category);
     if (!CATEGORY_MAPPINGS.interests.categories.includes(category)) return;
 
     const selectedOption = question.options.find(
@@ -1045,6 +1053,8 @@ function calculateInterestScore(
 
     // increment type score
     typeScores[type]++;
+
+    console.log("incrementing type score:", { type, currentScore: typeScores[type] });
 
     // increment inside category
     switch (type) {
