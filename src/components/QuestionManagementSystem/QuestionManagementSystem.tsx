@@ -49,7 +49,7 @@ function QuestionManagementSystem() {
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
-  const [isPurchased, setIsPurchased] = useState(!!user?.skillsphere_enabled); // <-- new state to track purchase
+  const [isPurchased, setIsPurchased] = useState(!!user?.skillsphere_enabled); 
   const [editingQuestion, setEditingQuestion] = useState<QuestionWithOptions | undefined>();
   const [exams, setExams] = useState<Exam[]>([]);
   const [paymentLoading, setPaymentLoading] = useState(false);

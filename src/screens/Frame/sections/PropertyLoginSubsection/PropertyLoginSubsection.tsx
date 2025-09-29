@@ -91,58 +91,72 @@ export const PropertyLoginSubsection = (): JSX.Element => {
   };
 
   // ---------------- Standard Email Login ----------------
-  const handleLogin = async () => {
-    if (!formData.email || !formData.password) {
-      setError("Please fill in all fields");
+const handleLogin = async () => {
+  if (!formData.email || !formData.password) {
+    setError("Please fill in all fields");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+
+  try {
+    const { data: existingUser, error: userCheckError } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("email", formData.email)
+      .single();
+
+    if (userCheckError || !existingUser) {
+      setError("Email does not exist. Please sign up first.");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError("");
+    // Step 2: Proceed with normal login
+    const { data, error } = await authHelpers.signIn(
+      formData.email,
+      formData.password
+    );
 
-    try {
-      const { data, error } = await authHelpers.signIn(
-        formData.email,
-        formData.password
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    if (data.user) {
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          user_metadata: data.user.user_metadata,
+        })
       );
 
-      if (error) {
-        setError(error.message);
-        return;
+      const { data: profile, error: profileError } = await supabase
+        .from("user_profiles")
+        .select("user_type")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!profileError && profile) {
+        if (profile.user_type === "teacher") navigate("/teacher/dashboard");
+        else if (profile.user_type === "parent") navigate("/parent/dashboard");
+        else if (profile.user_type === "admin") navigate("/admin");
+        else navigate("/component/dashboard");
+      } else {
+        navigate("/component/dashboard");
       }
-
-      if (data.user) {
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({
-            id: data.user.id,
-            email: data.user.email,
-            user_metadata: data.user.user_metadata,
-          })
-        );
-
-        const { data: profile, error: profileError } = await supabase
-          .from("user_profiles")
-          .select("user_type")
-          .eq("id", data.user.id)
-          .single();
-
-        if (!profileError && profile) {
-          if (profile.user_type === "teacher") navigate("/teacher/dashboard");
-          else if (profile.user_type === "parent")
-            navigate("/parent/dashboard");
-          else if (profile.user_type === "admin") navigate("/admin");
-          else navigate("/component/dashboard");
-        } else {
-          navigate("/component/dashboard");
-        }
-      }
-    } catch {
-      setError("An unexpected error occurred");
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    console.error("Login error:", err);
+    setError("An unexpected error occurred");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // ---------------- Reset Password ----------------
 const handleResetPassword = async () => {
