@@ -323,280 +323,276 @@ if (profile.user_type?.toLowerCase() !== "student") {
     navigate(`/exam/${exam.exam_id}`);
   };
 
-  const renderDashboardContent = () => {
-    return (
-      <div className="max-w-7xl mx-auto">
-        <div className="flex gap-8">
-          {/* Left Content */}
-          <div className="flex-1 max-w-4xl">
-            {/* Welcome Card */}
-            <Card className="mb-8 rounded-3xl shadow-xl border-0 overflow-visible relative">
+ const renderDashboardContent = () => {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left Content */}
+        <div className="flex-1 max-w-4xl">
+          {/* Welcome Card */}
+         <Card className="mb-8 rounded-3xl shadow-xl border-0 overflow-hidden">
   <CardContent className="p-0">
-    <div className="h-72 bg-gradient-to-r from-[#3479ff] to-[#4f8bff] relative overflow-visible rounded-3xl">
+    <div className="bg-gradient-to-r from-[#3479ff] to-[#4f8bff] rounded-3xl flex flex-col sm:flex-row sm:items-top h-auto items-center sm:h-72 overflow-hidden relative">
 
-      {/* Gradient Purple / Character Image */}
-      <img
-        className="absolute bottom-0 -right-4 z-10 drop-shadow-2xl pointer-events-none select-none"
-        alt="Character Illustration"
-        src="/GradientPurple.png"
-      />
-
-      {/* Text Content */}
-      <div className="p-8 relative z-30 max-w-xl">
-        <h2 className="font-bold text-white text-4xl mb-6">
+      {/* Text */}
+      <div className="p-6 sm:p-8 z-10 max-w-full sm:max-w-xl sm:text-left">
+        <h2 className="font-bold text-2xl sm:text-4xl text-white mb-4 sm:mb-6">
           Hello {userName}! 👋
         </h2>
-        <p className="text-white/90 text-lg leading-relaxed">
+        <p className="text-white/90 text-base sm:text-lg leading-relaxed">
           Don't miss out! Your child's future starts with one smart step — complete the payment today.
         </p>
       </div>
+
+      {/* Character Image */}
+      <div className="mt-4 sm:mt-0 sm:ml-auto flex-shrink-0">
+        <img
+          className="w-36 sm:w-56 h-auto drop-shadow-2xl pointer-events-none select-none"
+          alt="Character Illustration"
+          src="/GradientPurple.png"
+        />
+      </div>
+      
     </div>
   </CardContent>
 </Card>
 
-<Card className="rounded-3xl border-0 shadow-xl">
-  <CardContent className="p-8">
-    <h3 className="font-bold text-[#13377c] text-3xl mb-8">Summary</h3>
+
+
+
+
+          {/* Summary Card */}
+          <Card className="rounded-3xl border-0 shadow-xl mb-8">
+  <CardContent className="p-6 sm:p-8">
+    <h3 className="font-bold text-[#13377c] text-2xl sm:text-3xl mb-6 sm:mb-8">
+      Summary
+    </h3>
     <div className="space-y-6">
-
       {/* Payment Section */}
-<div className="bg-gradient-to-r from-[#e9efff] to-[#f0f4ff] rounded-2xl p-6 relative overflow-hidden">
-  <div className="max-w-lg relative z-10">
-    <h4 className="font-bold text-gray-900 text-2xl mb-3">
-      Unlock Your SkillSphere Assessment
-    </h4>
-    <p className="text-gray-700 text-base mb-6 leading-relaxed">
-      Get access to your personalized SkillSphere assessment. Complete the payment to evaluate your strengths, track progress, and unlock insights that help you grow faster.
-    </p>
+      <div className="bg-gradient-to-r from-[#e9efff] to-[#f0f4ff] rounded-2xl p-6 relative overflow-hidden flex flex-col sm:block">
+        <div className="relative z-10 max-w-full sm:max-w-lg">
+          <h4 className="font-bold text-gray-900 text-lg sm:text-2xl mb-3">
+            Unlock Your SkillSphere Assessment
+          </h4>
+          <p className="text-gray-700 text-sm sm:text-base mb-6 leading-relaxed">
+            Get access to your personalized SkillSphere assessment. Complete the payment to evaluate your strengths, track progress, and unlock insights that help you grow faster.
+          </p>
+          {exams.length > 0 && (() => {
+            const exam = exams.find(e => e.discounted_price + e.tax > 0);
+            if (!exam) return null;
+            const totalPrice = exam.discounted_price + exam.tax;
+            return (
+              <Button
+                onClick={() => handleExamPayment(exam)}
+                disabled={paymentLoading}
+                className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-4 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold text-sm sm:text-base"
+              >
+                {paymentLoading ? "Processing..." : `Pay ₹${totalPrice}`}
+              </Button>
+            );
+          })()}
+        </div>
 
-    {exams.length > 0 && (() => {
-  const exam = exams.find(e => e.discounted_price + e.tax > 0);
-  if (!exam) return null; // no paid exams
-
-  const totalPrice = exam.discounted_price + exam.tax;
-
-  return (
-    <Button
-      onClick={() => handleExamPayment(exam)}
-      disabled={paymentLoading}
-      className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold"
-    >
-      {paymentLoading ? "Processing..." : `Pay ₹${totalPrice}`}
-    </Button>
-  );
-})()}
-
-  </div>
-
-  {/* Image floated right */}
-  <img
-    className="absolute top-1/2 right-6 -translate-y-1/2 w-40 h-auto opacity-90"
-    alt="Payment illustration"
-    src="/CashlessPayment.png"
-  />
-</div>
-
-
+        {/* Image - responsive */}
+        <img
+          className="relative sm:absolute sm:top-1/2 sm:right-6 sm:-translate-y-1/2 mt-6 sm:mt-0 w-24 sm:w-40 h-auto opacity-90 mx-auto sm:mx-0"
+          alt="Payment illustration"
+          src="/CashlessPayment.png"
+        />
+      </div>
 
       {/* Cashback Section */}
-      <div className="bg-gradient-to-r from-[#fff4fb] to-[#fef7fc] rounded-2xl p-6 relative overflow-hidden">
-        {/* Content */}
-        <div className="max-w-lg relative z-10">
-          <h4 className="font-bold text-gray-900 text-2xl mb-2">
+      <div className="bg-gradient-to-r from-[#fff4fb] to-[#fef7fc] rounded-2xl p-6 relative overflow-hidden flex flex-col sm:block">
+        <div className="relative z-10 max-w-full sm:max-w-lg">
+          <h4 className="font-bold text-gray-900 text-lg sm:text-2xl mb-2">
             You Have ₹200 Cashback
           </h4>
-          <p className="text-gray-600 text-sm mb-6">T&C Apply</p>
-          <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-8 py-3 rounded-xl font-semibold">
+          <p className="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-6">T&C Apply</p>
+          <Button className="bg-[#3479ff] hover:bg-[#2968e6] text-white px-4 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold text-sm sm:text-base">
             Refer & Earn
           </Button>
         </div>
 
-        {/* Image floated right */}
+        {/* Image - responsive */}
         <img
-          className="absolute top-1/2 right-8 -translate-y-1/2 w-44 h-auto opacity-90"
+          className="relative sm:absolute sm:top-1/2 sm:right-8 sm:-translate-y-1/2 mt-6 sm:mt-0 w-24 sm:w-44 h-auto opacity-90 mx-auto sm:mx-0"
           alt="Wallet illustration"
           src="/Wallet.png"
         />
       </div>
-
     </div>
   </CardContent>
 </Card>
 
 
+          {/* Payment Plans */}
+          <Card className="rounded-3xl border-0 shadow-xl">
+            <CardContent className="p-6 sm:p-8">
+              <h3 className="font-bold text-[#13377c] text-2xl sm:text-3xl mb-6 sm:mb-8">
+                Complete Your Payment
+              </h3>
+              <p className="text-gray-600 text-base sm:text-lg mb-6 sm:mb-8">
+                Please select a plan that suits you best and complete your payment to unlock the assessment.
+              </p>
 
-            {/* Payment Plans Card */}
-            <Card className="rounded-3xl border-0 shadow-xl">
-              <CardContent className="p-8">
-                <h3 className="font-bold text-[#13377c] text-3xl mb-8">
-                  Complete Your Payment
-                </h3>
-                <p className="text-gray-600 text-lg mb-8">
-                  Please select a plan that suits you best and complete your payment to unlock the assessment.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {exams.map((exam) => {
+                  const totalPrice = exam.discounted_price + exam.tax;
+                  const isFree = totalPrice === 0;
+                  const isPurchased = userPurchases.includes(exam.exam_id);
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {exams.map((exam) => {
-                    const totalPrice = exam.discounted_price + exam.tax;
-                    const isFree = totalPrice === 0;
-                    const isPurchased = userPurchases.includes(exam.exam_id);
-                    
-                    return (
-                      <Card key={exam.exam_id} className="rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-200">
-                        <CardContent className="p-6">
-                          <div className="flex flex-col h-full">
-                            <h4 className="font-bold text-[#13377c] text-lg mb-2">{exam.exam_name}</h4>
-                            <p className="text-gray-600 text-sm mb-4 flex-1 line-clamp-3">{exam.description}</p>
-                            
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between text-sm text-gray-600">
-                                <span>Duration:</span>
-                                <span>{exam.total_time} minutes</span>
-                              </div>
-                              <div className="flex items-center justify-between text-sm text-gray-600">
-                                <span>Max Marks:</span>
-                                <span>{exam.maximum_marks}</span>
-                              </div>
-                              
-                              {!isFree && (
-                                <div className="border-t pt-3 space-y-2">
-                                  {exam.original_price > exam.discounted_price && (
-                                    <div className="flex items-center justify-between text-sm">
-                                      <span className="text-gray-500">Original Price:</span>
-                                      <span className="text-gray-500 line-through">₹{exam.original_price}</span>
-                                    </div>
-                                  )}
-                                  <div className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-700">Price:</span>
-                                    <span className="text-[#3479ff] font-semibold">₹{exam.discounted_price}</span>
-                                  </div>
-                                  {exam.tax > 0 && (
-                                    <div className="flex items-center justify-between text-sm">
-                                      <span className="text-gray-700">Tax:</span>
-                                      <span className="text-gray-700">₹{exam.tax}</span>
-                                    </div>
-                                  )}
-                                  <div className="flex items-center justify-between font-semibold border-t pt-2">
-                                    <span className="text-gray-900">Total:</span>
-                                    <span className="text-[#3479ff] text-lg">₹{totalPrice}</span>
-                                  </div>
-                                </div>
-                              )}
-                              
-                              <Button 
-                                onClick={() => {
-                                  if (isPurchased) {
-                                    navigate(`/exam-details/${exam.exam_id}`);
-                                  } else if (isFree) {
-                                    handleFreeExamAccess(exam);
-                                  } else {
-                                    handleExamPayment(exam);
-                                  }
-                                }}
-                                // disabled={paymentLoading}
-                                className={`w-full mt-4 ${
-                                  isPurchased 
-                                    ? 'bg-green-500 hover:bg-green-600' 
-                                    : isFree 
-                                      ? 'bg-green-500 hover:bg-green-600' 
-                                      : 'bg-[#3479ff] hover:bg-[#2968e6]'
-                                } text-white rounded-xl`}
-                              >
-                                {paymentLoading 
-                                  ? "Processing..." 
-                                  : isPurchased 
-                                    ? "View Exam" 
-                                    : isFree 
-                                      ? "Access Free" 
-                                      : `Pay ₹${totalPrice}`
-                                }
-                              </Button>
+                  return (
+                    <Card key={exam.exam_id} className="rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-200">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col h-full">
+                          <h4 className="font-bold text-[#13377c] text-base sm:text-lg mb-2">{exam.exam_name}</h4>
+                          <p className="text-gray-600 text-sm mb-4 flex-1 line-clamp-3">{exam.description}</p>
+
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
+                              <span>Duration:</span>
+                              <span>{exam.total_time} mins</span>
                             </div>
+                            <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
+                              <span>Max Marks:</span>
+                              <span>{exam.maximum_marks}</span>
+                            </div>
+
+                            {!isFree && (
+                              <div className="border-t pt-3 space-y-2">
+                                {exam.original_price > exam.discounted_price && (
+                                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                                    <span className="text-gray-500">Original Price:</span>
+                                    <span className="text-gray-500 line-through">₹{exam.original_price}</span>
+                                  </div>
+                                )}
+                                <div className="flex items-center justify-between text-xs sm:text-sm">
+                                  <span className="text-gray-700">Price:</span>
+                                  <span className="text-[#3479ff] font-semibold">₹{exam.discounted_price}</span>
+                                </div>
+                                {exam.tax > 0 && (
+                                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                                    <span className="text-gray-700">Tax:</span>
+                                    <span className="text-gray-700">₹{exam.tax}</span>
+                                  </div>
+                                )}
+                                <div className="flex items-center justify-between font-semibold border-t pt-2">
+                                  <span className="text-gray-900">Total:</span>
+                                  <span className="text-[#3479ff] text-base sm:text-lg">₹{totalPrice}</span>
+                                </div>
+                              </div>
+                            )}
+
+                            <Button
+                              onClick={() => {
+                                if (isPurchased) {
+                                  navigate(`/exam-details/${exam.exam_id}`);
+                                } else if (isFree) {
+                                  handleFreeExamAccess(exam);
+                                } else {
+                                  handleExamPayment(exam);
+                                }
+                              }}
+                              className={`w-full mt-4 ${
+                                isPurchased
+                                  ? "bg-green-500 hover:bg-green-600"
+                                  : isFree
+                                    ? "bg-green-500 hover:bg-green-600"
+                                    : "bg-[#3479ff] hover:bg-[#2968e6]"
+                              } text-white rounded-xl text-sm sm:text-base`}
+                            >
+                              {paymentLoading
+                                ? "Processing..."
+                                : isPurchased
+                                  ? "View Exam"
+                                  : isFree
+                                    ? "Access Free"
+                                    : `Pay ₹${totalPrice}`}
+                            </Button>
                           </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {paymentError && (
+                <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{paymentError}</p>
                 </div>
-                
-                {paymentError && (
-                  <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-sm">{paymentError}</p>
+              )}
+              {paymentSuccess && (
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-600 text-sm">✅ Payment completed successfully!</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="w-full lg:w-96 flex-shrink-0 mt-8 lg:mt-0">
+          <div className="lg:sticky lg:top-8">
+            <Card className="rounded-[2rem] shadow-xl border-0 bg-white">
+              <CardContent className="p-6 sm:p-8">
+                <h3 className="font-bold text-[#13377c] text-xl sm:text-2xl mb-6 sm:mb-8">
+                  Unlock Premium Features
+                </h3>
+                <div className="space-y-6">
+                  {/* Expert Guidance */}
+                  <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gradient-to-br from-[#7b58f2] to-[#a493ff] p-6 h-auto sm:h-80 relative overflow-hidden">
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-white text-lg sm:text-2xl mb-3 sm:mb-4">
+                        Get Expert Guidance
+                      </h4>
+                      <p className="text-white/90 text-sm sm:text-base mb-4 sm:mb-8 leading-relaxed max-w-sm">
+                        Unlock your test results with a 1:1 counselling call and get a personalized growth plan.
+                      </p>
+                      <Button className="bg-white hover:bg-gray-100 text-gray-900 px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-bold flex items-center gap-2 text-sm sm:text-base">
+                        <LockIcon className="w-4 h-4" />
+                        Unlock Session
+                      </Button>
+                    </div>
+                    <div className="absolute bottom-0 right-0">
+                      <img
+                        className="w-28 sm:w-48 h-20 sm:h-36 object-contain"
+                        alt="Expert guidance illustration"
+                        src="/GoodKid.png"
+                      />
+                    </div>
                   </div>
-                )}
-                
-                {paymentSuccess && (
-                  <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-green-600 text-sm">✅ Payment completed successfully!</p>
+                  {/* Join Clubs */}
+                  <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gradient-to-br from-[#fec854] to-[#ffdf99] p-6 h-auto sm:h-80 relative overflow-hidden">
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-gray-900 text-lg sm:text-2xl mb-3 sm:mb-4">
+                        Join Our Clubs
+                      </h4>
+                      <p className="text-gray-800/90 text-sm sm:text-base mb-4 sm:mb-8 leading-relaxed max-w-sm">
+                        Discover your interests, learn new skills, and connect with like-minded students.
+                      </p>
+                      <Button className="bg-white hover:bg-gray-100 text-gray-900 px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base">
+                        Explore Now
+                      </Button>
+                    </div>
+                    <div className="absolute bottom-0 right-0">
+                      <img
+                        className="w-28 sm:w-48 h-24 sm:h-40 object-contain"
+                        alt="Clubs illustration"
+                        src="/SorryMother.png"
+                      />
+                    </div>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           </div>
-
-          {/* Right Sidebar - Premium Features */}
-          <div className="w-96 flex-shrink-0">
-            <div className="sticky top-8">
-              <Card className="rounded-[3rem] shadow-xl border-0 bg-white">
-                <CardContent className="p-8">
-                  <h3 className="font-bold text-[#13377c] text-2xl mb-8">
-                    Unlock Premium Features
-                  </h3>
-
-                  <div className="space-y-6">
-                    {/* Expert Guidance Card */}
-                    <div className="rounded-[2rem] bg-gradient-to-br from-[#7b58f2] to-[#a493ff] p-6 h-80 relative overflow-hidden">
-                      <div className="relative z-10">
-                        <h4 className="font-bold text-white text-2xl mb-4">
-                          Get Expert Guidance
-                        </h4>
-                        <p className="text-white/90 text-base mb-8 leading-relaxed max-w-sm">
-                          Unlock your test results with a 1:1 counselling call and get a personalized growth plan.
-                        </p>
-                        <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold flex items-center gap-2">
-                          <LockIcon className="w-4 h-4" />
-                          Unlock Session
-                        </Button>
-                      </div>
-                      <div className="absolute bottom-0 right-0">
-                        <img
-                          className="w-48 h-36 object-contain"
-                          alt="Expert guidance illustration"
-                          src="/GoodKid.png"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Join Clubs Card */}
-                    <div className="rounded-[2rem] bg-gradient-to-br from-[#fec854] to-[#ffdf99] p-6 h-80 relative overflow-hidden">
-                      <div className="relative z-10">
-                        <h4 className="font-bold text-gray-900 text-2xl mb-4">
-                          Join Our Clubs
-                        </h4>
-                        <p className="text-gray-800/90 text-base mb-8 leading-relaxed max-w-sm">
-                          Discover your interests, learn new skills, and connect with like-minded students.
-                        </p>
-                        <Button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-bold">
-                          Explore Now
-                        </Button>
-                      </div>
-                      <div className="absolute bottom-0 right-0">
-                        <img
-                          className="w-48 h-40 object-contain"
-                          alt="Clubs illustration"
-                          src="/SorryMother.png"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
+
 
   const renderTestAssessmentContent = () => {
     return (
