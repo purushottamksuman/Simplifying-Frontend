@@ -1564,6 +1564,17 @@ function buildInterestGraphHtml(interestAndPreferenceScore: any): string {
           dbg('✅ Page 10 SEI list injected with', seiScore.length, 'items');
         }
 
+        // Handle Page 13 - Psychometric traits "Your Score" summary
+        if (fileName?.includes('page13/page13.component.html') && /Psychometric traits/i.test(out) && /<text[^>]*>Your Score<\/text>/.test(out) && /<div class=\"absolute-text\">\s*<\/div>/.test(out)) {
+          dbg('🎯 Page 13 (Psychometric) detected');
+          const psyItems = Object.entries(detailedResults.detailedPsychometricScore.categoryWiseScore)
+            .map(([category, so]: any) => ({ category, scoreObject: so }))
+            .sort((a: any, b: any) => a.scoreObject.categoryOrder - b.scoreObject.categoryOrder || b.scoreObject.categoryScore - a.scoreObject.categoryScore);
+          const summary = `<ul style="list-style:disc; padding-left:20px;">${psyItems.map((e: any) => `<li style="margin:8px 0;"><span style="font-family:Lora,Lora_MSFontService,sans-serif; font-weight:600;">${e.scoreObject.categoryDisplayText ?? e.category}</span> - ${e.scoreObject.categoryScore} (${e.scoreObject.categoryScoreLevel})</li>`).join('')}</ul>`;
+          out = out.replace(/<div class="absolute-text">\s*<\/div>/, `<div class="absolute-text">${summary}</div>`);
+          dbg('✅ Page 13 psychometric summary injected');
+        }
+        
         // Handle other "What it means" pages with empty absolute-text containers
         // Check for various page patterns and fill with appropriate content
         
@@ -2012,71 +2023,83 @@ function buildInterestGraphHtml(interestAndPreferenceScore: any): string {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   {(() => {
-                    const riasecCategories = Object.entries(detailedResults.interestAndPreferenceScore.categoryWiseScore)
-                      .sort(([,a], [,b]) => b.categoryScore - a.categoryScore)
-                      .slice(0, 3);
+                    const { typeScores, topThree } = detailedResults.interestAndPreferenceScore;
                     
                     const categoryDescriptions = {
-                      realistic: { 
+                      r: { 
                         description: "Work with tools, machines, and physical materials",
-                        careers: "Engineer, Mechanic, Carpenter, Farmer"
+                        careers: "Engineer, Mechanic, Carpenter, Farmer",
+                        displayText: "Realistic"
                       },
-                      investigative: { 
+                      i: { 
                         description: "Research, analyze, and solve complex problems",
-                        careers: "Scientist, Researcher, Doctor, Analyst"
+                        careers: "Scientist, Researcher, Doctor, Analyst",
+                        displayText: "Investigative"
                       },
-                      artistic: { 
+                      a: { 
                         description: "Create, design, and express through various art forms",
-                        careers: "Designer, Artist, Writer, Musician"
+                        careers: "Designer, Artist, Writer, Musician",
+                        displayText: "Artistic"
                       },
-                      social: { 
+                      s: { 
                         description: "Help, teach, and work directly with people",
-                        careers: "Teacher, Counselor, Social Worker, Nurse"
+                        careers: "Teacher, Counselor, Social Worker, Nurse",
+                        displayText: "Social"
                       },
-                      enterprising: { 
+                      e: { 
                         description: "Lead, persuade, and manage business operations",
-                        careers: "Manager, Entrepreneur, Sales, Lawyer"
+                        careers: "Manager, Entrepreneur, Sales, Lawyer",
+                        displayText: "Enterprising"
                       },
-                      conventional: { 
+                      c: { 
                         description: "Organize, process data, and follow detailed procedures",
-                        careers: "Accountant, Administrator, Clerk, Banker"
+                        careers: "Accountant, Administrator, Clerk, Banker",
+                        displayText: "Conventional"
                       }
                     };
                     
-                    return riasecCategories.map(([category, data], index) => (
-                      <div key={category} className="bg-white p-4 rounded-lg border-2 border-orange-200 relative">
-                        <div className="absolute -top-3 -left-3 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                          #{index + 1}
-                        </div>
-                        <div className="text-center mb-3">
-                          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <span className="text-2xl font-bold text-orange-600">{data.categoryLetter}</span>
+                    // Calculate max score for normalization
+                    const maxScore = Math.max(...Object.values(typeScores));
+                    
+                    return topThree.map((letter: string, index: number) => {
+                      const lowerLetter = letter.toLowerCase();
+                      const score = typeScores[lowerLetter] || 0;
+                      const full = categoryDescriptions[lowerLetter as keyof typeof categoryDescriptions];
+                      return (
+                        <div key={letter} className="bg-white p-4 rounded-lg border-2 border-orange-200 relative">
+                          <div className="absolute -top-3 -left-3 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                            #{index + 1}
                           </div>
-                          <h4 className="font-bold text-orange-900">{data.categoryDisplayText}</h4>
-                          <div className="text-sm text-orange-700 mt-1">
-                            Score: <span className="font-semibold">{data.categoryScore}/5</span>
+                          <div className="text-center mb-3">
+                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                              <span className="text-2xl font-bold text-orange-600">{letter.toUpperCase()}</span>
+                            </div>
+                            <h4 className="font-bold text-orange-900">{full.displayText}</h4>
+                            <div className="text-sm text-orange-700 mt-1">
+                              Score: <span className="font-semibold">{score}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="text-xs text-gray-700 space-y-2">
+                            <p className="font-medium">What you enjoy:</p>
+                            <p className="text-gray-600">
+                              {full.description}
+                            </p>
+                            <p className="font-medium">Career examples:</p>
+                            <p className="text-gray-600">
+                              {full.careers}
+                            </p>
+                          </div>
+                          
+                          <div className="mt-3 w-full bg-orange-200 rounded-full h-2">
+                            <div
+                              className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${maxScore > 0 ? (score / maxScore) * 100 : 0}%` }}
+                            ></div>
                           </div>
                         </div>
-                        
-                        <div className="text-xs text-gray-700 space-y-2">
-                          <p className="font-medium">What you enjoy:</p>
-                          <p className="text-gray-600">
-                            {categoryDescriptions[category as keyof typeof categoryDescriptions]?.description}
-                          </p>
-                          <p className="font-medium">Career examples:</p>
-                          <p className="text-gray-600">
-                            {categoryDescriptions[category as keyof typeof categoryDescriptions]?.careers}
-                          </p>
-                        </div>
-                        
-                        <div className="mt-3 w-full bg-orange-200 rounded-full h-2">
-                          <div
-                            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(data.categoryScore / 5) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    ));
+                      );
+                    });
                   })()}
                 </div>
                 
@@ -2084,23 +2107,16 @@ function buildInterestGraphHtml(interestAndPreferenceScore: any): string {
                 <div className="bg-white p-4 rounded-lg border border-orange-200">
                   <h4 className="font-semibold text-orange-900 mb-3 text-center">Your RIASEC Code</h4>
                   <div className="flex justify-center items-center space-x-2 mb-3">
-                    {(() => {
-                      const top3Letters = Object.entries(detailedResults.interestAndPreferenceScore.categoryWiseScore)
-                        .sort(([,a], [,b]) => b.categoryScore - a.categoryScore)
-                        .slice(0, 3)
-                        .map(([,data]) => data.categoryLetter);
-                      
-                      return top3Letters.map((letter, index) => (
-                        <React.Fragment key={letter}>
-                          <div className="w-12 h-12 bg-orange-500 text-white rounded-lg flex items-center justify-center text-xl font-bold">
-                            {letter}
-                          </div>
-                          {index < top3Letters.length - 1 && (
-                            <div className="text-orange-400 text-2xl">-</div>
-                          )}
-                        </React.Fragment>
-                      ));
-                    })()}
+                    {detailedResults.interestAndPreferenceScore.topThree.map((letter: string, index: number) => (
+                      <React.Fragment key={letter}>
+                        <div className="w-12 h-12 bg-orange-500 text-white rounded-lg flex items-center justify-center text-xl font-bold">
+                          {letter.toUpperCase()}
+                        </div>
+                        {index < detailedResults.interestAndPreferenceScore.topThree.length - 1 && (
+                          <div className="text-orange-400 text-2xl">-</div>
+                        )}
+                      </React.Fragment>
+                    ))}
                   </div>
                   <p className="text-center text-sm text-gray-600">
                     Your three-letter RIASEC code represents your strongest interest areas in order of preference
@@ -2111,19 +2127,30 @@ function buildInterestGraphHtml(interestAndPreferenceScore: any): string {
                 <div className="mt-4 bg-orange-50 p-4 rounded-lg">
                   <h4 className="font-semibold text-orange-900 mb-3">Complete Interest Profile</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {Object.entries(detailedResults.interestAndPreferenceScore.categoryWiseScore)
-                      .sort(([,a], [,b]) => b.categoryScore - a.categoryScore)
-                      .map(([category, data]) => (
-                        <div key={category} className="flex items-center justify-between bg-white p-2 rounded border">
-                          <div className="flex items-center">
-                            <div className="w-6 h-6 bg-orange-200 rounded-full flex items-center justify-center mr-2">
-                              <span className="text-xs font-bold text-orange-700">{data.categoryLetter}</span>
+                    {Object.entries(detailedResults.interestAndPreferenceScore.typeScores)
+                      .sort(([,a], [,b]) => (b as number) - (a as number))
+                      .map(([letter, score]) => {
+                        const lowerLetter = letter.toLowerCase();
+                        const full = {
+                          r: "Realistic",
+                          i: "Investigative",
+                          a: "Artistic",
+                          s: "Social",
+                          e: "Enterprising",
+                          c: "Conventional"
+                        }[lowerLetter] || letter.toUpperCase();
+                        return (
+                          <div key={letter} className="flex items-center justify-between bg-white p-2 rounded border">
+                            <div className="flex items-center">
+                              <div className="w-6 h-6 bg-orange-200 rounded-full flex items-center justify-center mr-2">
+                                <span className="text-xs font-bold text-orange-700">{letter.toUpperCase()}</span>
+                              </div>
+                              <span className="text-sm font-medium text-gray-700">{full}</span>
                             </div>
-                            <span className="text-sm font-medium text-gray-700">{data.categoryDisplayText}</span>
+                            <span className="text-sm font-bold text-orange-600">{score as number}</span>
                           </div>
-                          <span className="text-sm font-bold text-orange-600">{data.categoryScore}</span>
-                        </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 </div>
               </div>
