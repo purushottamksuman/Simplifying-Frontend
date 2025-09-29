@@ -24,6 +24,12 @@ export const PropertyCommanSubsection = (): JSX.Element => {
     confirmPassword: "",
   });
   const [countries, setCountries] = useState<{ name: string; code: string }[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<{
+  label: string;
+  color: string;
+}>({ label: "", color: "" });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -65,6 +71,24 @@ export const PropertyCommanSubsection = (): JSX.Element => {
 
   fetchCountries();
 }, []);
+
+
+const checkPasswordStrength = (password: string) => {
+  if (!password) return { label: "", color: "" };
+
+  const strongRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+  const mediumRegex =
+    /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*\d))|((?=.*[A-Z])(?=.*\d))).{6,}$/;
+
+  if (strongRegex.test(password)) {
+    return { label: "Strong", color: "green" };
+  } else if (mediumRegex.test(password)) {
+    return { label: "Medium", color: "orange" };
+  } else {
+    return { label: "Weak", color: "red" };
+  }
+};
 
 
 const handleSignUp = async () => {
@@ -235,15 +259,49 @@ const handleInputChange = (field: string, value: string) => {
             type="tel"
           />
                 </div>
+<div className="w-full">
+  {/* Input + eye button wrapper */}
+  <div className="relative w-full">
+    <Input
+      type={showPassword ? "text" : "password"}
+      value={formData.password}
+      onChange={(e) => {
+        setFormData({ ...formData, password: e.target.value });
+        setPasswordStrength(checkPasswordStrength(e.target.value));
+      }}
+      placeholder="Enter your password"
+      className="h-[53px] rounded-3xl pl-4 pr-12 font-roboto text-sm"
+    />
 
-                {/* Password */}
-                <Input
-                  type="password"
-                  className="h-[53px] rounded-3xl border border-gray-300 pl-4"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
-                />
+    {/* Eye toggle button */}
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute right-4 top-1/2 -translate-y-1/2"
+    >
+      <img
+        src={showPassword ? "/eyes.png" : "/eyes.png"} // use different icons for show/hide
+        alt="Toggle visibility"
+        className="w-5 h-5"
+      />
+    </button>
+  </div>
+
+  {/* Strength indicator (outside relative div so it doesn't push the button) */}
+  {passwordStrength.label && (
+    <p
+      className={`text-sm mt-1 font-medium ${
+        passwordStrength.color === "green"
+          ? "text-green-600"
+          : passwordStrength.color === "orange"
+          ? "text-yellow-500"
+          : "text-red-500"
+      }`}
+    >
+      Password strength: {passwordStrength.label}
+    </p>
+  )}
+</div>
 
                 {/* Confirm Password */}
                 <Input
