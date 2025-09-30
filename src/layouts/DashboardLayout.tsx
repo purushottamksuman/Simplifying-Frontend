@@ -8,7 +8,6 @@ import {
   GiftIcon,
   HelpCircleIcon,
   HomeIcon,
-  LockIcon,
   LogOutIcon,
   MenuIcon,
   PresentationIcon,
@@ -24,15 +23,27 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { authHelpers } from "../lib/supabase";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 
+import { authHelpers } from "../lib/supabase";
+import { CounsellingCalendarContainer } from "../components/ScheduleCounselling/CounsellingCalendar/CounsellingCalendarContainer";
 
 const navigationItems = [
   { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
   { icon: UserIcon, label: "Profile Settings", path: "profile" },
   { icon: FolderIcon, label: "My Course", path: "courses" },
   { icon: PresentationIcon, label: "Live Classes", path: "live" },
-  { icon: FileTextIcon, label: "SkillSphere Assessment", path: "questionManagementSystem", requiresPayment: true  },
+  {
+    icon: FileTextIcon,
+    label: "SkillSphere Assessment",
+    path: "questionManagementSystem",
+    requiresPayment: true,
+  },
   { icon: FileTextIcon, label: "Test & Assessment", path: "tests" },
   { icon: AwardIcon, label: "Certificates", path: "certificates" },
   { icon: TrophyIcon, label: "Leaderboard", path: "leaderboard" },
@@ -49,50 +60,49 @@ const DashboardLayout = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
 
   const location = useLocation();
- 
+
   useEffect(() => {
-  if (location.pathname === "/" || location.pathname === "/component") {
-    navigate("/component/dashboard", { replace: true });
-  }
-}, [location.pathname, navigate]);
+    if (location.pathname === "/" || location.pathname === "/component") {
+      navigate("/component/dashboard", { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
-
-const activeNav = navigationItems.find(item =>
-  location.pathname.includes(item.path)
-);
-
+  const activeNav = navigationItems.find((item) =>
+    location.pathname.includes(item.path)
+  );
 
   // Authentication check
-useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      // 1️⃣ Get logged-in user
-      const { user, error } = await authHelpers.getCurrentUser();
-      if (error || !user) {
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { user, error } = await authHelpers.getCurrentUser();
+        if (error || !user) {
+          navigate("/login");
+          return;
+        }
+
+        const { data: profile, error: profileError } =
+          await authHelpers.getUserProfile(user.id);
+        if (profileError || !profile) {
+          console.error("❌ Failed to fetch user profile:", profileError);
+        } else {
+          setUser({ ...user, ...profile });
+          const name =
+            profile.full_name || user.email?.split("@")[0] || "User";
+          setUserName(name);
+        }
+      } catch (err) {
+        console.error("❌ Auth check error:", err);
         navigate("/login");
-        return;
+      } finally {
+        setLoading(false);
       }
-
-      const { data: profile, error: profileError } = await authHelpers.getUserProfile(user.id); 
-      if (profileError || !profile) {
-        console.error("❌ Failed to fetch user profile:", profileError);
-      } else {
-        setUser({ ...user, ...profile }); // merge basic user + profile
-        const name = profile.full_name || user.email?.split("@")[0] || "User";
-        setUserName(name);
-      }
-    } catch (err) {
-      console.error("❌ Auth check error:", err);
-      navigate("/login");
-    } finally {
-      setLoading(false);
-    }
-  };
-  checkAuth();
-}, [navigate]);
-
+    };
+    checkAuth();
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -128,7 +138,11 @@ useEffect(() => {
         {/* Logo */}
         <div className="p-4 border-b border-[#ffffff15] flex-shrink-0 flex items-center justify-between h-20">
           {!sidebarCollapsed && (
-            <img className="w-48 h-12 object-contain" alt="Logo" src="/Simplifying.png" />
+            <img
+              className="w-48 h-12 object-contain"
+              alt="Logo"
+              src="/Simplifying.png"
+            />
           )}
           <Button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -136,40 +150,45 @@ useEffect(() => {
             size="icon"
             className="w-8 h-8 text-white hover:bg-[#ffffff15] rounded-lg transition-colors duration-200 flex items-center justify-center"
           >
-            {sidebarCollapsed ? <MenuIcon className="w-5 h-5" /> : <XIcon className="w-5 h-5" />}
+            {sidebarCollapsed ? (
+              <MenuIcon className="w-5 h-5" />
+            ) : (
+              <XIcon className="w-5 h-5" />
+            )}
           </Button>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto sidebar-scrollbar">
           <div className="flex flex-col gap-1">
-            {navigationItems.map(item => {
-  const isLocked = item.requiresPayment && !user?.skillsphere_enabled;
-  return (
-<NavLink
-  key={item.path}
-  to={`/component/${item.path}`}
-  className={({ isActive }) =>
-    `w-full justify-start gap-3 px-4 py-3 h-auto relative z-10 transition-all duration-200 rounded-2xl flex items-center ${
-      isActive
-        ? "bg-white text-[#3479ff] shadow-sm"
-        : "text-white hover:bg-[#ffffff15]"
-    } ${sidebarCollapsed ? "justify-center px-0" : "justify-start"}`
-  }
->
-  <item.icon className="w-5 h-5 flex-shrink-0" />
-  {!sidebarCollapsed && (
-    <span className="font-medium text-sm truncate">
-      {item.label} {item.requiresPayment && "🔒"}
-    </span>
-  )}
-</NavLink>
-
-  );
-})}
-
-
-
+            {navigationItems.map((item) => {
+              const isLocked =
+                item.requiresPayment && !user?.skillsphere_enabled;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={`/component/${item.path}`}
+                  className={({ isActive }) =>
+                    `w-full justify-start gap-3 px-4 py-3 h-auto relative z-10 transition-all duration-200 rounded-2xl flex items-center ${
+                      isActive
+                        ? "bg-white text-[#3479ff] shadow-sm"
+                        : "text-white hover:bg-[#ffffff15]"
+                    } ${
+                      sidebarCollapsed
+                        ? "justify-center px-0"
+                        : "justify-start"
+                    }`
+                  }
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="font-medium text-sm truncate">
+                      {item.label} {isLocked && "🔒"}
+                    </span>
+                  )}
+                </NavLink>
+              );
+            })}
           </div>
         </nav>
 
@@ -183,7 +202,9 @@ useEffect(() => {
             }`}
           >
             <LogOutIcon className="w-5 h-5 flex-shrink-0" />
-            {!sidebarCollapsed && <span className="font-medium text-sm">Log Out</span>}
+            {!sidebarCollapsed && (
+              <span className="font-medium text-sm">Log Out</span>
+            )}
           </Button>
         </div>
       </aside>
@@ -196,20 +217,40 @@ useEffect(() => {
             <div className="flex items-center justify-between">
               {/* Title */}
               <span className="text-[#3479ff] text-2xl font-bold">
-  {activeNav?.label || "Dashboard"}
-</span>
+                {activeNav?.label || "Dashboard"}
+              </span>
 
-              {/* Search */}
-              <div className="flex-1 max-w-md mx-8">
-                <div className="relative">
+              {/* Search + Book Counselling */}
+              <div className="flex-1 max-w-md mx-8 flex items-center gap-4">
+                <div className="relative flex-1">
                   <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
                     placeholder="Search anything..."
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
-                    className="pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-2xl shadow-sm focus:bg-white focus:shadow-md transition-all duration-200 placeholder:text-gray-500"
+                    className="pl-12 pr-4 py-3 w-full bg-gray-50 border-0 rounded-2xl shadow-sm focus:bg-white focus:shadow-md transition-all duration-200 placeholder:text-gray-500"
                   />
                 </div>
+
+                {/* Book Counselling Button */}
+                <Button
+                  onClick={() => setOpenDialog(true)}
+                  className="bg-[#3479ff] text-white rounded-2xl px-5 py-3 hover:bg-[#255edb] transition-all duration-200 shadow-md"
+                >
+                  Book Counselling
+                </Button>
+
+                {/* Dialog for Counselling Calendar */}
+                <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                  <DialogContent className="max-w-3xl rounded-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-bold text-[#3479ff]">
+                        Book Counselling Session
+                      </DialogTitle>
+                    </DialogHeader>
+                    <CounsellingCalendarContainer />
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {/* User Controls */}
@@ -222,7 +263,11 @@ useEffect(() => {
                   <BellIcon className="w-5 h-5" />
                 </Button>
                 <Avatar className="w-10 h-10 border-2 border-gray-200 shadow-sm">
-                  <AvatarImage src="/Profile.png" onClick={() => navigate('/component/profile')} className="cursor-pointer" />
+                  <AvatarImage
+                    src="/Profile.png"
+                    onClick={() => navigate("/component/profile")}
+                    className="cursor-pointer"
+                  />
                   <AvatarFallback className="bg-[#3479ff] text-white text-sm font-semibold">
                     {userName.charAt(0).toUpperCase()}
                   </AvatarFallback>
