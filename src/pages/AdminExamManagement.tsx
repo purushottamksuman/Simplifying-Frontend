@@ -49,6 +49,7 @@ export const AdminExamManagement: React.FC = () => {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAssessments, setSelectedAssessments] = useState<string[]>([]);
+  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
 
   // Form states
   const [examForm, setExamForm] = useState({
@@ -104,6 +105,25 @@ export const AdminExamManagement: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const deleteExam = async (examId: string) => {
+  if (!window.confirm("Are you sure you want to delete this exam?")) return;
+  try {
+    // Delete related junctions first
+    await supabase.from("exam_assessments").delete().eq("exam_id", examId);
+
+    // Delete exam
+    const { error } = await supabase.from("exams").delete().eq("exam_id", examId);
+    if (error) throw error;
+
+    setExams(exams.filter(e => e.exam_id !== examId));
+    alert("Exam deleted successfully!");
+  } catch (err) {
+    console.error("Error deleting exam:", err);
+    alert("Error deleting exam: " + (err as Error).message);
+  }
+};
+
 
   const createExam = async () => {
     try {
@@ -603,15 +623,26 @@ export const AdminExamManagement: React.FC = () => {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline" className="rounded-lg">
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                         <Button 
+  size="sm" 
+  variant="outline" 
+  className="rounded-lg"
+  onClick={() => setSelectedExam(exam)}
+>
+  <Eye className="w-4 h-4" />
+</Button>
+
                           <Button size="sm" variant="outline" className="rounded-lg" onClick={() => editExam(exam)}>
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="outline" className="rounded-lg text-red-600 hover:text-red-700">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <Button
+  size="sm"
+  variant="outline"
+  className="rounded-lg text-red-600 hover:text-red-700"
+  onClick={() => deleteExam(exam.exam_id)}
+>
+  <Trash2 className="w-4 h-4" />
+</Button>
                         </div>
                       </div>
                     </CardContent>
@@ -690,12 +721,30 @@ export const AdminExamManagement: React.FC = () => {
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="outline" className="rounded-lg">
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                          <Button 
+  size="sm" 
+  variant="outline" 
+  className="rounded-lg"
+  onClick={() => setSelectedExam(assessment)}
+>
+  <Eye className="w-4 h-4" />
+</Button>
                           <Button size="sm" variant="outline" className="rounded-lg text-red-600 hover:text-red-700">
                             <Trash2 className="w-4 h-4" />
                           </Button>
+                          <Dialog open={!!selectedExam} onOpenChange={() => setSelectedExam(null)}>
+  <DialogContent className="max-w-2xl rounded-xl">
+    <DialogHeader>
+      <DialogTitle>{selectedExam?.exam_name}</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-2">
+      <p><strong>Description:</strong> {selectedExam?.description}</p>
+      <p><strong>Instructions:</strong> {selectedExam?.instructions}</p>
+      <p><strong>Total Time:</strong> {selectedExam?.total_time} min</p>
+      <p><strong>Marks:</strong> {selectedExam?.maximum_marks}</p>
+    </div>
+  </DialogContent>
+</Dialog>
                         </div>
                       </div>
                     </CardContent>
