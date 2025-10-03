@@ -16,6 +16,7 @@ const sidebarMenuItems = [
 
 export const DivWrapperSubsection = (): JSX.Element => {
 const [isSaving, setIsSaving] = useState(false);
+const [isSaved, setIsSaved] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<any>({
     full_name: "",
@@ -99,6 +100,8 @@ const handleSave = async () => {
           : updatedProfile.hobbies,
       });
     }
+     setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 5000);
   } catch (err) {
     console.error("Unexpected error:", err);
   } finally {
@@ -107,9 +110,12 @@ const handleSave = async () => {
   }
 };
 
-
-
-
+const handleChange = (field: string, value: any) => {
+  setProfile(prev => ({
+    ...prev,
+    [field]: value,
+  }));
+};
 
 
   const formatDate = (dateStr: string) => {
@@ -260,13 +266,14 @@ const handleSave = async () => {
                     </div>
                   </div>
 
-                  <Button
-  className="w-32 h-[42px] bg-[#3479ff] hover:bg-[#2968e6] rounded-lg font-bold text-white"
-  onClick={handleSave}
-  disabled={isSaving}
->
-  {isSaving ? "Saving..." : "Save"}
-</Button>
+                   <Button
+                    className="w-32 h-[42px] bg-[#3479ff] hover:bg-[#2968e6] rounded-lg font-bold text-white"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? "Saving..." : isSaved ? "Saved" : "Save"}
+                  </Button>
+                            
 
                 </div>
               </div>
