@@ -145,6 +145,11 @@ const deleteAssessment = async (assessment_id: string) => {
 
 
   const createExam = async () => {
+
+     if (selectedAssessments.length === 0) {
+    alert('Please select at least one assessment before creating an exam.');
+    return;
+  }
     try {
       // Create exam
       const examData = {
