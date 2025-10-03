@@ -42,6 +42,7 @@ import PropertyFeedback from "./screens/parent-flow/PropertyFeedback/PropertyFee
 import ResetPassword from "./screens/Frame/sections/PropertyOtpSubsection/ResetPassword";
 import { PropertyManageChild } from "./screens/parent-flow/PropertyManageChild/PropertyManageChild";
 import AdminDashboard from "./layouts/AdminDashboard";
+import { AdminSkillsphereReportContainer } from "./components/AdminSkillsphereReport/AdminSkillsphereReportContainer";
 
 function RouteNormalizer() {
   const location = useLocation();
@@ -140,6 +141,7 @@ function App() {
   <Route path="questions-list" element={<QuestionsListWrapper />} />
   <Route path="edit-assessment/:assessmentId" element={<CreateAssessment />} />
   <Route path="doubt-solve" element={<TeacherDoubtsSolve />} />
+  <Route path="skillsphereResponses" element={<AdminSkillsphereReportContainer />} />
 </Route>
 
           {/* Exam Routes */}

@@ -50,8 +50,8 @@ const adminRoutes = [
   {
     title: "SkillSphere Results",
     description: "Check and analyze results of SkillSphere assessments.",
-    path: "/admin/skillsphere-results",
-    icon: BarChart3, // ✅ New Results Tile
+    path: "/admin/skillsphereResponses",
+    icon: BarChart3, // ✅ Icon for results
   },
 ];
 
