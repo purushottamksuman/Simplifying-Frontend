@@ -9,6 +9,7 @@ import {
   PlusCircle,
   List,
   Edit,
+  BarChart3, // ✅ Added for results
 } from "lucide-react";
 
 function generateRandomPassword(length = 10) {
@@ -45,6 +46,12 @@ const adminRoutes = [
     description: "Update or edit an existing assessment.",
     path: "/admin/edit-assessment/123",
     icon: Edit,
+  },
+  {
+    title: "SkillSphere Results",
+    description: "Check and analyze results of SkillSphere assessments.",
+    path: "/admin/skillsphere-results",
+    icon: BarChart3, // ✅ New Results Tile
   },
 ];
 
