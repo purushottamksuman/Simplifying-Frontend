@@ -3,6 +3,7 @@ import { CounsellingCalendar } from "./CounsellingCalendar"
 import { supabase } from "../../../lib/supabase"
 import { Slot } from "../../../types/scheduleCounselling/slots"
 import toast, { Toaster } from "react-hot-toast"
+import { razorpayService } from "../../../lib/razorpay"
 
 export const CounsellingCalendarContainer = () => {
 
@@ -45,42 +46,57 @@ export const CounsellingCalendarContainer = () => {
     }
 
     const handleBooking = async () => {
-        if (!selectedSlot) return
+        if (!selectedSlot) return;
 
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            toast.error("Please log in to book a slot ❌")
-            return
+            toast.error("Please log in to book a slot ❌");
+            return;
         }
         const userId = user.id;
 
-        // Prevent duplicate booking
         if (selectedSlot.students.includes(userId)) {
-            toast.error("You already booked this slot ❌")
-            return
+            toast.error("You already booked this slot ❌");
+            return;
         }
 
-        // ✅ Update slot in Supabase
-        const { error } = await supabase
-            .from("counselling_schedules")
-            .update({
+        try {
+            // 1️⃣ Start Razorpay payment
+            const paymentResult = await razorpayService.initiatePayment({
+            amount: 500, // your counselling fee
+            currency: "INR",
+            description: "Counselling Session Booking",
+            notes: { slot_id: selectedSlot.id, user_id: userId },
+            });
+
+            if (paymentResult.success) {
+            // 2️⃣ Payment verified successfully → update Supabase
+            const { error } = await supabase
+                .from("counselling_schedules")
+                .update({
                 students: [...selectedSlot.students, userId],
                 updated_at: new Date().toISOString(),
-            })
-            .eq("id", selectedSlot.id)
+                })
+                .eq("id", selectedSlot.id);
 
-        if (error) {
-            toast.error("Booking failed: " + error.message)
-        } else {
-            toast.success("Booking confirmed ✅")
-            setSelectedSlot(null)
-            setSelectedDate(null)
+            if (error) {
+                toast.error("Booking failed after payment: " + error.message);
+            } else {
+                toast.success("Booking confirmed ✅");
+                setSelectedSlot(null);
+                setSelectedDate(null);
 
-            // Refresh slots
-            const { data } = await supabase.from("counselling_schedules").select("*")
-            setSlots(data as Slot[])
+                const { data } = await supabase.from("counselling_schedules").select("*");
+                setSlots(data as Slot[]);
+            }
+            } else {
+            toast.error("Payment not completed ❌");
+            }
+        } catch (error: any) {
+            console.error(error);
+            toast.error("Payment failed ❌ " + error.message);
         }
-    }
+    };
 
     // Simple calendar: show next 30 days
     const days = Array.from({ length: 30 }, (_, i) => {
