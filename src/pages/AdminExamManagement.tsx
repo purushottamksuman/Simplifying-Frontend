@@ -105,6 +105,25 @@ export const AdminExamManagement: React.FC = () => {
     }
   };
 
+  const deleteExam = async (examId: string) => {
+  if (!window.confirm("Are you sure you want to delete this exam?")) return;
+  try {
+    // Delete related junctions first
+    await supabase.from("exam_assessments").delete().eq("exam_id", examId);
+
+    // Delete exam
+    const { error } = await supabase.from("exams").delete().eq("exam_id", examId);
+    if (error) throw error;
+
+    setExams(exams.filter(e => e.exam_id !== examId));
+    alert("Exam deleted successfully!");
+  } catch (err) {
+    console.error("Error deleting exam:", err);
+    alert("Error deleting exam: " + (err as Error).message);
+  }
+};
+
+
   const createExam = async () => {
     try {
       // Create exam
@@ -609,9 +628,14 @@ export const AdminExamManagement: React.FC = () => {
                           <Button size="sm" variant="outline" className="rounded-lg" onClick={() => editExam(exam)}>
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="outline" className="rounded-lg text-red-600 hover:text-red-700">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <Button
+  size="sm"
+  variant="outline"
+  className="rounded-lg text-red-600 hover:text-red-700"
+  onClick={() => deleteExam(exam.exam_id)}
+>
+  <Trash2 className="w-4 h-4" />
+</Button>
                         </div>
                       </div>
                     </CardContent>
