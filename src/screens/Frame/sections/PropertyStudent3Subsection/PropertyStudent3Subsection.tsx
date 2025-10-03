@@ -99,58 +99,58 @@ export const PropertyStudent3Subsection: React.FC<PropertyStudent3SubsectionProp
       </div>
 
       {/* RIGHT FORM PANEL */}
-      <div className="w-1/2 h-full bg-white flex flex-col justify-center items-center p-12 relative">
-        <img
-          className="w-[366px] h-[91px] object-contain mb-12"
-          src="/logosimplify.png"
-          alt="logosimplify"
-        />
+<div className="w-1/2 h-full bg-white flex flex-col justify-start items-center p-12 relative overflow-y-auto">
+  <img
+    className="w-[366px] h-[91px] object-contain mb-12"
+    src="/logosimplify.png"
+    alt="logosimplify"
+  />
 
-        <div className="flex flex-col w-full max-w-[420px] gap-8 items-center">
-          <div className="text-center text-xl font-medium text-[#13377c]">
-            Select your Hobbies & Interests
-          </div>
+  <div className="flex flex-col w-full max-w-[420px] gap-8 items-center">
+    <div className="text-center text-xl font-medium text-[#13377c]">
+      Select your Hobbies & Interests
+    </div>
 
-          <div className="w-full flex flex-col items-center gap-3">
-            <Progress value={50} className="w-full h-[10px] bg-[#bddeff] rounded-full" />
-            <span className="text-[#81b3ff] font-medium text-lg mt-1">
-              50% Completed
-            </span>
-          </div>
+    <div className="w-full flex flex-col items-center gap-3">
+      <Progress value={50} className="w-full h-[10px] bg-[#bddeff] rounded-full" />
+      <span className="text-[#81b3ff] font-medium text-lg mt-1">50% Completed</span>
+    </div>
 
-          <div className="flex flex-col w-full gap-4">
-            {hobbies.map((hobby) => (
-              <div
-                key={hobby.id}
-                className={`w-full h-[55px] flex items-center gap-4 px-4 cursor-pointer rounded-3xl border ${
-                  selectedHobby === hobby.id
-                    ? "bg-white border-[#007fff57] shadow-[0px_0px_20px_#007fff33]"
-                    : "bg-white border-[#e2e2ea]"
-                }`}
-                onClick={() => setSelectedHobby(hobby.id)}
-              >
-                {hobby.icon}
-                <span className="font-normal text-[#007fff] text-lg">{hobby.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <Button
-            disabled={!selectedHobby}
-            className="w-full h-[55px] bg-[#007fff] rounded-3xl text-white text-2xl font-semibold hover:bg-[#0066cc]"
-            onClick={() => onNext(selectedHobby)}
-          >
-            Next
-          </Button>
-                    <Button
-            variant="outline"
-            className="w-full h-[50px] lg:h-[55px] rounded-3xl text-[#007fff] border-[#007fff] text-xl lg:text-2xl font-semibold hover:bg-[#f0f8ff]"
-            onClick={onBack}
-          >
-            Back
-          </Button>
+    <div className="flex flex-col w-full gap-4">
+      {hobbies.map((hobby) => (
+        <div
+          key={hobby.id}
+          className={`w-full h-[55px] flex items-center gap-4 px-4 cursor-pointer rounded-3xl border ${
+            selectedHobby === hobby.id
+              ? "bg-white border-[#007fff57] shadow-[0px_0px_20px_#007fff33]"
+              : "bg-white border-[#e2e2ea]"
+          }`}
+          onClick={() => setSelectedHobby(hobby.id)}
+        >
+          {hobby.icon}
+          <span className="font-normal text-[#007fff] text-lg">{hobby.label}</span>
         </div>
-      </div>
+      ))}
+    </div>
+
+    <Button
+      disabled={!selectedHobby}
+      className="w-full h-[55px] bg-[#007fff] rounded-3xl text-white text-2xl font-semibold hover:bg-[#0066cc]"
+      onClick={() => onNext(selectedHobby)}
+    >
+      Next
+    </Button>
+
+    <Button
+      variant="outline"
+      className="w-full h-[50px] lg:h-[55px] rounded-3xl text-[#007fff] border-[#007fff] text-xl lg:text-2xl font-semibold hover:bg-[#f0f8ff]"
+      onClick={onBack}
+    >
+      Back
+    </Button>
+  </div>
+</div>
+
 
       {/* CLOSE BUTTON */}
       {onClose && (
