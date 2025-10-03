@@ -100,30 +100,31 @@ export const ExamDetailsPage: React.FC = () => {
     try {
       setLoading(true);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-        return;
-      }
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) {
+  navigate('/login');
+  return;
+}
 
-      console.log('🔍 Fetching exam details for user:', user.id, 'exam:', examId);
+// Admin bypass
+const isAdmin = true; // Or fetch from your user table/role
+if (!isAdmin) {
+  const { data: purchase, error: purchaseError } = await supabase
+    .from('exam_purchases')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('exam_id', examId)
+    .single();
 
-      // Check if user has access to this exam
-      const { data: purchase, error: purchaseError } = await supabase
-        .from('exam_purchases')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('exam_id', examId)
-        .single();
+  if (purchaseError || !purchase) {
+    console.error('❌ Purchase check failed:', purchaseError);
+    setError('You do not have access to this exam. Please purchase it first.');
+    return;
+  }
+}
 
-      if (purchaseError || !purchase) {
-        console.error('❌ Purchase check failed:', purchaseError);
-        setError('You do not have access to this exam. Please purchase it first.');
-        return;
-      }
+setHasAccess(true);
 
-      console.log('✅ User has access to exam:', purchase);
-      setHasAccess(true);
 
       // Fetch exam details
       const { data: examData, error: examError } = await supabase
