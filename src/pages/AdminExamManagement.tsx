@@ -151,6 +151,18 @@ const deleteAssessment = async (assessment_id: string) => {
     return;
   }
     try {
+
+       const { data: existingExams, error: fetchError } = await supabase
+      .from('exams')
+      .select('exam_name')
+      .ilike('exam_name', examForm.exam_name.trim());
+
+    if (fetchError) throw fetchError;
+
+    if (existingExams && existingExams.length > 0) {
+      alert('An exam with this name already exists. Please choose a different name.');
+      return;
+    }
       // Create exam
       const examData = {
         exam_name: examForm.exam_name.trim(),
@@ -241,6 +253,19 @@ const deleteAssessment = async (assessment_id: string) => {
     if (!editingExam) return;
 
     try {
+      const { data: existingExams, error: fetchError } = await supabase
+      .from('exams')
+      .select('exam_name')
+      .ilike('exam_name', examForm.exam_name.trim())
+      .neq('exam_id', editingExam.exam_id);
+
+    if (fetchError) throw fetchError;
+
+    if (existingExams && existingExams.length > 0) {
+      alert('An exam with this name already exists. Please choose a different name.');
+      return;
+    }
+
       const examData = {
         exam_name: examForm.exam_name.trim(),
         description: examForm.description?.trim() || null,
