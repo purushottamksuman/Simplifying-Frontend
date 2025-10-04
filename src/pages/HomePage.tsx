@@ -19,7 +19,7 @@ const components = [
     image: 'https://images.pexels.com/photos/4386321/pexels-photo-4386321.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop'
   },
   {
-    name: 'My Courses',
+    name: 'My Learning',
     id: 'mycourse',
     description: 'Course listing with progress tracking and mentor information',
     category: 'Education',

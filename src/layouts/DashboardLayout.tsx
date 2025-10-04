@@ -36,7 +36,7 @@ import { CounsellingCalendarContainer } from "../components/ScheduleCounselling/
 const navigationItems = [
   { icon: HomeIcon, label: "Dashboard", path: "dashboard" },
   { icon: UserIcon, label: "Profile Settings", path: "profile" },
-  { icon: FolderIcon, label: "My Course", path: "courses" },
+  { icon: FolderIcon, label: "My Learning", path: "courses" },
   { icon: PresentationIcon, label: "Live Classes", path: "live" },
   {
     icon: FileTextIcon,
