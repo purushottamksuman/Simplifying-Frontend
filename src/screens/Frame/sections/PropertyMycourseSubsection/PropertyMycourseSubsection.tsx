@@ -71,59 +71,7 @@ const courseData = [
     lastAccessed: "Software Developer",
     avatar:
       "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
-  },
-  {
-    id: 5,
-    image:
-      "https://images.pexels.com/photos/1181354/pexels-photo-1181354.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
-    category: "FRONTEND",
-    title: "Beginner's Guide To Becoming A professional Frontend Developer",
-    progress: 51,
-    videosCompleted: "4/10 Videos Completed",
-    instructor: "Prashant Kumar Singh",
-    lastAccessed: "Last Accessed: 09 Aug 2025",
-    avatar:
-      "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
-  },
-  {
-    id: 6,
-    image:
-      "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
-    category: "FRONTEND",
-    title: "Beginner's Guide To Becoming A professional Frontend Developer",
-    progress: 51,
-    videosCompleted: "4/10 Videos Completed",
-    instructor: "Prashant Kumar Singh",
-    lastAccessed: "Last Accessed: 09 Aug 2025",
-    avatar:
-      "https://images.pexels.com/photos/1300402/pexels-photo-1300402.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
-  },
-  {
-    id: 7,
-    image:
-      "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
-    category: "FRONTEND",
-    title: "Beginner's Guide To Becoming A professional Frontend Developer",
-    progress: 51,
-    videosCompleted: "4/10 Videos Completed",
-    instructor: "Prashant Kumar Singh",
-    lastAccessed: "Last Accessed: 09 Aug 2025",
-    avatar:
-      "https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
-  },
-  {
-    id: 8,
-    image:
-      "https://images.pexels.com/photos/1181772/pexels-photo-1181772.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
-    category: "FRONTEND",
-    title: "Beginner's Guide To Becoming A professional Frontend Developer",
-    progress: 51,
-    videosCompleted: "4/10 Videos Completed",
-    instructor: "Prashant Kumar Singh",
-    lastAccessed: "Last Accessed: 09 Aug 2025",
-    avatar:
-      "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop",
-  },
+  }
 ];
 
 const mentorData = [
@@ -259,10 +207,10 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="[font-family:'Nunito',Helvetica] font-bold text-[#13377c] text-xl tracking-[0] leading-[26px] mb-2">
-                  My Course
+                  My Learning
                 </h2>
                 <p className="[font-family:'Poppins',Helvetica] font-normal text-object-black-60 text-base tracking-[0] leading-6">
-                  List of your courses
+                  List of your clubs
                 </p>
               </div>
 
@@ -290,67 +238,76 @@ export const PropertyMycourseSubsection = (): JSX.Element => {
               </div>
             </div>
 
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-16 justify-items-center">
   {courseData.map((course) => (
     <Card
-  key={course.id}
-  className="shadow-cards-long-default rounded-[20px] overflow-hidden h-[340px] flex flex-col justify-between"
->
-  <CardContent className="p-3 relative flex flex-col justify-between h-full">
-    <div>
-      <div className="relative mb-3">
+      key={course.id}
+      className="rounded-[16px] border shadow-md overflow-hidden flex flex-col bg-white h-full"
+    >
+      <CardContent className="p-0 flex flex-col h-full">
+      
+
+        {/* Thumbnail */}
         <img
-          className="w-full h-[150px] object-cover rounded-lg"
+          className="w-full h-[120px] object-cover"
           alt="Course thumbnail"
           src={course.image}
           loading="lazy"
         />
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute top-2 right-2 w-5 h-5 p-0 bg-[#cccccc80] hover:bg-[#cccccc] rounded-full"
-        >
-          <HeartIcon className="w-3 h-3" />
-        </Button>
-      </div>
 
-      <Badge className="bg-[#75a4ff87] text-[#083a50] text-[8px] font-semibold mb-3 h-[15px] px-3">
-        {course.category}
-      </Badge>
+        {/* Content */}
+        <div className="p-4 flex flex-col flex-1">
+          <h3 className="text-sm font-semibold text-[#202020] leading-snug mb-3 line-clamp-2">
+            {course.title}
+          </h3>
 
-      <h3 className="[font-family:'Inter',Helvetica] font-medium text-[#202020] text-sm tracking-[0] leading-[normal] mb-3 line-clamp-2">
-        {course.title}
-      </h3>
-    </div>
+          <div className="mb-3">
+            <Progress value={course.progress} className="h-1.5 mb-1" />
+            <div className="flex justify-between text-[10px] text-[#7f7f7f]">
+              <span>Level 3/5</span>
+              <span>2850 / 4500 XP</span>
+            </div>
+          </div>
 
-    <div>
-      <div className="mb-2">
-        <Progress value={course.progress} className="h-1.5 mb-1" />
-        <p className="[font-family:'Poppins',Helvetica] font-normal text-[#7f7f7f] text-[6px] text-right tracking-[0] leading-[9px]">
-          {course.videosCompleted}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Avatar className="w-6 h-6">
-          <AvatarImage src={course.avatar} />
-          <AvatarFallback>PK</AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <p className="[font-family:'Inter',Helvetica] font-medium text-[#202020] text-[10px] tracking-[0] leading-[normal]">
-            {course.instructor}
+          <p className="text-[10px] text-red-500 font-medium mb-3">
+            ▶ 2 Live Sessions Available
           </p>
-          <p className="[font-family:'Inter',Helvetica] font-normal text-[#202020] text-[8px] tracking-[0] leading-[normal]">
-            {course.lastAccessed}
-          </p>
+
+          <div className="flex items-center gap-2 mb-3">
+            <Avatar className="w-6 h-6">
+              <AvatarImage src={course.avatar} />
+              <AvatarFallback>PK</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-[11px] font-medium text-[#202020]">
+                {course.instructor}
+              </p>
+              <p className="text-[9px] text-[#777]">{course.lastAccessed}</p>
+            </div>
+          </div>
+
+          {/* Bottom Section sticks */}
+          <div className="mt-auto space-y-3">
+            <Select>
+              <SelectTrigger className="w-full border-2 border-[#eaeaea] rounded-[6px] h-8">
+                <SelectValue placeholder="Select Recommendation" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="skillsphere">Skillsphere Recommended</SelectItem>
+                <SelectItem value="counselling">Counselling Recommended</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button className="w-full bg-[#3479ff] hover:bg-[#2e6de0] rounded-full h-8 text-xs font-semibold text-white">
+              Continue Quest
+            </Button>
+          </div>
         </div>
-      </div>
-    </div>
-  </CardContent>
-</Card>
-
+      </CardContent>
+    </Card>
   ))}
 </div>
+
 
           </div>
         </div>
