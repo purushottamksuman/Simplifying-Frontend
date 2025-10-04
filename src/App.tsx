@@ -141,7 +141,9 @@ function App() {
   <Route path="create-assessment" element={<CreateAssessment />} />
   <Route path="questions-list" element={<QuestionsListWrapper />} />
   <Route path="edit-assessment/:assessmentId" element={<CreateAssessment />} />
+  <Route path="view-assessment/:assessmentId" element={<CreateAssessment />} />
   <Route path="doubt-solve" element={<TeacherDoubtsSolve />} />
+
 </Route>
 
           {/* Exam Routes */}

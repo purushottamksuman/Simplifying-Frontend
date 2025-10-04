@@ -49,7 +49,6 @@ export const AdminExamManagement: React.FC = () => {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAssessments, setSelectedAssessments] = useState<string[]>([]);
-  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
 
   // Form states
   const [examForm, setExamForm] = useState({
@@ -125,8 +124,45 @@ export const AdminExamManagement: React.FC = () => {
 };
 
 
+const deleteAssessment = async (assessment_id: string) => {
+  if (!window.confirm("Are you sure you want to delete this assessment?")) return;
+
+  try {
+    const { error } = await supabase
+      .from("assessments") // fixed table name
+      .delete()
+      .eq("assessment_id", assessment_id);
+
+    if (error) throw error;
+
+    setAssessments(prev => prev.filter(e => e.assessment_id !== assessment_id)); // fixed state
+    alert("Assessment deleted successfully!");
+  } catch (err) {
+    console.error("Error deleting assessment:", err);
+    alert("Error deleting assessment: " + (err as Error).message);
+  }
+};
+
+
   const createExam = async () => {
+
+     if (selectedAssessments.length === 0) {
+    alert('Please select at least one assessment before creating an exam.');
+    return;
+  }
     try {
+
+       const { data: existingExams, error: fetchError } = await supabase
+      .from('exams')
+      .select('exam_name')
+      .ilike('exam_name', examForm.exam_name.trim());
+
+    if (fetchError) throw fetchError;
+
+    if (existingExams && existingExams.length > 0) {
+      alert('An exam with this name already exists. Please choose a different name.');
+      return;
+    }
       // Create exam
       const examData = {
         exam_name: examForm.exam_name.trim(),
@@ -217,6 +253,19 @@ export const AdminExamManagement: React.FC = () => {
     if (!editingExam) return;
 
     try {
+      const { data: existingExams, error: fetchError } = await supabase
+      .from('exams')
+      .select('exam_name')
+      .ilike('exam_name', examForm.exam_name.trim())
+      .neq('exam_id', editingExam.exam_id);
+
+    if (fetchError) throw fetchError;
+
+    if (existingExams && existingExams.length > 0) {
+      alert('An exam with this name already exists. Please choose a different name.');
+      return;
+    }
+
       const examData = {
         exam_name: examForm.exam_name.trim(),
         description: examForm.description?.trim() || null,
@@ -623,15 +672,14 @@ export const AdminExamManagement: React.FC = () => {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                         <Button 
+                          <Button
   size="sm" 
   variant="outline" 
   className="rounded-lg"
-  onClick={() => setSelectedExam(exam)}
+  onClick={() => navigate(`/exam-details/${exam.exam_id}`)}
 >
   <Eye className="w-4 h-4" />
 </Button>
-
                           <Button size="sm" variant="outline" className="rounded-lg" onClick={() => editExam(exam)}>
                             <Edit className="w-4 h-4" />
                           </Button>
@@ -725,26 +773,18 @@ export const AdminExamManagement: React.FC = () => {
   size="sm" 
   variant="outline" 
   className="rounded-lg"
-  onClick={() => setSelectedExam(assessment)}
+  onClick={() => navigate(`/admin/view-assessment/${assessment.assessment_id}`)}
 >
   <Eye className="w-4 h-4" />
 </Button>
-                          <Button size="sm" variant="outline" className="rounded-lg text-red-600 hover:text-red-700">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                          <Dialog open={!!selectedExam} onOpenChange={() => setSelectedExam(null)}>
-  <DialogContent className="max-w-2xl rounded-xl">
-    <DialogHeader>
-      <DialogTitle>{selectedExam?.exam_name}</DialogTitle>
-    </DialogHeader>
-    <div className="space-y-2">
-      <p><strong>Description:</strong> {selectedExam?.description}</p>
-      <p><strong>Instructions:</strong> {selectedExam?.instructions}</p>
-      <p><strong>Total Time:</strong> {selectedExam?.total_time} min</p>
-      <p><strong>Marks:</strong> {selectedExam?.maximum_marks}</p>
-    </div>
-  </DialogContent>
-</Dialog>
+                           <Button
+  size="sm"
+  variant="outline"
+  className="rounded-lg text-red-600 hover:text-red-700"
+  onClick={() => deleteAssessment(assessment.assessment_id)}
+>
+  <Trash2 className="w-4 h-4" />
+</Button>
                         </div>
                       </div>
                     </CardContent>
